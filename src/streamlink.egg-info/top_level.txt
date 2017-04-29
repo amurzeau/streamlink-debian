@@ -1,0 +1,2 @@
+streamlink
+streamlink_cli
