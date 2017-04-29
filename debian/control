@@ -15,7 +15,7 @@ Build-Depends: debhelper (>= 9),
  python3-mock
 X-Python3-Version: >= 3.4
 Homepage: http://streamlink.io/
-Vcs-Git: git://github.com/amurzeau/streamlink.git
+Vcs-Git: https://github.com/amurzeau/streamlink.git
 Vcs-Browser: https://github.com/amurzeau/streamlink
 
 Package: python3-streamlink
