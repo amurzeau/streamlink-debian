@@ -1,13 +1,16 @@
+From: Alexis Murzeau <amubtdx@outlook.fr>
+Date: Sun, 23 Apr 2017 15:54:58 +0200
 Subject: Use Debian packaged modernizr
+
 Forwarded: not-needed
 Author: Stefan Breunig <stefan-debian@yrden.de>
+---
+ docs/_themes/sphinx_rtd_theme_violet/layout.html | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Index: packaging/docs/_themes/sphinx_rtd_theme_violet/layout.html
-===================================================================
---- packaging.orig/docs/_themes/sphinx_rtd_theme_violet/layout.html	2015-01-19 21:33:26.997832354 +0100
-+++ packaging/docs/_themes/sphinx_rtd_theme_violet/layout.html	2015-01-19 22:11:53.404504485 +0100
-@@ -68,7 +68,7 @@
+--- a/docs/_themes/sphinx_rtd_theme_violet/layout.html
++++ b/docs/_themes/sphinx_rtd_theme_violet/layout.html
+@@ -67,7 +67,7 @@
    {%- block extrahead %} {% endblock %}
  
    {# Keep modernizr in head - http://modernizr.com/docs/#installing #}

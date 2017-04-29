@@ -1,2 +1,2 @@
-usr/lib/python2.7/*-packages/streamlink_cli usr/share/streamlink
+usr/lib/python3*/*-packages/streamlink_cli usr/share/streamlink
 usr/share/streamlink/streamlink

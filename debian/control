@@ -1,59 +1,31 @@
 Source: streamlink
-Maintainer: Stefan Breunig <stefan-debian@yrden.de>
+Maintainer: Alexis Murzeau <amubtdx@outlook.fr>
 Section: python
 Priority: optional
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Build-Depends: debhelper (>= 9),
  dh-python,
- python,
- python3,
- python-setuptools,
+ python3 (>= 3.4),
  python3-setuptools,
- python-singledispatch,
- python3 (>= 3.4) | python3-singledispatch,
- python-requests,
- python3-requests,
- python-sphinx,
- python-concurrent.futures
-X-Python-Version: >= 2.6
-X-Python3-Version: >= 3.3
+ python3-sphinx,
+ python3-requests (>= 1.0),
+ python3-pycountry,
+ python3-crypto,
+ python3-pytest,
+ python3-mock
+X-Python3-Version: >= 3.4
 Homepage: http://streamlink.io/
-Vcs-Git: git://github.com/streamlink/streamlink.git
-Vcs-Browser: https://github.com/streamlink/streamlink
-
-Package: python-streamlink
-Architecture: all
-Depends: ${misc:Depends},
- ${python:Depends},
- python-requests,
- python-singledispatch,
- python-concurrent.futures
-Recommends: rtmpdump,
-  python-crypto,
-  python-librtmp
-Suggests: streamlink
-Description: library to extract video streams from various services - Python 2
- The API lists available video qualities from URLs which are
- visible to a service’s users. It can extract any such quality
- and pass on the raw video data.
- .
- Currently most of the big streaming services are supported
- (e.g. Dailymotion, Livestream, Justin.tv, Twitch, YouTube Live
- and UStream) and more specialized content providers can be
- added easily using Streamlink’s plugin system.
- .
- This package makes Streamlink APIs accessible in Python 2.
+Vcs-Git: git://github.com/amurzeau/streamlink.git
+Vcs-Browser: https://github.com/amurzeau/streamlink
 
 Package: python3-streamlink
 Architecture: all
 Depends: ${misc:Depends},
- ${python3:Depends},
- python3-requests,
- python3 (>= 3.4) | python3-singledispatch
+ ${python3:Depends}
 Recommends: rtmpdump,
-  python3-crypto,
-  python3-librtmp
-Suggests: streamlink
+  python3-librtmp,
+  ffmpeg
+Suggests: streamlink, python3-streamlink-doc
 Description: library to extract video streams from various services - Python 3
  The API lists available video qualities from URLs which are
  visible to a service’s users. It can extract any such quality
@@ -66,15 +38,16 @@ Description: library to extract video streams from various services - Python 3
  .
  This package makes Streamlink APIs accessible in Python 3.
 
-Package: python-streamlink-doc
+Package: python3-streamlink-doc
 Section: doc
 Architecture: all
 Depends: ${sphinxdoc:Depends},
   ${misc:Depends},
-  libjs-modernizr,
-  sphinx-rtd-theme-common
-Recommends: fonts-inconsolata,
-  fonts-lato
+  libjs-modernizr
+Recommends: fonts-lato,
+  fonts-inconsolata
+Built-Using: ${sphinxdoc:Built-Using}
+Suggests: python3-streamlink
 Description: library to extract video streams from various services - documentation
  The API lists available video qualities from URLs which are
  visible to a service’s users. It can extract any such quality
@@ -92,9 +65,8 @@ Package: streamlink
 Section: video
 Architecture: all
 Depends: ${misc:Depends},
-  ${python:Depends},
-  python-streamlink (= ${source:Version})
-Suggests: python-streamlink-doc
+  ${python3:Depends},
+  python3-streamlink (= ${source:Version})
 Description: CLI that pipes video streams to video players
  Streamlink is a Command Line Interface that extracts video
  streams from various services and hands them to a video player,

@@ -1,14 +1,19 @@
-Description: Remove GitHub Buttons without replacement
- Upstream includes buttons to GitHub that display how
- often the project was starred. Due to privacy concerns
- these are removed from the documentation in Debian.
+From: Alexis Murzeau <amubtdx@outlook.fr>
+Date: Sun, 23 Apr 2017 15:54:58 +0200
+Subject: Remove GitHub Buttons without replacement
+
+Upstream includes buttons to GitHub that display how
+often the project was starred. Due to privacy concerns
+these are removed from the documentation in Debian.
+
 Forwarded: not-needed
 Author: Stefan Breunig <stefan-debian@yrden.de>
+---
+ docs/_themes/sphinx_rtd_theme_violet/layout.html | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Index: packaging/docs/_themes/sphinx_rtd_theme_violet/layout.html
-===================================================================
---- packaging.orig/docs/_themes/sphinx_rtd_theme_violet/layout.html	2015-01-19 22:51:07.000000000 +0100
-+++ packaging/docs/_themes/sphinx_rtd_theme_violet/layout.html	2015-01-19 23:07:46.225297834 +0100
+--- a/docs/_themes/sphinx_rtd_theme_violet/layout.html
++++ b/docs/_themes/sphinx_rtd_theme_violet/layout.html
 @@ -176,10 +176,6 @@
    {% endif %}
  

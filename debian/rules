@@ -1,19 +1,30 @@
 #! /usr/bin/make -f
 
-# Place streamlink executable in the correct place right away. This
-# also avoids overwrites by the Python 3 build, regardless of order.
-export PYBUILD_INSTALL_ARGS_python2 = --install-scripts usr/share/streamlink/
+#export DH_VERBOSE=1
+
+# Place streamlink executable in the correct place right away.
+export PYBUILD_INSTALL_ARGS_python3 = --install-scripts usr/share/streamlink/
+
+# Debian have a python3-pycountry package but not a iso3166 package so use pycountry.
+export STREAMLINK_USE_PYCOUNTRY=1
+
+# Debian have python3-crypto for pycrypto, use it instead of pycryptodome
+export STREAMLINK_USE_PYCRYPTO=1
+
+# Ensure no internet access
+export http_proxy=127.0.0.1:9
+export https_proxy=127.0.0.1:9
 
 %:
-	dh $@ --with python2,python3,sphinxdoc --buildsystem=pybuild
+	dh $@ --with python3,sphinxdoc --buildsystem=pybuild
 
 override_dh_auto_install:
-	python setup.py build_sphinx -b man
-	python setup.py build_sphinx -b html
+	python3 setup.py build_sphinx -b man
+	python3 setup.py build_sphinx -b html
 	dh_auto_install
 
 override_dh_compress:
-	dh_compress -X.html
+	dh_compress -X.html -X.otf -X.eot -X.woff -X.ttf
 
 override_dh_installchangelogs:
-	dh_installchangelogs CHANGELOG.md
+	dh_installchangelogs CHANGELOG.rst
