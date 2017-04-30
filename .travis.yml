@@ -24,10 +24,6 @@ script:
   - sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
   - sudo -E su $USER -c "sbuild -As ../*.dsc -d stable --arch-all --run-lintian"
 
-branches:
-  only:
-    - /^debian.*/
-
 before_deploy:
   - export RELEASE_FILES=$(ls *.dsc *.deb *.tar.xz *.orig.tar.gz *.changes)
   - echo "Deploying $RELEASE_PKG_FILE to GitHub releases"
