@@ -11,9 +11,8 @@ install:
 
 script:
   - mkdir ~/chroot
-  - git checkout debian-unstable
-  - git-buildpackage --git-verbose
-  - sudo sbuild-createchroot --arch=amd64 stable ~/chroot/stable-amd64-sbuild/ http://ftp.de.debian.org/debian/ --keyring= --include=gnupg,lintian --alias=UNRELEASED
+  - git-buildpackage --git-verbose --git-ignore-branch
+  - sudo sbuild-createchroot --arch=amd64 stable ~/chroot/stable-amd64-sbuild/ http://ftp.de.debian.org/debian/ --keyring= --include=gnupg,lintian
   - sudo sbuild-adduser $USER
   - mkdir ../sbuild ../sbuild/logs ../sbuild/stats
   - echo "\$log_dir = \"$(pwd)/../sbuild/logs\";" > ~/.sbuildrc
