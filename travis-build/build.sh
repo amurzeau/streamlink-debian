@@ -26,7 +26,6 @@ sudo chown -R _apt:root ~/chroot/$CHROOT_NAME/var/lib/apt/lists/partial || true
 
 # Configure schroot
 sudo bash -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
-sudo bash -c "echo 'command-prefix=eatmydata' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
 cat /etc/schroot/chroot.d/$CHROOT_NAME*
 sudo cp travis-build/sbuild-key.* /var/lib/sbuild/apt-keys/
 sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
