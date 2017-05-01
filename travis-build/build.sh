@@ -10,8 +10,8 @@ CHROOT_ADDITIONAL_PACKETS="gnupg lintian sbuild schroot"
 
 sudo apt-get install -y --no-install-recommends eatmydata
 
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"$LD_LIBRARY_PATH:"}/usr/lib/libeatmydata
-LD_PRELOAD=${LD_PRELOAD:+"$LD_PRELOAD "}libeatmydata.so
+export LD_PRELOAD=${LD_PRELOAD:+"$LD_PRELOAD "}/usr/lib/libeatmydata/libeatmydata.so
+alias sudo='sudo LD_PRELOAD=${LD_PRELOAD:+"$LD_PRELOAD "}/usr/lib/libeatmydata/libeatmydata.so'
 
 # Install dependencies on ubuntu to create a chroot with debian unstable
 sudo apt-get install -y --no-install-recommends git-buildpackage dpkg-dev schroot sbuild debootstrap
@@ -28,6 +28,7 @@ sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/
 
 # Configure schroot
 sudo bash -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
+sudo bash -c "echo 'command-prefix=eatmydata' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
 cat /etc/schroot/chroot.d/$CHROOT_NAME*
 sudo cp travis-build/sbuild-key.* /var/lib/sbuild/apt-keys/
 sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
