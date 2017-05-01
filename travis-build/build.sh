@@ -26,6 +26,9 @@ id -u _apt > /dev/null 2>&1 || sudo adduser --force-badname --system --home /non
 mkdir ~/chroot
 sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/ $CHROOT_DEBIAN_MIRROR --keyring= --include=eatmydata || (cat ~/chroot/$CHROOT_NAME/debootstrap/debootstrap.log && exit 2)
 
+# Fix _apt permissions
+sudo chown -R root:root ~/chroot/$CHROOT_NAME/var/lib/apt/lists ~/chroot/$CHROOT_NAME/var/cache/apt/archives || true
+
 # Configure schroot
 sudo bash -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
 sudo bash -c "echo 'command-prefix=eatmydata' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
