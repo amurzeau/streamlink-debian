@@ -6,22 +6,8 @@ before_install:
   - echo $LC_ALL
   - echo $USER
 
-install:
-  - sudo apt-get install --no-install-recommends git-buildpackage devscripts sbuild debootstrap lintian
-
 script:
-  - mkdir ~/chroot
-  - git-buildpackage --git-verbose --git-ignore-branch
-  - sudo sbuild-createchroot --arch=amd64 stable ~/chroot/stable-amd64-sbuild/ http://ftp.de.debian.org/debian/ --keyring= --include=gnupg,lintian
-  - sudo sbuild-adduser $USER
-  - mkdir ../sbuild ../sbuild/logs ../sbuild/stats
-  - echo "\$log_dir = \"$(pwd)/../sbuild/logs\";" > ~/.sbuildrc
-  - echo "\$stats_dir = \"$(pwd)/../sbuild/stats\";" >> ~/.sbuildrc
-  - echo "1;" >> ~/.sbuildrc
-  - cat ~/.sbuildrc
-  - sudo cp travis-build/sbuild-key.* /var/lib/sbuild/apt-keys/
-  - sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
-  - sudo -E su $USER -c "sbuild -As ../*.dsc -d stable --arch-all --run-lintian"
+  - ./travis-build/build.sh
 
 before_deploy:
   - export RELEASE_FILES=$(ls *.dsc *.deb *.tar.xz *.orig.tar.gz *.changes)
