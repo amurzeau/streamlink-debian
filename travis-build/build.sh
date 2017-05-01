@@ -14,6 +14,9 @@ sudo apt-get install -y --no-install-recommends git-buildpackage dpkg-dev schroo
 # Build source package (build errors will be found early)
 git-buildpackage --git-verbose --git-ignore-branch
 
+# Add _apt user so debian unstable schroot won't warn about missing user _apt
+id -u _apt > /dev/null 2>&1 || sudo adduser --force-badname --system --home /nonexistent --no-create-home --quiet _apt || true
+
 # Create debian unstable chroot
 mkdir ~/chroot
 sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/ $CHROOT_DEBIAN_MIRROR --keyring= || (cat ~/chroot/$CHROOT_NAME/debootstrap/debootstrap.log && exit 2)
@@ -22,6 +25,7 @@ sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/
 sudo bash -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
 cat /etc/schroot/chroot.d/$CHROOT_NAME*
 sudo cp travis-build/sbuild-key.* /var/lib/sbuild/apt-keys/
+sudo schroot -c "source:${CHROOT_NAME}" -u root -- apt-get install -y --no-install-recommends $CHROOT_ADDITIONAL_PACKETS
 
 # Configure mounts inside first schroot
 sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
@@ -33,11 +37,7 @@ sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> ~/chroo
 sudo cp /etc/schroot/chroot.d/$CHROOT_NAME* ~/chroot/$CHROOT_NAME/etc/schroot/chroot.d/
 sudo sed -i 's/script-config=.*/profile=sbuild/' ~/chroot/$CHROOT_NAME/etc/schroot/chroot.d/$CHROOT_NAME*
 
-sudo schroot -c "source:${CHROOT_NAME}" -u root -- apt-get install -y -no-install-recommends $CHROOT_ADDITIONAL_PACKETS
+# Add current user to sbuild group (required by sbuild)
+sudo sbuild-adduser $USER
 
-SESSION=$(sudo schroot --begin-session -c $CHROOT_NAME)
-echo $SESSION
-sudo schroot --run-session -c "$SESSION" -u root -- sbuild-adduser $USER
-sudo schroot --run-session -c "$SESSION" -u $USER -- sbuild -As ../*.dsc -d $CHROOT_DIST --run-lintian
-sudo schroot --end-session -c "$SESSION"
-
+sudo schroot -c "$CHROOT_NAME" -u $USER -- sbuild -As ../*.dsc -d $CHROOT_DIST --run-lintian
