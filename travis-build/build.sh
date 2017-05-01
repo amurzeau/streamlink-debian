@@ -19,7 +19,7 @@ mkdir ~/chroot
 sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/ $CHROOT_DEBIAN_MIRROR --keyring= || (cat ~/chroot/$CHROOT_NAME/debootstrap/debootstrap.log && exit 2)
 
 # Configure schroot
-sudo bach -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
+sudo bash -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
 cat /etc/schroot/chroot.d/$CHROOT_NAME*
 cp travis-build/sbuild-key.* /var/lib/sbuild/apt-keys/
 
