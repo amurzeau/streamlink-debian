@@ -25,13 +25,11 @@ sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/
 sudo bash -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
 cat /etc/schroot/chroot.d/$CHROOT_NAME*
 sudo cp travis-build/sbuild-key.* /var/lib/sbuild/apt-keys/
-sudo schroot -c "source:${CHROOT_NAME}" -u root -- apt-get install -y --no-install-recommends $CHROOT_ADDITIONAL_PACKETS
-
-# Configure mounts inside first schroot
 sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
 sudo bash -c "echo '/var/lib/schroot /var/lib/schroot none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
+sudo schroot -c "source:${CHROOT_NAME}" -u root -d / -- apt-get install -y --no-install-recommends $CHROOT_ADDITIONAL_PACKETS
 
-# Configure mounts inside build schroot
+# Configure mounts inside schroot
 sudo mkdir -p ~/chroot/$CHROOT_NAME/etc/schroot/chroot.d/
 sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> ~/chroot/$CHROOT_NAME/etc/schroot/sbuild/fstab"
 sudo cp /etc/schroot/chroot.d/$CHROOT_NAME* ~/chroot/$CHROOT_NAME/etc/schroot/chroot.d/
