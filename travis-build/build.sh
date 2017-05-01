@@ -8,11 +8,6 @@ CHROOT_NAME=$CHROOT_DIST-$CHROOT_ARCH-sbuild
 CHROOT_DEBIAN_MIRROR=http://ftp.de.debian.org/debian/
 CHROOT_ADDITIONAL_PACKETS="gnupg lintian sbuild schroot"
 
-sudo apt-get install -y --no-install-recommends eatmydata
-
-export LD_PRELOAD=${LD_PRELOAD:+"$LD_PRELOAD "}/usr/lib/libeatmydata/libeatmydata.so
-alias sudo='sudo LD_PRELOAD=${LD_PRELOAD:+"$LD_PRELOAD "}/usr/lib/libeatmydata/libeatmydata.so'
-
 # Install dependencies on ubuntu to create a chroot with debian unstable
 sudo apt-get install -y --no-install-recommends git-buildpackage dpkg-dev schroot sbuild debootstrap
 
@@ -24,10 +19,10 @@ id -u _apt > /dev/null 2>&1 || sudo adduser --force-badname --system --home /non
 
 # Create debian unstable chroot
 mkdir ~/chroot
-sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/ $CHROOT_DEBIAN_MIRROR --keyring= --include=eatmydata || (cat ~/chroot/$CHROOT_NAME/debootstrap/debootstrap.log && exit 2)
+sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/ $CHROOT_DEBIAN_MIRROR --keyring= || (cat ~/chroot/$CHROOT_NAME/debootstrap/debootstrap.log && exit 2)
 
 # Fix _apt permissions
-sudo chown -R root:root ~/chroot/$CHROOT_NAME/var/lib/apt/lists ~/chroot/$CHROOT_NAME/var/cache/apt/archives || true
+sudo chown -R _apt:root ~/chroot/$CHROOT_NAME/var/lib/apt/lists/partial || true
 
 # Configure schroot
 sudo bash -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
