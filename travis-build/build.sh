@@ -16,7 +16,8 @@ git-buildpackage --git-verbose --git-ignore-branch
 
 # Create debian unstable chroot
 mkdir ~/chroot
-sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/ $CHROOT_DEBIAN_MIRROR --keyring= --include=$CHROOT_ADDITIONAL_PACKETS
+sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/ $CHROOT_DEBIAN_MIRROR --keyring= --include=$CHROOT_ADDITIONAL_PACKETS ||
+(cat ~/chroot/$CHROOT_NAME/debootstrap/debootstrap.log && exit 2)
 
 # Configure schroot
 sudo bach -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
