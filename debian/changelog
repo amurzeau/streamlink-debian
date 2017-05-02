@@ -1,6 +1,5 @@
-streamlink (0.5.0-1) UNRELEASED; urgency=low
+streamlink (0.5.0-1) unstable; urgency=low
 
   * Initial release
 
- -- Alexis Murzeau <amubtdx@outlook.fr>  Sun, 23 Apr 2017 00:43:11 +0200
-
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Tue, 02 May 2017 22:24:07 +0200

@@ -10,14 +10,18 @@ script:
   - ./travis-build/build.sh
 
 before_deploy:
-  - export RELEASE_FILES=$(ls *.changes *.dsc *.orig.tar.* *.debian.tar.* *.deb *.buildinfo)
-  - ls -la
-  - echo "Deploying $RELEASE_PKG_FILE to GitHub releases"
+  - export RELEASE_FILE=$(ls *.dsc | head -1 | sed 's/\.dsc//')
+  - mkdir -p $RELEASE_FILE
+  - mv *.changes *.dsc *.orig.tar.* *.debian.tar.* *.deb *.buildinfo $RELEASE_FILE
+  - tar cf ${RELEASE_FILE}.tar $RELEASE_FILE
+  - ls -la $RELEASE_FILE/ ./
+  - echo "Deploying to GitHub releases"
 
 deploy:
   provider: releases
   api_key:
-    secure:
-  file: "${RELEASE_PKG_FILE}"
+    secure: DLrWHPqTx42JMxBZKKKir3S3c7y8OrvF+sDD9NUmi5hiWOHlgkD0nfTejyFFPHeGWBi1QOaizgqpWOfFWD3Pc43SfbCBNaVuaHEcxHeBZRbInZO2x1U+NLOAcSmkLJNjR+j69eijEqqbO5hs+losHvvlZvcQXt0KoR0N500bsMGQNQza1qQRbKfmHVLRf7LRgiPe4gb/Uj+nZvoHfHau3FJIwBFLBAa2sVnDtbQ0d8SASbs6Z+U9oFf13Gxbo1L9w4Bs8CwBagxMJF4dNe3A31He1eFVXFI4GI3ju9zlsUHH0GLLR4NSGN2OfL9bYmffZ3BkFJbZPB8BOF7nyeE4FRye1nIiANQC+VUDuNSQ1jl8KsB6AEnzyplelWuGBt6/ZWgUI0+L/AgHNfVUnfjeWwLcWy4u8VX0wQ6XbSihIb6CJsSo/ajh3L79k+xVh0/F9m3EunlYI+iwNM3JBo3BJZqhvTpRV9R3nBcTq36RV+SgPOkjUEX1cxRN4b71/VMj/2bnJcjUbRf9nQW06GecHxyUGDKxQaBrdZenH/T1ag7bpZaT6lVGphZ83IUkHBrpQXmetLr7XIP5RCNQqw/i7Ty8YjFevClC8jFSS05KGZ8OP7bwl4lV6d1AYZ55Zhv9Hy89wsfl0GBVXh5WGgmGKFrN/iEtAythqTcBTfFYArY=
+  file: ${RELEASE_FILE}.tar
+  skip_cleanup: true
   on:
     tags: true
