@@ -10,7 +10,8 @@ script:
   - ./travis-build/build.sh
 
 before_deploy:
-  - export RELEASE_FILES=$(ls *.dsc *.deb *.tar.xz *.orig.tar.gz *.changes)
+  - export RELEASE_FILES=$(ls *.changes *.dsc *.orig.tar.* *.debian.tar.* *.deb *.buildinfo)
+  - ls -la
   - echo "Deploying $RELEASE_PKG_FILE to GitHub releases"
 
 deploy:

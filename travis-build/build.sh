@@ -12,7 +12,7 @@ CHROOT_ADDITIONAL_PACKETS="gnupg lintian sbuild schroot"
 sudo apt-get install -y --no-install-recommends git-buildpackage dpkg-dev schroot sbuild debootstrap
 
 # Build source package (build errors will be found early)
-git-buildpackage --git-verbose --git-ignore-branch
+git-buildpackage --git-verbose --git-ignore-branch '--git-builder=dpkg-source -b .' --git-cleaner=
 
 # Add _apt user so debian unstable schroot won't warn about missing user _apt
 id -u _apt > /dev/null 2>&1 || sudo adduser --force-badname --system --home /nonexistent --no-create-home --quiet _apt || true
