@@ -1,9 +1,9 @@
-streamlink (0.5.0-2) UNRELEASED; urgency=low
+streamlink (0.5.0-2) unstable; urgency=low
 
   * Use reproducible gzip compression level
   * Deploy on bintray instead of github
 
- -- Alexis Murzeau <amubtdx@outlook.fr>  Sat, 06 May 2017 22:28:50 +0200
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Sun, 07 May 2017 00:45:26 +0200
 
 streamlink (0.5.0-1) unstable; urgency=low
 
