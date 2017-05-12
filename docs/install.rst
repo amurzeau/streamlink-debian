@@ -163,8 +163,6 @@ Name                                 Notes
 **Optional**
 --------------------------------------------------------------------------------
 `RTMPDump`_                          Required to play RTMP streams.
-`python-librtmp`_                    Required by the *ustreamtv* plugin to be
-                                     able to use non-mobile streams.
 `ffmpeg`_                            Required to play streams that are made up of separate
                                      audio and video streams, eg. YouTube 1080p+
 ==================================== ===========================================
@@ -190,7 +188,6 @@ With these two environment variables it is possible to use `pycrypto`_ instead o
 .. _pycountry: https://pypi.python.org/pypi/pycountry
 .. _pycrypto: https://www.dlitz.net/software/pycrypto/
 .. _pycryptodome: https://pycryptodome.readthedocs.io/en/latest/
-.. _python-librtmp: https://github.com/chrippa/python-librtmp
 .. _ffmpeg: https://www.ffmpeg.org/
 .. _iso-639: https://pypi.python.org/pypi/iso-639
 .. _iso3166: https://pypi.python.org/pypi/iso3166
@@ -240,11 +237,13 @@ Windows binaries
     Windows XP is not supported.
     Windows Vista requires at least SP2 to be installed. 
 
-You can download the latest stable Windows installer from the `GitHub Releases Page <https://github.com/streamlink/streamlink/releases/latest>`__.
+A Windows installer of the latest **stable release** can be found on the `GitHub releases page <https://github.com/streamlink/streamlink/releases/latest>`__.
 
-Alternatively, you can download the latest `nightly Windows installer <https://streamlink-builds.s3.amazonaws.com/nightly/windows/streamlink-latest.exe>`__.
+Alternatively, a Windows installer of the `latest development build <https://dl.bintray.com/streamlink/streamlink-nightly/streamlink-latest.exe>`__ for testing purposes is available,
+with a summary of the changes in the `release notes <https://bintray.com/streamlink/streamlink-nightly/streamlink/latest#release>`__. This development build is updated once per day,
+and a list of `previous builds <https://dl.bintray.com/streamlink/streamlink-nightly/>`__ is provided.
 
-This is a installer which contains:
+This is an installer which contains:
 
 - A compiled version of Streamlink that does not require an existing Python
   installation
