@@ -1,10 +1,10 @@
-streamlink (0.6.0-1) UNRELEASED; urgency=medium
+streamlink (0.6.0-1) unstable; urgency=low
 
   * New upstream version 0.6.0
     - Drop recommends on python3-librtmp
   * bintray: upload all .changes files but .buildinfo
 
- -- Alexis Murzeau <amubtdx@outlook.fr>  Sat, 13 May 2017 00:09:48 +0200
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Sat, 13 May 2017 00:56:00 +0200
 
 streamlink (0.5.0-2) unstable; urgency=low
 
