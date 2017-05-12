@@ -12,7 +12,7 @@ Bug-Debian: https://bugs.debian.org/750502
 
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
-@@ -274,7 +274,7 @@
+@@ -273,7 +273,7 @@
      metavar="{yes,true,1,on,no,false,0,off}",
      default=False,
      help="""
@@ -23,7 +23,7 @@ Bug-Debian: https://bugs.debian.org/750502
      """
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -972,7 +972,7 @@
+@@ -1000,7 +1000,7 @@
      setup_http_session()
      check_root()
  

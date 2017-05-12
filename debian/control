@@ -23,7 +23,6 @@ Architecture: all
 Depends: ${misc:Depends},
  ${python3:Depends}
 Recommends: rtmpdump,
-  python3-librtmp,
   ffmpeg
 Suggests: streamlink, python3-streamlink-doc
 Description: library to extract video streams from various services - Python 3
