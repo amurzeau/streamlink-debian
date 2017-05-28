@@ -1,3 +1,9 @@
+streamlink (0.6.0-2) unstable; urgency=low
+
+  * Use fonts from fonts-font-awesome
+
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Sun, 28 May 2017 16:36:32 +0200
+
 streamlink (0.6.0-1) unstable; urgency=low
 
   * New upstream version 0.6.0
