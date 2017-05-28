@@ -42,7 +42,8 @@ Section: doc
 Architecture: all
 Depends: ${sphinxdoc:Depends},
   ${misc:Depends},
-  libjs-modernizr
+  libjs-modernizr,
+  fonts-font-awesome
 Recommends: fonts-lato,
   fonts-inconsolata
 Built-Using: ${sphinxdoc:Built-Using}

@@ -23,8 +23,9 @@ override_dh_auto_install:
 	python3 setup.py build_sphinx -b html
 	dh_auto_install
 
+# Needed to prevent docs/changelog.html from being compressed
 override_dh_compress:
-	dh_compress -X.html -X.otf -X.eot -X.woff -X.ttf
+	dh_compress -X.html
 
 override_dh_installchangelogs:
 	dh_installchangelogs CHANGELOG.rst
