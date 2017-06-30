@@ -12,18 +12,18 @@ Bug-Debian: https://bugs.debian.org/750502
 
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
-@@ -273,7 +273,7 @@
+@@ -276,7 +276,7 @@
      metavar="{yes,true,1,on,no,false,0,off}",
      default=False,
      help="""
 -    Enable or disable the automatic check for a new version of Streamlink.
 +    Unused, kept for compatibility reasons.
  
-     Default is no
+     Default is "no".
      """
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -1000,7 +1000,7 @@
+@@ -1011,7 +1011,7 @@
      setup_http_session()
      check_root()
  
