@@ -1,3 +1,9 @@
+streamlink (0.7.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 0.7.0
+
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Fri, 30 Jun 2017 22:57:50 +0200
+
 streamlink (0.6.0-2) unstable; urgency=low
 
   * Use fonts from fonts-font-awesome
