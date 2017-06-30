@@ -1,8 +1,9 @@
-streamlink (0.7.0-1) UNRELEASED; urgency=medium
+streamlink (0.7.0-1) unstable; urgency=low
 
   * New upstream version 0.7.0
+  * remove_new_version_check: refresh patch
 
- -- Alexis Murzeau <amubtdx@outlook.fr>  Fri, 30 Jun 2017 22:57:50 +0200
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Fri, 30 Jun 2017 23:21:19 +0200
 
 streamlink (0.6.0-2) unstable; urgency=low
 
