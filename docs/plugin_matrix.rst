@@ -22,6 +22,7 @@ animelab            animelab.com         --    Yes   Requires a login. Streams m
 antenna             antenna.gr           --    Yes
 apac                a-pac.tv             Yes   --
 app17               17app.co             Yes   --
+arconai             arconai.tv           Yes   Yes   Only SD quality streams
 ard_live            daserste.de          Yes   Yes   Streams may be geo-restricted to Germany.
 ard_mediathek       - ardmediathek.de    Yes   Yes   Streams may be geo-restricted to Germany.
                     - mediathek... [5]_
@@ -69,7 +70,7 @@ cybergame           cybergame.tv         Yes   Yes
 cyro                cyro.se              --    Yes
 dailymotion         dailymotion.com      Yes   Yes
 daisuki             daisuki.net          No    Yes
-deutschewelle       dw.com               Yes   No
+deutschewelle       dw.com               Yes   Yes
 dingittv            dingit.tv            Yes   Yes
 disney_de           - video.disney.de    Yes   Yes   Streams may be geo-restricted to Germany.
                     - disneychannel.de
@@ -112,8 +113,9 @@ goodgame            goodgame.ru          Yes   No    Only HLS streams are availa
 googledrive         - docs.google.com    --    Yes
                     - drive.google.com
 gulli               replay.gulli.fr      Yes   Yes   Streams may be geo-restricted to France.
-hitbox              hitbox.tv            Yes   Yes
-huajiao             huajiao.com          Yes   No    
+hitbox              - hitbox.tv          Yes   Yes
+                    - smashcast.tv
+huajiao             huajiao.com          Yes   No
 huomao              huomao.com           Yes   No
 huya                huya.com             Yes   No    Temporarily only HLS streams available.
 ine                 ine.com              ---   Yes
@@ -123,6 +125,7 @@ liveedu             - liveedu.tv         Yes   --    Some streams require a logi
                     - livecoding.tv
 liveme              liveme.com           Yes   --
 livestream          new.livestream.com   Yes   --
+looch               looch.tv             Yes   Yes
 media_ccc_de        - media.ccc.de       Yes   Yes   Only mp4 and HLS are supported.
                     - streaming... [4]_
 mediaklikk          mediaklikk.hu        Yes   No    Streams may be geo-restricted to Hungary.
@@ -145,14 +148,24 @@ openrectv           openrec.tv           Yes   Yes
 orf_tvthek          tvthek.orf.at        Yes   Yes
 ovvatv              ovva.tv              Yes   No
 pandatv             panda.tv             Yes   ?
-pcyourfreetv        pc-yourfreetv.com    Yes   --    Requires a login.
 periscope           periscope.tv         Yes   Yes   Replay/VOD is supported.
-picarto             picarto.tv           Yes   --
+picarto             picarto.tv           Yes   Yes
 playtv              playtv.fr            Yes   --    Streams may be geo-restricted to France.
 pluzz               - france.tv          Yes   Yes   Streams may be geo-restricted to France, Andorra and Monaco.
                     - ludo.fr
                     - zouzous.fr
+		    - france3-reg.. [8]_
 powerapp            powerapp.com.tr      Yes   No
+radionet            - radio.net          Yes   --
+                    - radio.at
+		    - radio.de
+		    - radio.dk
+		    - radio.es
+		    - radio.fr
+		    - radio.it
+		    - radio.pl
+		    - radio.pt
+		    - radio.se
 raiplay             raiplay.it           Yes   No    Most streams are geo-restricted to Italy.
 rtlxl               rtlxl.nl             No    Yes   Streams may be geo-restricted to The Netherlands. Livestreams not supported.
 rte                 rte.ie/player        Yes   Yes
@@ -205,6 +218,9 @@ tv3cat              tv3.cat              Yes   Yes   Streams may be geo-restrict
 tv4play             - tv4play.se         Yes   Yes   Streams may be geo-restricted to Sweden.
                                                      Only non-premium streams currently supported.
                     - fotbollskanalen.se
+tv5monde            - tv5monde.com       Yes   Yes   Streams may be geo-restricted to France, Belgium and Switzerland.
+                    - tv5mondeplus.com
+                    - tv5mondepl... [9]_
 tv8                 tv8.com.tr           Yes   No
 tv8cat              tv8.cat              Yes   No    Streams may be geo-restricted to Spain/Catalunya.
 tv360               tv360.com.tr         Yes   No
@@ -216,6 +232,7 @@ tvrby               tvr.by               Yes   No    Streams may be geo-restrict
 tvrplus             tvrplus.ro           Yes   No    Streams may be geo-restricted to Romania.
 twitch              twitch.tv            Yes   Yes   Possible to authenticate for access to
                                                      subscription streams.
+ufctv               ufc.tv               Yes   Yes   Authentication required for premium streams.
 ustreamtv           ustream.tv           Yes   Yes
 vaughnlive          - vaughnlive.tv      Yes   --
                     - breakers.tv
@@ -256,3 +273,5 @@ zhanqitv            zhanqi.tv            Yes   No
 .. [5] mediathek.daserste.de
 .. [6] players.brightcove.net
 .. [7] player.theplatform.com
+.. [8] france3-regions.francetvinfo.fr
+.. [9] tv5mondeplusafrique.com

@@ -919,16 +919,27 @@ def setup_plugin_options():
     if liveedu_password:
         streamlink.set_plugin_option("liveedu", "password", liveedu_password)
 
-    if args.pcyourfreetv_username:
-        streamlink.set_plugin_option("pcyourfreetv", "username", args.pcyourfreetv_username)
+    if args.bbciplayer_username:
+        streamlink.set_plugin_option("bbciplayer", "username", args.bbciplayer_username)
 
-    if args.pcyourfreetv_username and not args.pcyourfreetv_password:
-        pcyourfreetv_password = console.askpass("Enter pc-yourfreetv.com password: ")
+    if args.bbciplayer_username and not args.bbciplayer_password:
+        bbciplayer_password = console.askpass("Enter bbc.co.uk account password: ")
     else:
-        pcyourfreetv_password = args.pcyourfreetv_password
+        bbciplayer_password = args.bbciplayer_password
 
-    if pcyourfreetv_password:
-        streamlink.set_plugin_option("pcyourfreetv", "password", pcyourfreetv_password)
+    if bbciplayer_password:
+        streamlink.set_plugin_option("bbciplayer", "password", bbciplayer_password)
+
+    if args.ufctv_username:
+        streamlink.set_plugin_option("ufctv", "username", args.ufctv_username)
+
+    if args.ufctv_username and not args.ufctv_password:
+        ufctv_password = console.askpass("Enter ufc.tv account password: ")
+    else:
+        ufctv_password = args.ufctv_password
+
+    if ufctv_password:
+        streamlink.set_plugin_option("ufctv", "password", ufctv_password)
 
     # Deprecated options
     if args.jtv_legacy_names:

@@ -13,6 +13,7 @@ docs/api_guide.rst
 docs/changelog.rst
 docs/cli.rst
 docs/conf.py
+docs/docutils.conf
 docs/donate.rst
 docs/ext_argparse.py
 docs/ext_github.py
@@ -94,6 +95,7 @@ src/streamlink/plugins/animelab.py
 src/streamlink/plugins/antenna.py
 src/streamlink/plugins/apac.py
 src/streamlink/plugins/app17.py
+src/streamlink/plugins/arconai.py
 src/streamlink/plugins/ard_live.py
 src/streamlink/plugins/ard_mediathek.py
 src/streamlink/plugins/artetv.py
@@ -134,6 +136,7 @@ src/streamlink/plugins/dogan.py
 src/streamlink/plugins/dogus.py
 src/streamlink/plugins/dommune.py
 src/streamlink/plugins/douyutv.py
+src/streamlink/plugins/douyutv_blackbox.py
 src/streamlink/plugins/dplay.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
@@ -164,6 +167,7 @@ src/streamlink/plugins/kanal7.py
 src/streamlink/plugins/liveedu.py
 src/streamlink/plugins/liveme.py
 src/streamlink/plugins/livestream.py
+src/streamlink/plugins/looch.py
 src/streamlink/plugins/media_ccc_de.py
 src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/mips.py
@@ -181,13 +185,13 @@ src/streamlink/plugins/openrectv.py
 src/streamlink/plugins/orf_tvthek.py
 src/streamlink/plugins/ovvatv.py
 src/streamlink/plugins/pandatv.py
-src/streamlink/plugins/pcyourfreetv.py
 src/streamlink/plugins/periscope.py
 src/streamlink/plugins/picarto.py
 src/streamlink/plugins/piczel.py
 src/streamlink/plugins/playtv.py
 src/streamlink/plugins/pluzz.py
 src/streamlink/plugins/powerapp.py
+src/streamlink/plugins/radionet.py
 src/streamlink/plugins/raiplay.py
 src/streamlink/plugins/rte.py
 src/streamlink/plugins/rtlxl.py
@@ -214,6 +218,7 @@ src/streamlink/plugins/streamupcom.py
 src/streamlink/plugins/streann.py
 src/streamlink/plugins/svtplay.py
 src/streamlink/plugins/swisstxt.py
+src/streamlink/plugins/teamliquid.py
 src/streamlink/plugins/telefe.py
 src/streamlink/plugins/tf1.py
 src/streamlink/plugins/tga.py
@@ -226,6 +231,7 @@ src/streamlink/plugins/tv1channel.py
 src/streamlink/plugins/tv360.py
 src/streamlink/plugins/tv3cat.py
 src/streamlink/plugins/tv4play.py
+src/streamlink/plugins/tv5monde.py
 src/streamlink/plugins/tv8.py
 src/streamlink/plugins/tv8cat.py
 src/streamlink/plugins/tvcatchup.py
@@ -234,6 +240,7 @@ src/streamlink/plugins/tvplayer.py
 src/streamlink/plugins/tvrby.py
 src/streamlink/plugins/tvrplus.py
 src/streamlink/plugins/twitch.py
+src/streamlink/plugins/ufctv.py
 src/streamlink/plugins/ustreamtv.py
 src/streamlink/plugins/vaughnlive.py
 src/streamlink/plugins/vgtv.py
@@ -307,16 +314,18 @@ tests/test_plugin_cdnbg.py
 tests/test_plugin_chaturbate.py
 tests/test_plugin_crunchyroll.py
 tests/test_plugin_cyro.py
+tests/test_plugin_deutschewelle.py
 tests/test_plugin_eltrecetv.py
 tests/test_plugin_eurocom.py
+tests/test_plugin_euronews.py
 tests/test_plugin_facebook.py
 tests/test_plugin_garena.py
 tests/test_plugin_gulli.py
 tests/test_plugin_huomao.py
 tests/test_plugin_oldlivestream.py
-tests/test_plugin_pcyourfreetv.py
 tests/test_plugin_playtv.py
 tests/test_plugin_pluzz.py
+tests/test_plugin_radionet.py
 tests/test_plugin_raiplay.py
 tests/test_plugin_rte.py
 tests/test_plugin_showroom.py
@@ -325,9 +334,11 @@ tests/test_plugin_srgssr.py
 tests/test_plugin_stream.py
 tests/test_plugin_streamme.py
 tests/test_plugin_swisstxt.py
+tests/test_plugin_teamliquid.py
 tests/test_plugin_telefe.py
 tests/test_plugin_tf1.py
 tests/test_plugin_tv1channel.py
+tests/test_plugin_tv5monde.py
 tests/test_plugin_tv8cat.py
 tests/test_plugin_tvplayer.py
 tests/test_plugin_tvrby.py
