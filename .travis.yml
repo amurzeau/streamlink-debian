@@ -11,7 +11,7 @@ script:
 
 deploy:
   provider: script
-  script: ./travis-build/deploy.sh
+  script: ./travis-build/deploy.sh streamlink-debian
   skip_cleanup: true
   on:
     tags: true

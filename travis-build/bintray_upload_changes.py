@@ -25,9 +25,9 @@ changesFile = sys.argv[3]
 apikey = os.environ["BINTRAY_API_KEY"]
 passphrase = os.environ["BINTRAY_PASSPHRASE"]
 
-if versioncmp(requests.__version__, '0.8.3') >= 0: 
+if versioncmp(requests.__version__, '0.8.3') >= 0:
 	auth=requests.auth.HTTPBasicAuth(user, apikey)
-else:   
+else:
 	auth=('basic', user, apikey)
 
 
@@ -45,13 +45,13 @@ def send_file(parameters, auth, baseDir, file):
 def publish_files(parameters, auth):
 	url = "https://api.bintray.com/content/{user}/{repo}/{package}/{version}/publish"
 	finalUrl = url.format(**parameters)
-	
+
 	print("Publishing files")
 
 	headers = {'X-GPG-PASSPHRASE': passphrase}
 	r = requests.post(finalUrl, headers=headers, auth=auth, json={"publish_wait_for_secs": -1})
 	print("Response: {}".format(r.text))
-        
+
 
 def check_files(parameters, auth, change_file):
 	url = "https://api.bintray.com/packages/{user}/{repo}/{package}/versions/{version}/files"
