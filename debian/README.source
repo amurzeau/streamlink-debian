@@ -11,16 +11,16 @@ Here are the commands to manage the package:
 - Build and test the package:
   - `debuild`
 
-- Release version with `low` urgency:
-  - `gbp dch -Ra --commit -U low`
+- Release backport version with `low` urgency:
+  - `gbp dch -Ra --bpo --commit -U low`
 
 - Build source package and tag debian branch:
   - `gbp buildpackage --git-tag --git-sign-tags -nc -S`
 
 - Build package using sbuild:
-  - `sbuild -As ../streamlink_<version>.dsc -d unstable`
+  - `sbuild -As ../streamlink_<version>.dsc -d stable`
 
 - Run lintian:
   - `lintian -EviIL +pedantic  ./streamlink_<version>_amd64.changes`
 
-- Don't forget to push `master` and `upstream` branches along with new tags (`debian/<version>`, `upstream/<version>`)
+- Don't forget to push `stretch-backports` and `upstream` branches along with new tags (`debian/<version>`, `upstream/<version>`)

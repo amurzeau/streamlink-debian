@@ -2,7 +2,7 @@ sudo: required
 language: generic
 
 env:
-  - DIST=unstable TARGET_DIST=unstable
+  - DIST=stable TARGET_DIST=stretch-backports
 
 before_install:
   - echo $LANG
