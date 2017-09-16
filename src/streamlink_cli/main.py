@@ -673,18 +673,12 @@ def setup_http_session():
         streamlink.set_option("http-timeout", args.http_timeout)
 
     if args.http_cookies:
-        console.logger.warning("The option --http-cookies is deprecated since "
-                               "version 1.11.0, use --http-cookie instead.")
         streamlink.set_option("http-cookies", args.http_cookies)
 
     if args.http_headers:
-        console.logger.warning("The option --http-headers is deprecated since "
-                               "version 1.11.0, use --http-header instead.")
         streamlink.set_option("http-headers", args.http_headers)
 
     if args.http_query_params:
-        console.logger.warning("The option --http-query-params is deprecated since "
-                               "version 1.11.0, use --http-query-param instead.")
         streamlink.set_option("http-query-params", args.http_query_params)
 
 
@@ -940,6 +934,19 @@ def setup_plugin_options():
 
     if ufctv_password:
         streamlink.set_plugin_option("ufctv", "password", ufctv_password)
+
+    if args.zattoo_email:
+        streamlink.set_plugin_option("zattoo", "email", args.zattoo_email)
+    if args.zattoo_email and not args.zattoo_password:
+        zattoo_password = console.askpass("Enter zattoo password: ")
+    else:
+        zattoo_password = args.zattoo_password
+    if zattoo_password:
+        streamlink.set_plugin_option("zattoo", "password", zattoo_password)
+
+    if args.zattoo_purge_credentials:
+        streamlink.set_plugin_option("zattoo", "purge_credentials",
+                                     args.zattoo_purge_credentials)
 
     # Deprecated options
     if args.jtv_legacy_names:

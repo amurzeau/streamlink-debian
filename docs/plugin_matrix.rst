@@ -38,8 +38,9 @@ bigo                - live.bigo.tv       Yes   --
                     - bigoweb.co
 bilibili            live.bilibili.com    Yes   ?
 bloomberg           bloomberg.com        Yes   Yes
-bongacams           bongacams.com        Yes   No    Only RTMP streams are available.
+bongacams           bongacams.com        Yes   No
 brightcove          players.brig... [6]_ Yes   Yes
+brittv              brittv.co.uk         Yes   --
 btv                 btv.bg               Yes   No    Requires login, and geo-restricted to Bulgaria.
 cam4                cam4.com             Yes   No
 camsoda             camsoda.com          Yes   No
@@ -154,21 +155,22 @@ playtv              playtv.fr            Yes   --    Streams may be geo-restrict
 pluzz               - france.tv          Yes   Yes   Streams may be geo-restricted to France, Andorra and Monaco.
                     - ludo.fr
                     - zouzous.fr
-		    - france3-reg.. [8]_
+                    - france3-reg.. [8]_
 powerapp            powerapp.com.tr      Yes   No
 radionet            - radio.net          Yes   --
                     - radio.at
-		    - radio.de
-		    - radio.dk
-		    - radio.es
-		    - radio.fr
-		    - radio.it
-		    - radio.pl
-		    - radio.pt
-		    - radio.se
+                    - radio.de
+                    - radio.dk
+                    - radio.es
+                    - radio.fr
+                    - radio.it
+                    - radio.pl
+                    - radio.pt
+                    - radio.se
 raiplay             raiplay.it           Yes   No    Most streams are geo-restricted to Italy.
 rtlxl               rtlxl.nl             No    Yes   Streams may be geo-restricted to The Netherlands. Livestreams not supported.
 rte                 rte.ie/player        Yes   Yes
+rtpplay             rtp.pt/play          Yes   Yes   Streams may be geo-restricted to Portugal.
 rtve                rtve.es              Yes   No
 rtvs                rtvs.sk              Yes   No    Streams may be geo-restricted to Slovakia.
 ruv                 ruv.is               Yes   Yes   Streams may be geo-restricted to Iceland.
@@ -177,6 +179,7 @@ seemeplay           seemeplay.ru         Yes   Yes
 seetv               seetv.tv             Yes   No    Streams that are embedded from other sites will not work.
 servustv            servustv.com         ?     ?
 showroom            showroom-live.com    Yes   No    Only RTMP streams are available.
+skai                skai.gr              Yes   No    Only embedded youtube live streams are supported
 speedrunslive       speedrunslive.com    Yes   --    URL forwarder to Twitch channels.
 sportal             sportal.bg           Yes   No
 sportschau          sportschau.de        Yes   No
@@ -253,6 +256,7 @@ viasat              - tv3play.se         Yes   Yes   Streams may be geo-restrict
                     - play.tv3.lt
                     - juicyplay.se
 vidio               vidio.com            Yes   Yes
+vk                  vk.com               Yes   Yes
 vrtbe               vrt.be/vrtnu         Yes   Yes
 wattv               wat.tv               --    Yes
 webtv               web.tv               Yes   --
@@ -261,6 +265,9 @@ wwenetwork          network.wwe.com      Yes   Yes   Requires an account to acce
 younow              younow.com           Yes   --
 youtube             - youtube.com        Yes   Yes   Protected videos are not supported.
                     - youtu.be
+zattoo              - zattoo.com         Yes   Yes
+                    - nettv.net... [10]_
+                    - tvonline.ewe.de
 zdf_mediathek       zdf.de               Yes   Yes   Streams may be geo-restricted to Germany.
 zhanqitv            zhanqi.tv            Yes   No
 =================== ==================== ===== ===== ===========================
@@ -275,3 +282,4 @@ zhanqitv            zhanqi.tv            Yes   No
 .. [7] player.theplatform.com
 .. [8] france3-regions.francetvinfo.fr
 .. [9] tv5mondeplusafrique.com
+.. [10] nettv.netcologne.de

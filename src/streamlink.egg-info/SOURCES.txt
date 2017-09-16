@@ -8,8 +8,10 @@ docs-requirements.txt
 setup.cfg
 setup.py
 docs/Makefile
+docs/_applications.rst
 docs/api.rst
 docs/api_guide.rst
+docs/applications.rst
 docs/changelog.rst
 docs/cli.rst
 docs/conf.py
@@ -23,6 +25,7 @@ docs/install.rst
 docs/issues.rst
 docs/players.rst
 docs/plugin_matrix.rst
+docs/thirdparty.rst
 docs/twitch_oauth.rst
 docs/_static/flattr-badge.png
 docs/_themes/.gitignore
@@ -89,6 +92,7 @@ src/streamlink/plugins/adultswim.py
 src/streamlink/plugins/afreeca.py
 src/streamlink/plugins/afreecatv.py
 src/streamlink/plugins/aftonbladet.py
+src/streamlink/plugins/akamaihd.py
 src/streamlink/plugins/aliez.py
 src/streamlink/plugins/aljazeeraen.py
 src/streamlink/plugins/animelab.py
@@ -110,6 +114,7 @@ src/streamlink/plugins/bilibili.py
 src/streamlink/plugins/bloomberg.py
 src/streamlink/plugins/bongacams.py
 src/streamlink/plugins/brightcove.py
+src/streamlink/plugins/brittv.py
 src/streamlink/plugins/btv.py
 src/streamlink/plugins/cam4.py
 src/streamlink/plugins/camsoda.py
@@ -136,7 +141,6 @@ src/streamlink/plugins/dogan.py
 src/streamlink/plugins/dogus.py
 src/streamlink/plugins/dommune.py
 src/streamlink/plugins/douyutv.py
-src/streamlink/plugins/douyutv_blackbox.py
 src/streamlink/plugins/dplay.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
@@ -157,7 +161,10 @@ src/streamlink/plugins/gomexp.py
 src/streamlink/plugins/goodgame.py
 src/streamlink/plugins/googledrive.py
 src/streamlink/plugins/gulli.py
+src/streamlink/plugins/hds.py
 src/streamlink/plugins/hitbox.py
+src/streamlink/plugins/hls.py
+src/streamlink/plugins/http.py
 src/streamlink/plugins/huajiao.py
 src/streamlink/plugins/huomao.py
 src/streamlink/plugins/huya.py
@@ -195,6 +202,8 @@ src/streamlink/plugins/radionet.py
 src/streamlink/plugins/raiplay.py
 src/streamlink/plugins/rte.py
 src/streamlink/plugins/rtlxl.py
+src/streamlink/plugins/rtmp.py
+src/streamlink/plugins/rtpplay.py
 src/streamlink/plugins/rtve.py
 src/streamlink/plugins/rtvs.py
 src/streamlink/plugins/ruv.py
@@ -203,12 +212,12 @@ src/streamlink/plugins/seemeplay.py
 src/streamlink/plugins/seetv.py
 src/streamlink/plugins/servustv.py
 src/streamlink/plugins/showroom.py
+src/streamlink/plugins/skai.py
 src/streamlink/plugins/speedrunslive.py
 src/streamlink/plugins/sportal.py
 src/streamlink/plugins/sportschau.py
 src/streamlink/plugins/srgssr.py
 src/streamlink/plugins/ssh101.py
-src/streamlink/plugins/stream.py
 src/streamlink/plugins/streamable.py
 src/streamlink/plugins/streamboat.py
 src/streamlink/plugins/streamingvideoprovider.py
@@ -247,6 +256,7 @@ src/streamlink/plugins/vgtv.py
 src/streamlink/plugins/viasat.py
 src/streamlink/plugins/viasat_embed.py
 src/streamlink/plugins/vidio.py
+src/streamlink/plugins/vk.py
 src/streamlink/plugins/vrtbe.py
 src/streamlink/plugins/wattv.py
 src/streamlink/plugins/webtv.py
@@ -254,6 +264,7 @@ src/streamlink/plugins/weeb.py
 src/streamlink/plugins/wwenetwork.py
 src/streamlink/plugins/younow.py
 src/streamlink/plugins/youtube.py
+src/streamlink/plugins/zattoo.py
 src/streamlink/plugins/zdf_mediathek.py
 src/streamlink/plugins/zhanqi.py
 src/streamlink/stream/__init__.py
@@ -300,6 +311,7 @@ tests/test_options.py
 tests/test_plugin_adultswim.py
 tests/test_plugin_api_http_session.py
 tests/test_plugin_api_validate.py
+tests/test_plugin_arconai.py
 tests/test_plugin_artetv.py
 tests/test_plugin_bbciplayer.py
 tests/test_plugin_bfmtv.py
@@ -322,12 +334,14 @@ tests/test_plugin_facebook.py
 tests/test_plugin_garena.py
 tests/test_plugin_gulli.py
 tests/test_plugin_huomao.py
+tests/test_plugin_liveme.py
 tests/test_plugin_oldlivestream.py
 tests/test_plugin_playtv.py
 tests/test_plugin_pluzz.py
 tests/test_plugin_radionet.py
 tests/test_plugin_raiplay.py
 tests/test_plugin_rte.py
+tests/test_plugin_rtpplay.py
 tests/test_plugin_showroom.py
 tests/test_plugin_sportal.py
 tests/test_plugin_srgssr.py
@@ -342,8 +356,11 @@ tests/test_plugin_tv5monde.py
 tests/test_plugin_tv8cat.py
 tests/test_plugin_tvplayer.py
 tests/test_plugin_tvrby.py
+tests/test_plugin_vidio.py
+tests/test_plugin_vk.py
 tests/test_plugin_vrtbe.py
 tests/test_plugin_webtv.py
+tests/test_plugin_zattoo.py
 tests/test_plugins.py
 tests/test_session.py
 tests/test_stream_streamprocess.py

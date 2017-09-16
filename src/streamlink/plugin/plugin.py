@@ -1,3 +1,4 @@
+import ast
 import operator
 import re
 from collections import OrderedDict
@@ -37,6 +38,14 @@ FILTER_OPERATORS = {
     ">": operator.gt,
     ">=": operator.ge,
 }
+
+
+PARAMS_REGEX = r"(\w+)=({.+?}|\[.+?\]|\(.+?\)|'(?:[^'\\]|\\')*'|\"(?:[^\"\\]|\\\")*\"|\S+)"
+
+HIGH_PRIORITY = 30
+NORMAL_PRIORITY = 20
+LOW_PRIORITY = 10
+NO_PRIORITY = 0
 
 
 def stream_weight(stream):
@@ -123,6 +132,28 @@ def stream_sorting_filter(expr, stream_weight):
     return func
 
 
+def parse_url_params(url):
+    split = url.split(" ", 1)
+    url = split[0]
+    params = split[1] if len(split) > 1 else ''
+    return url, parse_params(params)
+
+
+def parse_params(params):
+    rval = {}
+    matches = re.findall(PARAMS_REGEX, params)
+
+    for key, value in matches:
+        try:
+            value = ast.literal_eval(value)
+        except Exception:
+            pass
+
+        rval[key] = value
+
+    return rval
+
+
 class Plugin(object):
     """A plugin can retrieve stream information from the URL specified.
 
@@ -191,6 +222,15 @@ class Plugin(object):
             return func
 
         return decorator
+
+    @classmethod
+    def priority(cls, url):
+        """
+        Return the plugin priority for a given URL, by default it returns
+        NORMAL priority.
+        :return: priority level
+        """
+        return NORMAL_PRIORITY
 
     def streams(self, stream_types=None, sorting_excludes=None):
         """Attempts to extract available streams.
