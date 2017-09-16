@@ -1,9 +1,15 @@
-streamlink (0.8.1-1) UNRELEASED; urgency=medium
+streamlink (0.8.1-1) unstable; urgency=low
 
-  * travis: make scripts generic and always enable verbose sbuild
   * New upstream version 0.8.1
+  * websocket-client: add new required dependency
+  * pycountry: require >= 16.10.23 to have lookup method
+  * Bump standard version to 4.0.0
+  * Add autopkgtest: run testsuite on installed package
+  * Update patches:
+    - docs/cli.rst: fix generated manpage warning
+    - pycountry: drop patch, pycountry package is new enough now
 
- -- Alexis Murzeau <amubtdx@outlook.fr>  Sat, 16 Sep 2017 19:06:26 +0200
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Sun, 17 Sep 2017 00:53:26 +0200
 
 streamlink (0.7.0-1) unstable; urgency=low
 
