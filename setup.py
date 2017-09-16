@@ -15,9 +15,9 @@ if version_info[0] == 2:
     if version_info[1] <= 6:
         # Require backport of argparse on Python 2.6
         deps.append("argparse")
-        # require pyOpenSSL and idna for 2.6 compatibility
-        deps.append("pyOpenSSL")
-        deps.append("idna")
+
+    if version_info[1] < 7 or (version_info[1] == 7 and version_info[2] <= 9):
+        deps.append("urllib3[secure]")
 
 # Require singledispatch on Python <3.4
 if version_info[0] == 2 or (version_info[0] == 3 and version_info[1] < 4):
@@ -44,6 +44,11 @@ else:
     deps.append("iso-639")
     deps.append("iso3166")
 
+deps.append("websocket-client")
+
+# Support for SOCKS proxies
+deps.append("requests[socks]")
+
 # When we build an egg for the Win32 bootstrap we don't want dependency
 # information built into it.
 if environ.get("NO_DEPS"):
@@ -53,7 +58,7 @@ srcdir = join(dirname(abspath(__file__)), "src/")
 sys_path.insert(0, srcdir)
 
 setup(name="streamlink",
-      version="0.7.0",
+      version="0.8.1",
       description="Streamlink is command-line utility that extracts streams "
                   "from various services and pipes them into a video player of "
                   "choice.",
