@@ -2,22 +2,22 @@
 
 set -xe
 
-CHROOT_DIST=unstable
+CHROOT_DIST=${1:-stable}
 CHROOT_ARCH=amd64
 CHROOT_NAME=$CHROOT_DIST-$CHROOT_ARCH-sbuild
 CHROOT_DEBIAN_MIRROR=http://ftp.de.debian.org/debian/
 CHROOT_ADDITIONAL_PACKETS="gnupg lintian sbuild schroot"
 
-# Install dependencies on ubuntu to create a chroot with debian unstable
+# Install dependencies on ubuntu to create a chroot with debian
 sudo apt-get install -y --no-install-recommends git-buildpackage dpkg-dev schroot sbuild debootstrap
 
 # Build source package (build errors will be found early)
 git-buildpackage --git-verbose --git-ignore-branch '--git-builder=dpkg-source -b .' --git-cleaner=
 
-# Add _apt user so debian unstable schroot won't warn about missing user _apt
+# Add _apt user so debian schroot won't warn about missing user _apt
 id -u _apt > /dev/null 2>&1 || sudo adduser --force-badname --system --home /nonexistent --no-create-home --quiet _apt || true
 
-# Create debian unstable chroot
+# Create debian chroot
 mkdir ~/chroot
 sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/ $CHROOT_DEBIAN_MIRROR --keyring= || (cat ~/chroot/$CHROOT_NAME/debootstrap/debootstrap.log && exit 2)
 

@@ -1,17 +1,21 @@
 sudo: required
 language: generic
 
+env:
+  - DIST=unstable
+
 before_install:
   - echo $LANG
   - echo $LC_ALL
   - echo $USER
+  - echo $DIST
 
 script:
-  - ./travis-build/build.sh
+  - ./travis-build/build.sh $DIST
 
 deploy:
   provider: script
-  script: ./travis-build/deploy.sh streamlink-debian
+  script: ./travis-build/deploy.sh streamlink-debian $DIST
   skip_cleanup: true
   on:
     tags: true

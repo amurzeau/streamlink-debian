@@ -21,7 +21,8 @@ if len(sys.argv) < 4:
 
 user = sys.argv[1]
 repository = sys.argv[2]
-changesFile = sys.argv[3]
+distribution = sys.argv[3]
+changesFile = sys.argv[4]
 apikey = os.environ["BINTRAY_API_KEY"]
 passphrase = os.environ["BINTRAY_PASSPHRASE"]
 
@@ -81,7 +82,7 @@ with io.open(changesFile, 'rb') as f:
 		'repo': repository,
 		'package': d['Source'],
 		'version': d['Version'],
-		'distributions':'unstable',
+		'distributions': distribution,
 		'component':'main',
 		'architectures':'amd64,i386'
 	}
