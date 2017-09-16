@@ -1,3 +1,11 @@
+streamlink (0.8.1-1~bpo9+1) stretch-backports; urgency=low
+
+  * Rebuild for stretch-backports.
+  * pycountry: add patch to support stable provided version (1.8)
+  * d/control: require pycountry <= 1.15
+
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Sun, 17 Sep 2017 02:07:59 +0200
+
 streamlink (0.8.1-1) unstable; urgency=low
 
   * New upstream version 0.8.1
