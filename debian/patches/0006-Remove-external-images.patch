@@ -1,0 +1,26 @@
+From: Alexis Murzeau <amubtdx@outlook.fr>
+Date: Sat, 16 Sep 2017 23:43:29 +0200
+Subject: Remove external images
+
+Due to privacy concerns these are removed from the documentation in
+Debian.
+See also lintian tag privacy-breach-generic.
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@outlook.fr>
+---
+ docs/applications.rst | 3 ---
+ 1 file changed, 3 deletions(-)
+
+--- a/docs/applications.rst
++++ b/docs/applications.rst
+@@ -8,9 +8,6 @@
+ Streamlink Twitch GUI
+ ---------------------
+ 
+-.. image:: https://user-images.githubusercontent.com/467294/28097570-3415020e-66b1-11e7-928d-4b9da35daf13.jpg
+-    :alt: Streamlink Twitch GUI
+-
+ :Description: A multi platform Twitch.tv browser for Streamlink
+ :Type: Graphical User Interface
+ :OS: |Windows| |MacOS| |Linux|

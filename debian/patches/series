@@ -3,3 +3,4 @@ remove_github_buttons
 use_debian_fonts
 use_debian_modernizr
 0005-Fix-manpage-generation.patch
+0006-Remove-external-images.patch
