@@ -23,7 +23,7 @@ Bug-Debian: https://bugs.debian.org/750502
      """
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -1011,7 +1011,7 @@
+@@ -1018,7 +1018,7 @@
      setup_http_session()
      check_root()
  
