@@ -1,0 +1,2 @@
+Test-Command: PYTHONPATH=/usr/share/streamlink pytest-3 tests
+Depends: streamlink, python3-pytest, python3-mock
