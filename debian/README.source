@@ -8,6 +8,9 @@ Here are the commands to manage the package:
 - Check for important changes that may need other package changes (copyright, new patch, ...):
   - `https://github.com/streamlink/streamlink/compare/<old_tag>...<new_tag>`
 
+- Build and test the package:
+  - `debuild`
+
 - Release version with `low` urgency:
   - `gbp dch -Ra --commit -U low`
 
