@@ -41,4 +41,4 @@ sudo sed -i 's/script-config=.*/profile=sbuild/' ~/chroot/$CHROOT_NAME/etc/schro
 # Add current user to sbuild group (required by sbuild)
 sudo sbuild-adduser $USER
 
-sudo schroot -c "$CHROOT_NAME" -u $USER -- sbuild -v -As ../*.dsc -d $CHROOT_DIST --run-lintian --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts="-- schroot %r-%a-sbuild"
+sudo schroot -c "$CHROOT_NAME" -u $USER -- sbuild -v -As --force-orig-source ../*.dsc -d $CHROOT_DIST --run-lintian --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts="-- schroot %r-%a-sbuild"
