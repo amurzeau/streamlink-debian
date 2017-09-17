@@ -6,7 +6,7 @@ CHROOT_DIST=${1:-stable}
 CHROOT_ARCH=amd64
 CHROOT_NAME=$CHROOT_DIST-$CHROOT_ARCH-sbuild
 CHROOT_DEBIAN_MIRROR=http://ftp.de.debian.org/debian/
-CHROOT_ADDITIONAL_PACKETS="gnupg lintian sbuild schroot"
+CHROOT_ADDITIONAL_PACKETS="gnupg lintian sbuild schroot autopkgtest"
 
 # Install dependencies on ubuntu to create a chroot with debian
 sudo apt-get install -y --no-install-recommends git-buildpackage dpkg-dev schroot sbuild debootstrap
