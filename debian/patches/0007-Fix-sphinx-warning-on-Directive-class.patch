@@ -5,7 +5,7 @@ Subject: Fix sphinx warning on Directive class
 Sphinx has deprecated sphinx.util.compat.Directive.
 Use the class in docutils as recommended by Sphinx.
 
-Forwarded: no
+Forwarded: https://github.com/streamlink/streamlink/pull/1260
 Author: Alexis Murzeau <amubtdx@outlook.fr>
 ---
  docs/ext_argparse.py | 2 +-
