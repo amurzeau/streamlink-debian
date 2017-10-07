@@ -1,5 +1,5 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Contact: Forrest Alvarez <forrest.alvarez+streamlinkdebian@gmail.com>
+Upstream-Contact: https://github.com/streamlink/streamlink/issues
 Source: https://github.com/streamlink/streamlink
 Upstream-Name: streamlink
 
