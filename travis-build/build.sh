@@ -52,4 +52,4 @@ fi
 # Add current user to sbuild group (required by sbuild)
 sudo sbuild-adduser $USER
 
-sudo schroot -c "$CHROOT_NAME" -u $USER -- sbuild -v -As --force-orig-source ../*.dsc -d $CHROOT_DIST --run-lintian --lintian-opts="-EviIL +pedantic" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts="-- schroot %r-%a-sbuild"
+sudo schroot -c "$CHROOT_NAME" -u $USER -- sbuild -v -As --force-orig-source build-dir/*.dsc -d $CHROOT_DIST --run-lintian --lintian-opts="-EviIL +pedantic" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts="-- schroot %r-%a-sbuild"
