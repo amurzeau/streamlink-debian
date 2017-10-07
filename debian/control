@@ -52,7 +52,7 @@ Recommends: fonts-lato,
   fonts-inconsolata
 Built-Using: ${sphinxdoc:Built-Using}
 Suggests: python3-streamlink
-Description: CLI for extracting video streams from various websites to a video player (documentation)
+Description: CLI for extracting video streams from various websites (documentation)
  Streamlink is a CLI utility that pipes flash videos from online streaming
  services to a variety of video players such as VLC, or alternatively, a
  browser.
