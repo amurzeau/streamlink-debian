@@ -1,4 +1,3 @@
 version=3
-opts="uversionmangle=s/(rc|a|b|c)/~$1/, \
-  pgpsigurlmangle=s/$/.asc/" \
+opts="uversionmangle=s/(rc|a|b|c)/~$1/,pgpsigurlmangle=s/$/.asc/" \
   https://github.com/streamlink/streamlink/releases .*/streamlink-(\d\S+)\.tar\.gz
