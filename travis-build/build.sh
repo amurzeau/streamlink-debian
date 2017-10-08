@@ -11,7 +11,7 @@ CHROOT_DEBIAN_MIRROR=http://ftp.de.debian.org/debian/
 CHROOT_ADDITIONAL_PACKETS="gnupg lintian sbuild schroot autopkgtest"
 
 # Install dependencies on ubuntu to create a chroot with debian
-sudo apt-get install -y --no-install-recommends git-buildpackage dpkg-dev schroot sbuild debootstrap
+sudo apt-get install -y --no-install-recommends git-buildpackage dpkg-dev schroot sbuild debootstrap pristine-tar
 
 # Build source package (build errors will be found early)
 git-buildpackage --git-verbose --git-ignore-branch '--git-builder=dpkg-source -b .' --git-cleaner=
