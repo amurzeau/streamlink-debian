@@ -8,13 +8,11 @@ CHROOT_TARGET_DIST=${CHROOT_ALIAS:-$CHROOT_DIST}
 CHROOT_ARCH=amd64
 CHROOT_NAME=$CHROOT_DIST-$CHROOT_ARCH-sbuild
 CHROOT_DEBIAN_MIRROR=http://ftp.de.debian.org/debian/
-CHROOT_ADDITIONAL_PACKETS="gnupg lintian sbuild schroot autopkgtest"
+CHROOT_COMMON_ADDITIONAL_PACKETS="sbuild schroot gnupg lintian autopkgtest dpkg-dev"
+CHROOT_BUILDER_ADDITIONAL_PACKETS="git-buildpackage pristine-tar equivs"
 
 # Install dependencies on ubuntu to create a chroot with debian
-sudo apt-get install -y --no-install-recommends git-buildpackage dpkg-dev schroot sbuild debootstrap pristine-tar
-
-# Build source package (build errors will be found early)
-git-buildpackage --git-verbose --git-ignore-branch '--git-builder=dpkg-source -b .' --git-cleaner=
+sudo apt-get install -y --no-install-recommends schroot sbuild debootstrap
 
 # Add _apt user so debian schroot won't warn about missing user _apt
 id -u _apt > /dev/null 2>&1 || sudo adduser --force-badname --system --home /nonexistent --no-create-home --quiet _apt || true
@@ -35,7 +33,7 @@ if [ ! -d ~/chroot/$CHROOT_NAME ]; then
 	sudo cp travis-build/sbuild-key.* /var/lib/sbuild/apt-keys/
 	sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
 	sudo bash -c "echo '/var/lib/schroot /var/lib/schroot none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
-	sudo schroot -c "source:${CHROOT_NAME}" -u root -d / -- apt-get install -y --no-install-recommends $CHROOT_ADDITIONAL_PACKETS
+	sudo schroot -c "source:${CHROOT_NAME}" -u root -d / -- apt-get install -y --no-install-recommends ${CHROOT_COMMON_ADDITIONAL_PACKETS}
 
 	# Configure mounts inside schroot
 	sudo mkdir -p ~/chroot/$CHROOT_NAME/etc/schroot/chroot.d/
@@ -52,4 +50,8 @@ fi
 # Add current user to sbuild group (required by sbuild)
 sudo sbuild-adduser $USER
 
-sudo schroot -c "$CHROOT_NAME" -u $USER -- sbuild -v -As --force-orig-source build-dir/*.dsc -d $CHROOT_DIST --run-lintian --lintian-opts="-EviIL +pedantic" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts="-- schroot %r-%a-sbuild"
+CHROOT_SESSION=$(sudo schroot -c "${CHROOT_NAME}" --begin-session)
+sudo schroot --run-session -c $CHROOT_SESSION -u root -- apt-get install -y --no-install-recommends $CHROOT_BUILDER_ADDITIONAL_PACKETS
+sudo schroot --run-session -c $CHROOT_SESSION -u root -- mk-build-deps -i -r -t "apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends"
+sudo schroot --run-session -c $CHROOT_SESSION -u $USER -- gbp buildpackage --git-verbose --git-ignore-branch --git-cleaner= "--git-builder=sbuild -v -As -d $CHROOT_DIST --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\""
+sudo schroot --end-session -c $CHROOT_SESSION
