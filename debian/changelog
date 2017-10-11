@@ -1,3 +1,16 @@
+streamlink (0.8.1-2) UNRELEASED; urgency=low
+
+  * Update pkg descriptions from actual README.md
+  * Lintian fix unnecessary-testsuite-autopkgtest-header
+  * Bump Standards-Version to 4.1.1
+  * Bump debhelper compat to 10
+  * Add patch to fix sphinx deprecation warning
+  * d/watch: use github release with signature
+  * Use pristine-tar to keep exact upstream tar
+  * Fix package homepage
+
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Wed, 11 Oct 2017 20:53:57 +0200
+
 streamlink (0.8.1-1~bpo9+1) stretch-backports; urgency=low
 
   * Rebuild for stretch-backports.

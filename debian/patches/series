@@ -5,3 +5,4 @@ use_debian_modernizr
 use_debian_pycountry
 0005-Fix-manpage-generation.patch
 0006-Remove-external-images.patch
+0007-Fix-sphinx-warning-on-Directive-class.patch

@@ -2,8 +2,8 @@ Source: streamlink
 Maintainer: Alexis Murzeau <amubtdx@outlook.fr>
 Section: python
 Priority: optional
-Standards-Version: 4.0.0
-Build-Depends: debhelper (>= 9),
+Standards-Version: 4.1.1
+Build-Depends: debhelper (>= 10),
  dh-python,
  python3 (>= 3.4),
  python3-setuptools,
@@ -13,12 +13,12 @@ Build-Depends: debhelper (>= 9),
  python3-crypto,
  python3-pytest,
  python3-mock,
- python3-websocket
+ python3-websocket,
+ python3-docutils
 X-Python3-Version: >= 3.4
-Homepage: http://streamlink.io/
+Homepage: https://streamlink.github.io/
 Vcs-Git: https://github.com/amurzeau/streamlink.git
 Vcs-Browser: https://github.com/amurzeau/streamlink
-Testsuite: autopkgtest
 
 Package: python3-streamlink
 Architecture: all
@@ -27,15 +27,18 @@ Depends: ${misc:Depends},
 Recommends: rtmpdump,
   ffmpeg
 Suggests: streamlink, python3-streamlink-doc
-Description: library to extract video streams from various services - Python 3
- The API lists available video qualities from URLs which are
- visible to a service’s users. It can extract any such quality
- and pass on the raw video data.
+Description: Python module for extracting video streams from various websites
+ Streamlink is a CLI utility that pipes flash videos from online streaming
+ services to a variety of video players such as VLC, or alternatively, a
+ browser.
+ The main purpose of streamlink is to convert CPU-heavy flash plugins to a
+ less CPU-intensive format.
  .
- Currently most of the big streaming services are supported
- (e.g. Dailymotion, Livestream, Justin.tv, Twitch, YouTube Live
- and UStream) and more specialized content providers can be
- added easily using Streamlink’s plugin system.
+ Streamlink is a fork of the Livestreamer project.
+ .
+ Please note that by using this application you're bypassing ads run by sites
+ such as Twitch.tv. Please consider donating or paying for subscription
+ services when they are available for the content you consume and enjoy.
  .
  This package makes Streamlink APIs accessible in Python 3.
 
@@ -50,15 +53,18 @@ Recommends: fonts-lato,
   fonts-inconsolata
 Built-Using: ${sphinxdoc:Built-Using}
 Suggests: python3-streamlink
-Description: library to extract video streams from various services - documentation
- The API lists available video qualities from URLs which are
- visible to a service’s users. It can extract any such quality
- and pass on the raw video data.
+Description: CLI for extracting video streams from various websites (documentation)
+ Streamlink is a CLI utility that pipes flash videos from online streaming
+ services to a variety of video players such as VLC, or alternatively, a
+ browser.
+ The main purpose of streamlink is to convert CPU-heavy flash plugins to a
+ less CPU-intensive format.
  .
- Currently most of the big streaming services are supported
- (e.g. Dailymotion, Livestream, Justin.tv, Twitch, YouTube Live
- and UStream) and more specialized content providers can be
- added easily using Streamlink’s plugin system.
+ Streamlink is a fork of the Livestreamer project.
+ .
+ Please note that by using this application you're bypassing ads run by sites
+ such as Twitch.tv. Please consider donating or paying for subscription
+ services when they are available for the content you consume and enjoy.
  .
  This package contains the Streamlink usage, API and plugins
  documentation in HTML format.
@@ -69,14 +75,15 @@ Architecture: all
 Depends: ${misc:Depends},
   ${python3:Depends},
   python3-streamlink (= ${source:Version})
-Description: CLI that pipes video streams to video players
- Streamlink is a Command Line Interface that extracts video
- streams from various services and hands them to a video player,
- such as VLC. The main purpose of Streamlink is to allow the
- user to avoid buggy and CPU heavy flash plugins but still
- be able to enjoy various streamed content.
+Description: CLI for extracting video streams from various websites to a video player
+ Streamlink is a CLI utility that pipes flash videos from online streaming
+ services to a variety of video players such as VLC, or alternatively, a
+ browser.
+ The main purpose of streamlink is to convert CPU-heavy flash plugins to a
+ less CPU-intensive format.
  .
- Currently most of the big streaming services are supported
- (e.g. Dailymotion, Livestream, Justin.tv, Twitch, YouTube Live
- and UStream) and more specialized content providers can be
- added easily using Streamlink’s plugin system.
+ Streamlink is a fork of the Livestreamer project.
+ .
+ Please note that by using this application you're bypassing ads run by sites
+ such as Twitch.tv. Please consider donating or paying for subscription
+ services when they are available for the content you consume and enjoy.
