@@ -1,4 +1,4 @@
-streamlink (0.8.1-2) UNRELEASED; urgency=low
+streamlink (0.8.1-2) unstable; urgency=low
 
   * Update pkg descriptions from actual README.md
   * Lintian fix unnecessary-testsuite-autopkgtest-header
@@ -8,8 +8,9 @@ streamlink (0.8.1-2) UNRELEASED; urgency=low
   * d/watch: use github release with signature
   * Use pristine-tar to keep exact upstream tar
   * Fix package homepage
+  * Initial release on Debian (Closes: #878029)
 
- -- Alexis Murzeau <amubtdx@outlook.fr>  Wed, 11 Oct 2017 20:53:57 +0200
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Wed, 11 Oct 2017 21:36:13 +0200
 
 streamlink (0.8.1-1) unstable; urgency=low
 
