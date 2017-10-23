@@ -1,8 +1,8 @@
-streamlink (0.8.1-3) UNRELEASED; urgency=medium
+streamlink (0.8.1-3) unstable; urgency=low
 
   * Change mail address to gmail
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 23 Oct 2017 23:03:33 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 23 Oct 2017 23:11:00 +0200
 
 streamlink (0.8.1-2) unstable; urgency=low
 
