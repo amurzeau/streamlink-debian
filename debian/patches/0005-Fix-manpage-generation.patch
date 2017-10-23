@@ -1,4 +1,4 @@
-From: Alexis Murzeau <amubtdx@outlook.fr>
+From: Alexis Murzeau <amubtdx@gmail.com>
 Date: Sat, 16 Sep 2017 20:09:30 +0200
 Subject: Fix manpage generation
 
@@ -7,7 +7,7 @@ generation by sphinx and trigger the following lintian warning:
 W: streamlink: manpage-has-errors-from-man usr/share/man/man1/streamlink.1.gz 533: warning: macro `.' not defined
 
 Forwarded: no
-Author: Alexis Murzeau <amubtdx@outlook.fr>
+Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  docs/cli.rst | 1 +
  1 file changed, 1 insertion(+)

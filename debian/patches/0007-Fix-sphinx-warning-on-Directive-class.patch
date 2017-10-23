@@ -1,4 +1,4 @@
-From: Alexis Murzeau <amubtdx@outlook.fr>
+From: Alexis Murzeau <amubtdx@gmail.com>
 Date: Sat, 7 Oct 2017 19:50:46 +0200
 Subject: Fix sphinx warning on Directive class
 
@@ -6,7 +6,7 @@ Sphinx has deprecated sphinx.util.compat.Directive.
 Use the class in docutils as recommended by Sphinx.
 
 Forwarded: https://github.com/streamlink/streamlink/pull/1260
-Author: Alexis Murzeau <amubtdx@outlook.fr>
+Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  docs/ext_argparse.py | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
