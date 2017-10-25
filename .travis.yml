@@ -16,7 +16,7 @@ script:
 
 deploy:
   provider: script
-  script: ./travis-build/deploy.sh streamlink-debian $DIST $TARGET_DIST
+  script: ./travis-build/deploy.sh streamlink-debian $TARGET_DIST
   skip_cleanup: true
   on:
     tags: true
