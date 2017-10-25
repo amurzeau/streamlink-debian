@@ -2,56 +2,51 @@
 
 set -xe
 
+SCRIPT_DIR=$(dirname "$0")
+
 CHROOT_DIST=${1:-stable}
 CHROOT_ALIAS=$2
 CHROOT_TARGET_DIST=${CHROOT_ALIAS:-$CHROOT_DIST}
 CHROOT_ARCH=amd64
 CHROOT_NAME=$CHROOT_DIST-$CHROOT_ARCH-sbuild
 CHROOT_DEBIAN_MIRROR=http://ftp.de.debian.org/debian/
-CHROOT_COMMON_ADDITIONAL_PACKETS="sbuild schroot gnupg lintian autopkgtest dpkg-dev"
-CHROOT_BUILDER_ADDITIONAL_PACKETS="git-buildpackage pristine-tar equivs"
+CHROOT_COMMON_ADDITIONAL_PACKETS="sbuild schroot gnupg lintian autopkgtest dpkg-dev git-buildpackage pristine-tar"
 
-# Install dependencies on ubuntu to create a chroot with debian
-sudo apt-get install -y --no-install-recommends schroot sbuild debootstrap
+STABLE_CHROOT_NAME=stable-$CHROOT_ARCH-sbuild
+STABLE_CHROOT_LOCATION=~/chroot/stable
 
-# Add _apt user so debian schroot won't warn about missing user _apt
-id -u _apt > /dev/null 2>&1 || sudo adduser --force-badname --system --home /nonexistent --no-create-home --quiet _apt || true
+TARGET_CHROOT_LOCATION=~/chroot/$CHROOT_DIST
 
-# Create debian chroot
+# Create debian stable chroot
 mkdir -p ~/chroot
-if [ ! -d ~/chroot/$CHROOT_NAME ]; then
-	sudo sbuild-createchroot --arch=$CHROOT_ARCH $CHROOT_DIST ~/chroot/$CHROOT_NAME/ $CHROOT_DEBIAN_MIRROR --keyring= || (cat ~/chroot/$CHROOT_NAME/debootstrap/debootstrap.log && exit 2)
-
-	# Fix _apt permissions
-	sudo chown -R _apt:root ~/chroot/$CHROOT_NAME/var/lib/apt/lists/partial || true
+if [ ! -d $STABLE_CHROOT_LOCATION ]; then
+	sudo "$SCRIPT_DIR/create-schroot.sh" stable "$STABLE_CHROOT_LOCATION"
 
 	# Configure schroot
-	if [ -n "$CHROOT_ALIAS" ]; then
-		sudo bash -c "echo 'aliases=$CHROOT_ALIAS' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
-	fi
-	sudo bash -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
-	sudo cp travis-build/sbuild-key.* /var/lib/sbuild/apt-keys/
+	sudo bash -c "echo 'union-type=overlayfs' >> /etc/schroot/chroot.d/$STABLE_CHROOT_NAME*"
 	sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
 	sudo bash -c "echo '/var/lib/schroot /var/lib/schroot none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
-	sudo schroot -c "source:${CHROOT_NAME}" -u root -d / -- apt-get install -y --no-install-recommends ${CHROOT_COMMON_ADDITIONAL_PACKETS}
+	sudo schroot -c "source:${STABLE_CHROOT_NAME}" -u root -d / -- apt-get install -y --no-install-recommends ${CHROOT_COMMON_ADDITIONAL_PACKETS}
 
-	# Configure mounts inside schroot
-	sudo mkdir -p ~/chroot/$CHROOT_NAME/etc/schroot/chroot.d/
-	sudo bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> ~/chroot/$CHROOT_NAME/etc/schroot/sbuild/fstab"
-	sudo cp /etc/schroot/chroot.d/$CHROOT_NAME* ~/chroot/$CHROOT_NAME/etc/schroot/chroot.d/
-
-	# overlayfs is replaced by overlay in sid's sbuild when having a kernel newer than 3.18 (overlayfs need workdir which is provided only when using overlay instead of overlayfs)
-	sudo sed -i 's/union-type=overlayfs/union-type=overlay/' ~/chroot/$CHROOT_NAME/etc/schroot/chroot.d/$CHROOT_NAME*
-
-	cat /etc/schroot/chroot.d/$CHROOT_NAME*
-	cat ~/chroot/$CHROOT_NAME/etc/schroot/chroot.d/$CHROOT_NAME*
+	cat /etc/schroot/chroot.d/$STABLE_CHROOT_NAME*
 fi
 
 # Add current user to sbuild group (required by sbuild)
 sudo sbuild-adduser $USER
 
-CHROOT_SESSION=$(sudo schroot -c "${CHROOT_NAME}" --begin-session)
-sudo schroot --run-session -c $CHROOT_SESSION -u root -- apt-get install -y --no-install-recommends $CHROOT_BUILDER_ADDITIONAL_PACKETS
-sudo schroot --run-session -c $CHROOT_SESSION -u root -- mk-build-deps -i -r -t "apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends"
-sudo schroot --run-session -c $CHROOT_SESSION -u $USER -- gbp buildpackage --git-verbose --git-ignore-branch --git-cleaner= "--git-builder=sbuild -v -As -d $CHROOT_DIST --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\""
+CHROOT_SESSION=$(sudo schroot -c "${STABLE_CHROOT_NAME}" --begin-session)
+sudo schroot --run-session -c $CHROOT_SESSION -u root -- "$SCRIPT_DIR/create-schroot.sh" $CHROOT_DIST $TARGET_CHROOT_LOCATION
+if [ -n "$CHROOT_ALIAS" ]; then
+	sudo schroot --run-session -c $CHROOT_SESSION -u root -- bash -c "echo 'aliases=$CHROOT_ALIAS' >> /etc/schroot/chroot.d/$CHROOT_NAME*"
+fi
+sudo schroot --run-session -c $CHROOT_SESSION -u root -- bash -c "sed -i 's/union-type=.*/union-type=overlay/' /etc/schroot/chroot.d/$CHROOT_NAME*"
+sudo schroot --run-session -c $CHROOT_SESSION -u root -- bash -c "echo '/home/$USER  /home/$USER none  rw,bind 0       0' >> /etc/schroot/sbuild/fstab"
+sudo schroot --run-session -c $CHROOT_SESSION -u root -- bash -c "cat /etc/schroot/chroot.d/$CHROOT_NAME*"
+
+# git-buildpackage does not work with trusty linux kernel, rename syscall fail if target already exists
+sudo schroot --run-session -c $CHROOT_SESSION -u root -- bash -c "patch /usr/lib/python2.7/dist-packages/gbp/scripts/buildpackage.py < $SCRIPT_DIR/buildpackage.py.patch"
+sudo schroot --run-session -c $CHROOT_SESSION -u $USER -- gbp buildpackage --git-verbose --git-ignore-branch --git-cleaner= "--git-builder=sbuild -v -As -d $CHROOT_DIST --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\""
 sudo schroot --end-session -c $CHROOT_SESSION
+
+ls -l build-dir
+cat build-dir/*.changes

@@ -1,0 +1,16 @@
+--- /usr/lib/python2.7/dist-packages/gbp/scripts/buildpackage.py	2017-10-25 18:50:30.788780863 +0000
++++ /usr/lib/python2.7/dist-packages/gbp/scripts/buildpackage.py	2017-10-25 18:57:48.150345094 +0000
+@@ -179,11 +179,8 @@
+ 
+ def move_old_export(target):
+     """move a build tree away if it exists"""
+-    try:
+-        os.makedirs(target)
+-    except OSError as e:
+-        if e.errno == errno.EEXIST:
+-            os.rename(target, "%s.obsolete.%s" % (target, time.time()))
++    if os.path.exists(target):
++        os.rename(target, "%s.obsolete.%s" % (target, time.time()))
+ 
+ 
+ def extract_orig(orig_tarball, dest_dir):
