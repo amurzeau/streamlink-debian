@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from debian import deb822
 import io
@@ -15,8 +15,8 @@ def versioncmp(version1, version2):
 	b = normalize(version2)
 	return (a > b) - (a < b)
 
-if len(sys.argv) < 4:
-	print("Usage: {app} user repository changes_file".format(app= sys.argv[0]))
+if len(sys.argv) < 5:
+	print("Usage: {app} user repository distribution changes_file".format(app= sys.argv[0]))
 	sys.exit(0)
 
 user = sys.argv[1]
@@ -40,6 +40,7 @@ def send_file(parameters, auth, baseDir, file):
 	print("Sending package {} using parameters:\n{}".format(finalFile, json.dumps(parameters, indent=4)))
 	with io.open(finalFile, "rb") as packageFile:
 		headers = {'X-GPG-PASSPHRASE': passphrase}
+		print("Push to {}".format(finalUrl))
 		r = requests.put(finalUrl, headers=headers, auth=auth, data=packageFile)
 		print("Response: {}".format(r.text))
 
