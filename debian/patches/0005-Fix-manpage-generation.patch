@@ -6,7 +6,7 @@ A footnote without a new line before seems to cause bad man page
 generation by sphinx and trigger the following lintian warning:
 W: streamlink: manpage-has-errors-from-man usr/share/man/man1/streamlink.1.gz 533: warning: macro `.' not defined
 
-Forwarded: no
+Forwarded: https://github.com/streamlink/streamlink/pull/1230
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  docs/cli.rst | 1 +
