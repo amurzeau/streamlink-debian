@@ -25,7 +25,8 @@ Architecture: all
 Depends: ${misc:Depends},
  ${python3:Depends}
 Recommends: rtmpdump,
-  ffmpeg
+  ffmpeg,
+  python3-socks
 Suggests: streamlink, python3-streamlink-doc
 Description: Python module for extracting video streams from various websites
  Streamlink is a CLI utility that pipes flash videos from online streaming
