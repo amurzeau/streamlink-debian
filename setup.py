@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
+import os
 from os import environ
 from os.path import abspath, dirname, join
 from setuptools import setup, find_packages
 from sys import version_info, path as sys_path
-import warnings
 
 deps = []
 
@@ -47,7 +47,12 @@ else:
 deps.append("websocket-client")
 
 # Support for SOCKS proxies
-deps.append("requests[socks]")
+deps.append("PySocks!=1.5.7,>=1.5.6")  # requests[socks] uses this version
+
+# win-inet-pton is missing a dependency in PySocks, this has been fixed but not released yet
+if os.name == "nt" and version_info < (3, 0):
+    # Required due to missing socket.inet_ntop & socket.inet_pton method in Windows Python 2.x
+    deps.append("win-inet-pton")
 
 # When we build an egg for the Win32 bootstrap we don't want dependency
 # information built into it.
@@ -58,7 +63,7 @@ srcdir = join(dirname(abspath(__file__)), "src/")
 sys_path.insert(0, srcdir)
 
 setup(name="streamlink",
-      version="0.8.1",
+      version="0.9.0",
       description="Streamlink is command-line utility that extracts streams "
                   "from various services and pipes them into a video player of "
                   "choice.",

@@ -29,3 +29,7 @@ override_dh_compress:
 
 override_dh_installchangelogs:
 	dh_installchangelogs CHANGELOG.rst
+
+# Use gzip format in .deb, bintray does not support .xz format
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip

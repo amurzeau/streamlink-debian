@@ -1,4 +1,4 @@
-From: Alexis Murzeau <amubtdx@outlook.fr>
+From: Alexis Murzeau <amubtdx@gmail.com>
 Date: Sun, 23 Apr 2017 15:54:58 +0200
 Subject: Remove streamlink version check on startup
 
@@ -10,9 +10,11 @@ Bug-Debian: https://bugs.debian.org/750502
  src/streamlink_cli/main.py      | 2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/src/streamlink_cli/argparser.py b/src/streamlink_cli/argparser.py
+index 1c96a4e..14609c0 100644
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
-@@ -276,7 +276,7 @@
+@@ -276,7 +276,7 @@ general.add_argument(
      metavar="{yes,true,1,on,no,false,0,off}",
      default=False,
      help="""
@@ -21,9 +23,11 @@ Bug-Debian: https://bugs.debian.org/750502
  
      Default is "no".
      """
+diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
+index bcc162a..a428f1a 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -1018,7 +1018,7 @@
+@@ -1024,7 +1024,7 @@ def main():
      setup_http_session()
      check_root()
  

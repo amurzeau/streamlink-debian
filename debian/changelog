@@ -1,4 +1,25 @@
-streamlink (0.8.1-2) UNRELEASED; urgency=low
+streamlink (0.9.0-1) unstable; urgency=low
+
+  * New upstream version 0.9.0
+  * Recommend python3-socks for socks proxy support
+  * Drop documentation patches applied upstream
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 16 Nov 2017 21:17:09 +0100
+
+streamlink (0.8.1-4) unstable; urgency=low
+
+  * Use gzip format in deb files
+    - bintray repository does not support control.tar.xz
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 26 Oct 2017 01:05:14 +0200
+
+streamlink (0.8.1-3) unstable; urgency=low
+
+  * Change mail address to gmail
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 23 Oct 2017 23:11:00 +0200
+
+streamlink (0.8.1-2) unstable; urgency=low
 
   * Update pkg descriptions from actual README.md
   * Lintian fix unnecessary-testsuite-autopkgtest-header
@@ -8,8 +29,9 @@ streamlink (0.8.1-2) UNRELEASED; urgency=low
   * d/watch: use github release with signature
   * Use pristine-tar to keep exact upstream tar
   * Fix package homepage
+  * Initial release on Debian (Closes: #878029)
 
- -- Alexis Murzeau <amubtdx@outlook.fr>  Wed, 11 Oct 2017 20:53:57 +0200
+ -- Alexis Murzeau <amubtdx@outlook.fr>  Wed, 11 Oct 2017 21:36:13 +0200
 
 streamlink (0.8.1-1~bpo9+1) stretch-backports; urgency=low
 
