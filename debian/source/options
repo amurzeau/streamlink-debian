@@ -1,2 +1,0 @@
-extend-diff-ignore = "^\.travis\.yml$"
-extend-diff-ignore = "^travis-build/.*$"
