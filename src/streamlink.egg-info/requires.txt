@@ -8,4 +8,4 @@ backports.shutil_get_terminal_size
 iso-639
 iso3166
 websocket-client
-requests[socks]
+PySocks!=1.5.7,>=1.5.6
