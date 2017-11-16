@@ -12,9 +12,11 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  docs/applications.rst | 3 ---
  1 file changed, 3 deletions(-)
 
+diff --git a/docs/applications.rst b/docs/applications.rst
+index 598d719..ccd9335 100644
 --- a/docs/applications.rst
 +++ b/docs/applications.rst
-@@ -8,9 +8,6 @@
+@@ -8,9 +8,6 @@ Streamlink Applications
  Streamlink Twitch GUI
  ---------------------
  
