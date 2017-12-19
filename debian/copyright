@@ -2,6 +2,8 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Contact: https://github.com/streamlink/streamlink/issues
 Source: https://github.com/streamlink/streamlink
 Upstream-Name: streamlink
+Files-Excluded: docs/_static/flattr-badge.png
+Comment: Image license is not known and might be non dfsg-compatible.
 
 Files: *
 Copyright: 2011-2016 Christopher Rosell <chrippa@tanuki.se>
