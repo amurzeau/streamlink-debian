@@ -1,3 +1,13 @@
+streamlink (0.9.0+dfsg-1) UNRELEASED; urgency=medium
+
+  [ Alexis Murzeau ]
+  * Recommend python3-socks for socks proxy support
+  * Remove travis related files
+  * Exlude flattr-badge which might not be dfsg-compatible
+  * New upstream version 0.9.0+dfsg
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 23 Dec 2017 21:36:03 +0100
+
 streamlink (0.8.1-4) unstable; urgency=low
 
   * Use gzip format in deb files
