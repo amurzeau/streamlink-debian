@@ -218,6 +218,7 @@ src/streamlink/plugins/sportal.py
 src/streamlink/plugins/sportschau.py
 src/streamlink/plugins/srgssr.py
 src/streamlink/plugins/ssh101.py
+src/streamlink/plugins/startv.py
 src/streamlink/plugins/streamable.py
 src/streamlink/plugins/streamboat.py
 src/streamlink/plugins/streamingvideoprovider.py
@@ -259,6 +260,7 @@ src/streamlink/plugins/vidio.py
 src/streamlink/plugins/vk.py
 src/streamlink/plugins/vrtbe.py
 src/streamlink/plugins/wattv.py
+src/streamlink/plugins/webcast_india_gov.py
 src/streamlink/plugins/webtv.py
 src/streamlink/plugins/weeb.py
 src/streamlink/plugins/wwenetwork.py
@@ -369,6 +371,7 @@ tests/test_stream_wrappers.py
 tests/test_streamlink_api.py
 tests/test_utils.py
 tests/test_utils_crypto.py
+tests/test_webcast_india_gov.py
 tests/plugins/__init__.py
 tests/plugins/testplugin.py
 tests/plugins/testplugin_support.py
