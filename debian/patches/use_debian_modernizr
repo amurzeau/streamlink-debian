@@ -8,6 +8,8 @@ Author: Stefan Breunig <stefan-debian@yrden.de>
  docs/_themes/sphinx_rtd_theme_violet/layout.html | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/docs/_themes/sphinx_rtd_theme_violet/layout.html b/docs/_themes/sphinx_rtd_theme_violet/layout.html
+index 9ee91d4..8a5c7d2 100644
 --- a/docs/_themes/sphinx_rtd_theme_violet/layout.html
 +++ b/docs/_themes/sphinx_rtd_theme_violet/layout.html
 @@ -67,7 +67,7 @@
