@@ -37,9 +37,8 @@ Description: Python module for extracting video streams from various websites
  .
  Streamlink is a fork of the Livestreamer project.
  .
- Please note that by using this application you're bypassing ads run by sites
- such as Twitch.tv. Please consider donating or paying for subscription
- services when they are available for the content you consume and enjoy.
+ Please consider donating or paying for subscription services when they are
+ available for the content you consume and enjoy.
  .
  This package makes Streamlink APIs accessible in Python 3.
 
@@ -63,9 +62,8 @@ Description: CLI for extracting video streams from various websites (documentati
  .
  Streamlink is a fork of the Livestreamer project.
  .
- Please note that by using this application you're bypassing ads run by sites
- such as Twitch.tv. Please consider donating or paying for subscription
- services when they are available for the content you consume and enjoy.
+ Please consider donating or paying for subscription services when they are
+ available for the content you consume and enjoy.
  .
  This package contains the Streamlink usage, API and plugins
  documentation in HTML format.
@@ -85,6 +83,5 @@ Description: CLI for extracting video streams from various websites to a video p
  .
  Streamlink is a fork of the Livestreamer project.
  .
- Please note that by using this application you're bypassing ads run by sites
- such as Twitch.tv. Please consider donating or paying for subscription
- services when they are available for the content you consume and enjoy.
+ Please consider donating or paying for subscription services when they are
+ available for the content you consume and enjoy.
