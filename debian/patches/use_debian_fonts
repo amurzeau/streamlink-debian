@@ -3,8 +3,7 @@ Date: Sun, 23 Apr 2017 15:54:58 +0200
 Subject: Use Debian packaged fonts
 
 Remove Google Fonts link used by upstream and instead
-use local fonts. Except for "Roboto Slab", all are
-available on Debian.
+use local fonts. All fonts are available on Debian.
 
 Forwarded: not-needed
 Author: Stefan Breunig <stefan-debian@yrden.de>
