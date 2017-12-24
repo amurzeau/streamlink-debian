@@ -86,3 +86,10 @@ Description: CLI for extracting video streams from various websites to a video p
  .
  Please consider donating or paying for subscription services when they are
  available for the content you consume and enjoy.
+
+Package: livestreamer
+Section: oldlibs
+Architecture: all
+Depends: streamlink, ${misc:Depends}
+Description: transitional package
+ This is a transitional package. It can safely be removed.
