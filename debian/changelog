@@ -1,8 +1,12 @@
-streamlink (0.9.0+dfsg-1) UNRELEASED; urgency=medium
+streamlink (0.9.0+dfsg.2-1) UNRELEASED; urgency=medium
 
-  * Exlude flattr-badge which might not be dfsg-compatible
+  * Exlude flattr-badge and font-awesome which might not be dfsg-compatible
+  * Bump standard version, no change required
+  * Remove streaming platform references in description
+  * Add fonts-roboto-slab to recommends
+  * Add transitional package livestreamer
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 23 Dec 2017 21:36:03 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 29 Dec 2017 00:09:55 +0100
 
 streamlink (0.9.0-1) unstable; urgency=low
 
