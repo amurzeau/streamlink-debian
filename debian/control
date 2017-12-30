@@ -94,4 +94,5 @@ Depends: streamlink, ${misc:Depends}
 Description: transitional package - streamlink
  This is a transitional package. It can safely be removed.
  .
- livestreamer developpment is not active anymore and has been forked by streamlink.
+ livestreamer development is not active anymore and has been forked by
+ streamlink.
