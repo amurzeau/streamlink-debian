@@ -15,6 +15,9 @@ export STREAMLINK_USE_PYCRYPTO=1
 export http_proxy=127.0.0.1:9
 export https_proxy=127.0.0.1:9
 
+# Provides DEB_VERSION
+include /usr/share/dpkg/pkg-info.mk
+
 %:
 	dh $@ --with python3,sphinxdoc --buildsystem=pybuild
 
@@ -26,6 +29,12 @@ override_dh_auto_install:
 # Needed to prevent docs/changelog.html from being compressed
 override_dh_compress:
 	dh_compress -X.html
+
+# livestreamer transitional package need to have a greater version than the
+# existing package version in stable which has version 1.12.2-1.
+override_dh_gencontrol:
+	dh_gencontrol -plivestreamer -- -v1.12.2+streamlink+$(DEB_VERSION)
+	dh_gencontrol --remaining-packages
 
 override_dh_installchangelogs:
 	dh_installchangelogs CHANGELOG.rst
