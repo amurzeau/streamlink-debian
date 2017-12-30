@@ -91,5 +91,7 @@ Package: livestreamer
 Section: oldlibs
 Architecture: all
 Depends: streamlink, ${misc:Depends}
-Description: transitional package
+Description: transitional package - streamlink
  This is a transitional package. It can safely be removed.
+ .
+ livestreamer developpment is not active anymore and has been forked by streamlink.
