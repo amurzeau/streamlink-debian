@@ -1,3 +1,5 @@
+# Build procedure
+
 Here are the commands to manage the package:
 - Import upstream version and update debian branch with new upstream release:
   - `gbp import-orig --uscan`
@@ -25,3 +27,27 @@ Here are the commands to manage the package:
   - `lintian -EviIL +pedantic  ./streamlink_<version>_amd64.changes`
 
 - Don't forget to push `master` and `upstream` branches along with new tags (`debian/<version>`, `upstream/<version>`)
+
+
+# Packages structure
+
+## streamlink
+
+This package contains the command line tool which use the public python module available in python3-streamlink package.
+
+This package contains the python module `streamlink_cli` which is private and so goes to /usr/share/streamlink.
+The command line script is also in /usr/share/streamlink so it can find the python module.
+/usr/bin/streamlink is a symlink to the command line script.
+
+See also an advice about why not putting the command line script in /usr/bin:
+  https://lists.debian.org/debian-python/2016/05/msg00046.html
+
+As recommended in dh_installman manpage, manpage installation is defined in streamlink.manpages.
+
+## python3-streamlink
+
+This package contains the public python module `streamlink`.
+
+## python3-streamlink-doc
+
+This package contains streamlink documentation in html format.
