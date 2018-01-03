@@ -5,10 +5,14 @@
 # Place streamlink executable in the correct place right away.
 export PYBUILD_INSTALL_ARGS_python3 = --install-scripts usr/share/streamlink/
 
-# Debian have a python3-pycountry package but not a iso3166 package so use pycountry.
+# Debian have a python3-pycountry package but not a iso3166 package so use
+# pycountry.
 export STREAMLINK_USE_PYCOUNTRY=1
 
-# Debian have python3-crypto for pycrypto, use it instead of pycryptodome
+# Debian have python3-crypto for pycrypto, use it instead of
+# python3-pycryptodome.
+# That package contains pycryptodomex python module instead of pycryptodome,
+# with which streamlink is not compatible.
 export STREAMLINK_USE_PYCRYPTO=1
 
 # Ensure no internet access
