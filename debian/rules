@@ -1,7 +1,5 @@
 #! /usr/bin/make -f
 
-#export DH_VERBOSE=1
-
 # Place streamlink executable in the correct place right away.
 export PYBUILD_INSTALL_ARGS_python3 = --install-scripts usr/share/streamlink/
 
@@ -42,7 +40,3 @@ override_dh_gencontrol:
 
 override_dh_installchangelogs:
 	dh_installchangelogs CHANGELOG.rst
-
-# Use gzip format in .deb, bintray does not support .xz format
-override_dh_builddeb:
-	dh_builddeb -- -Zgzip
