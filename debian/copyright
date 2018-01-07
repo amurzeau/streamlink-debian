@@ -10,7 +10,7 @@ Comment: Image license is not known and might be non dfsg-compatible.
 
 Files: *
 Copyright: 2011-2016 Christopher Rosell <chrippa@tanuki.se>
-           2016-2017 Streamlink Team
+           2016-2018 Streamlink Team
 License: BSD-2-clause
 
 Files: src/streamlink/packages/requests_file.py
@@ -20,7 +20,7 @@ License: Apache-2
 Files: docs/_themes/sphinx_rtd_theme_violet/*
 Copyright: 2013 Dave Snider
            2014 Christopher Rosell <chrippa@tanuki.se>
-           2015-2016 Streamlink
+           2015-2018 Streamlink
 License: Expat
 
 Files: docs/_themes/sphinx_rtd_theme_violet/search.html
@@ -39,7 +39,7 @@ License: Expat
 
 Files: debian/*
 Copyright: 2014-2016, Stefan Breunig <stefan-debian@yrden.de>
-           2017 Alexis Murzeau <amubtdx@gmail.com>
+           2017-2018 Alexis Murzeau <amubtdx@gmail.com>
 License: BSD-2-clause
 
 License: BSD-2-clause
