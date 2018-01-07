@@ -23,6 +23,7 @@ _option_re = re.compile("""
     \s*
     (?P<value>.*) # The value, anything goes.
 """, re.VERBOSE)
+_hours_minutes_seconds_re = re.compile(r"-?(?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d+)")
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -137,6 +138,24 @@ def boolean(value):
 
     return value.lower() in truths
 
+
+def hours_minutes_seconds(value):
+    """
+    converts hours:minutes:seconds to seconds
+    :param value: hh:mm:ss
+    :return: seconds
+    """
+    match = _hours_minutes_seconds_re.match(value)
+    if not match:
+        raise ValueError
+    s = 0
+    s += int(match.group("hours")) * 60 * 60
+    s += int(match.group("minutes")) * 60
+    s += int(match.group("seconds"))
+
+    return s
+
+
 parser = ArgumentParser(
     fromfile_prefix_chars="@",
     formatter_class=HelpFormatter,
@@ -147,7 +166,7 @@ parser = ArgumentParser(
     various services and pipes them into a video player of choice.
     """),
     epilog=dedent("""
-    For more in-depth documention see:
+    For more in-depth documentation see:
       https://streamlink.github.io
 
     Please report broken plugins or bugs to the issue tracker on Github:
@@ -690,6 +709,15 @@ transport.add_argument(
     Default is 10.0.
     """)
 transport.add_argument(
+    "--hls-audio-select",
+    type=str,
+    metavar="CODE",
+    help="""
+    Selects a specific audio source, by language code, when multiple audio sources are available.
+
+    Note: This is only useful in special circumstances where the regular locale option fails.
+    """)
+transport.add_argument(
     "--hls-timeout",
     type=num(float, min=0),
     metavar="TIMEOUT",
@@ -699,15 +727,34 @@ transport.add_argument(
     Default is 60.0.
     """)
 transport.add_argument(
-    "--hls-audio-select",
-    type=str,
-    metavar="CODE",
+    "--hls-start-offset",
+    type=hours_minutes_seconds,
+    metavar="HH:MM:SS",
+    default=None,
     help="""
-    Selects a specific audio source by language code
-    when multiple audio sources are available.
+    Amount of time to skip from the beginning of the stream.
+    For live streams, this is a negative offset from the end of the stream.
 
-    Note: This is only useful in special circumstances
-    where the regular locale option fails.
+    Default is 00:00:00.
+    """)
+transport.add_argument(
+    "--hls-duration",
+    type=hours_minutes_seconds,
+    metavar="HH:MM:SS",
+    default=None,
+    help="""
+    Limit the playback duration, useful for watching segments of a stream. The actual duration may be slightly
+    longer, as it is rounded to the nearest HLS segment.
+
+    Has no effect on live streams.
+
+    Default is unlimited.
+    """)
+transport.add_argument(
+    "--hls-live-restart",
+    action="store_true",
+    help="""
+    Skip to the beginning of a live stream, or as far back as possible.
     """)
 transport.add_argument(
     "--http-stream-timeout",
