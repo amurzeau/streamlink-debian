@@ -306,8 +306,8 @@ tests/test_buffer.py
 tests/test_cache.py
 tests/test_cli_main.py
 tests/test_cmdline.py
+tests/test_hls.py
 tests/test_hls_playlist.py
-tests/test_integration_hls.py
 tests/test_localization.py
 tests/test_log.py
 tests/test_options.py
