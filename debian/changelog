@@ -1,4 +1,4 @@
-streamlink (0.9.0+dfsg.2-4) UNRELEASED; urgency=low
+streamlink (0.9.0+dfsg.2-4) UNRELEASED; urgency=medium
 
   * Bump standard version to 4.1.3, no change required
   * Bump debhelper compat to 11
@@ -6,8 +6,13 @@ streamlink (0.9.0+dfsg.2-4) UNRELEASED; urgency=low
   * Add information about binary packages in README.source
   * Add autopkgtest tests running streamlink via cli
   * Remove dh_builddeb override, not needed in Debian
+  * Add missing dependency on hexdump for autopkgtest
+  * Update copyrights to 2018
+  * Remove proxy in d/rules
+  * Fix bad git repository in VCS fields of d/control
+  * New upstream version 0.10.0+dfsg
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 04 Jan 2018 00:14:35 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 23 Jan 2018 21:42:11 +0100
 
 streamlink (0.9.0+dfsg.2-3) unstable; urgency=low
 
