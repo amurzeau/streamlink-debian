@@ -30,7 +30,6 @@ artetv              arte.tv              Yes   Yes
 atresplayer         atresplayer.com      Yes   No    Streams are geo-restricted to Spain.
 bambuser            bambuser.com         Yes   Yes
 bbciplayer          bbc.co.uk/iplayer    Yes   Yes   Streams may be geo-restricted to the United Kingdom.
-beam                beam.pro             Yes   Yes
 beattv              be-at.tv             Yes   Yes   Playlist not implemented yet.
 bfmtv               bfmtv.com            Yes   Yes
                     01net.com
@@ -44,9 +43,7 @@ brittv              brittv.co.uk         Yes   --
 btv                 btv.bg               Yes   No    Requires login, and geo-restricted to Bulgaria.
 cam4                cam4.com             Yes   No
 camsoda             camsoda.com          Yes   No
-canalplus           - canalplus.fr       Yes   Yes   Streams may be geo-restricted to France.
-                    - c8.fr
-                    - cstar.fr
+canalplus           - mycanal.fr         No    Yes   Streams may be geo-restricted to France.
                     - cnews.fr
 canlitv             - canlitv.com        Yes   --
                     - canlitv.life
@@ -131,9 +128,21 @@ media_ccc_de        - media.ccc.de       Yes   Yes   Only mp4 and HLS are suppor
 mediaklikk          mediaklikk.hu        Yes   No    Streams may be geo-restricted to Hungary.
 mips                mips.tv              Yes   --    Requires rtmpdump with K-S-V patches.
 mitele              mitele.es            Yes   No    Streams may be geo-restricted to Spain.
+mixer               mixer.com            Yes   Yes
 mlgtv               mlg.tv               Yes   --
 nbc                 nbc.com              No    Yes   Streams are geo-restricted to USA. Authentication is not supported.
 nbcsports           nbcsports.com        No    Yes   Streams maybe be geo-restricted to USA. Authentication is not supported.
+neulion             - fanpass.co.nz      Yes   Yes   Authentication required for premium streams. Streams may be geo-restricted.
+                    - nba.com
+                    - rugbypass.com
+                    - elevensports.be
+                    - elevensports.lu
+                    - elevensports.pl
+                    - elevensports.sg
+                    - elevensports.tw
+                    - elevensports.tw
+                    - tennischa... [11]_
+                    - ufc.tv
 nhkworld            nhk.or.jp/nhkworld   Yes   No
 nineanime           9anime.to            --    Yes
 nos                 nos.nl               Yes   Yes   Streams may be geo-restricted to Netherlands.
@@ -144,6 +153,7 @@ nrk                 - tv.nrk.no          Yes   Yes   Streams may be geo-restrict
                     - radio.nrk.no
 oldlivestream       - original.li.. [3]_ Yes   No    Only mobile streams are supported.
                     - cdn.livestream.com
+olympicchannel      olympicchannel.com   Yes   Yes   Only non-premium content is available.
 openrectv           openrec.tv           Yes   Yes
 orf_tvthek          tvthek.orf.at        Yes   Yes
 ovvatv              ovva.tv              Yes   No
@@ -156,6 +166,7 @@ pluzz               - france.tv          Yes   Yes   Streams may be geo-restrict
                     - zouzous.fr
                     - france3-reg.. [8]_
 powerapp            powerapp.com.tr      Yes   No
+qq                  live.qq.com          Yes   No
 radionet            - radio.net          Yes   --
                     - radio.at
                     - radio.de
@@ -235,26 +246,22 @@ tvrby               tvr.by               Yes   No    Streams may be geo-restrict
 tvrplus             tvrplus.ro           Yes   No    Streams may be geo-restricted to Romania.
 twitch              twitch.tv            Yes   Yes   Possible to authenticate for access to
                                                      subscription streams.
-ufctv               ufc.tv               Yes   Yes   Authentication required for premium streams.
 ustreamtv           ustream.tv           Yes   Yes
 vaughnlive          - vaughnlive.tv      Yes   --
                     - breakers.tv
                     - instagib.tv
                     - vapers.tv
 vgtv                vgtv.no              Yes   Yes
-viasat              - tv3play.se         Yes   Yes   Streams may be geo-restricted.
-                    - tv3play.no
-                    - tv3play.dk
-                    - tv3play.ee
-                    - tv3play.lt
-                    - tv3play.lv
-                    - tv6play.se
+viasat              - juicyplay.dk       Yes   Yes   Streams may be geo-restricted.
+                    - play.nova.bg
+                    - skaties.lv
+                    - tv3.dk
+                    - tv3.ee
+                    - tv3.lt
                     - tv6play.no
-                    - tv8play.se
-                    - tv10play.se
-                    - viasat4play.no
-                    - play.tv3.lt
-                    - juicyplay.se
+                    - viafree.dk
+                    - viafree.no
+                    - viafree.se
 vidio               vidio.com            Yes   Yes
 vk                  vk.com               Yes   Yes
 vrtbe               vrt.be/vrtnu         Yes   Yes
@@ -270,6 +277,7 @@ zattoo              - zattoo.com         Yes   Yes
                     - nettv.net... [10]_
                     - tvonline.ewe.de
 zdf_mediathek       zdf.de               Yes   Yes   Streams may be geo-restricted to Germany.
+zengatv             zengatv.com          Yes   No
 zhanqitv            zhanqi.tv            Yes   No
 =================== ==================== ===== ===== ===========================
 
@@ -284,3 +292,4 @@ zhanqitv            zhanqi.tv            Yes   No
 .. [8] france3-regions.francetvinfo.fr
 .. [9] tv5mondeplusafrique.com
 .. [10] nettv.netcologne.de
+.. [11] tennischanneleverywhere.com
