@@ -1,4 +1,4 @@
-streamlink (0.9.0+dfsg.2-4) UNRELEASED; urgency=medium
+streamlink (0.10.0+dfsg-1) UNRELEASED; urgency=medium
 
   * Bump standard version to 4.1.3, no change required
   * Bump debhelper compat to 11

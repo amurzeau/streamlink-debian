@@ -3,10 +3,8 @@ Upstream-Contact: https://github.com/streamlink/streamlink/issues
 Source: https://github.com/streamlink/streamlink
 Upstream-Name: streamlink
 Files-Excluded:
- docs/_static
  docs/_themes/sphinx_rtd_theme_violet/static/fonts
-Comment: Image license is not known and might be non dfsg-compatible.
- Fonts awesome use embedding restriction 0x0004.
+Comment: Fonts awesome use embedding restriction 0x0004.
 
 Files: *
 Copyright: 2011-2016 Christopher Rosell <chrippa@tanuki.se>

@@ -11,10 +11,10 @@ Bug-Debian: https://bugs.debian.org/750502
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/streamlink_cli/argparser.py b/src/streamlink_cli/argparser.py
-index 1c96a4e..14609c0 100644
+index 0e734cc..01bcf22 100644
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
-@@ -276,7 +276,7 @@ general.add_argument(
+@@ -295,7 +295,7 @@ general.add_argument(
      metavar="{yes,true,1,on,no,false,0,off}",
      default=False,
      help="""
@@ -24,10 +24,10 @@ index 1c96a4e..14609c0 100644
      Default is "no".
      """
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index bcc162a..a428f1a 100644
+index e094fc5..eed9d0e 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -1024,7 +1024,7 @@ def main():
+@@ -1032,7 +1032,7 @@ def main():
      setup_http_session()
      check_root()
  

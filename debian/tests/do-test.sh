@@ -25,7 +25,7 @@ cd ${AUTOPKGTEST_TMP:-"."}
 echo "Generating HLS stream data" &&
 for i in 0 1 2 3; do dd if=/dev/zero of=stream$i.ts bs=1K count=20 status=none; done &&
 dd if=/dev/urandom of=encryption_key.key bs=16 count=1 &&
-for i in 0 1 2 3; do openssl aes-128-cbc -e -in stream$i.ts -out stream$i.ts.enc -iv 67452301674523016745230167452301 -K $(hexdump encryption_key.key -e '/1 "%02X"') -nosalt -nopad; done &&
+for i in 0 1 2 3; do openssl aes-128-cbc -e -in stream$i.ts -out stream$i.ts.enc -iv 67452301674523016745230167452301 -K $(hexdump encryption_key.key -e '/1 "%02X"') -nosalt; done &&
 cat > playlist.m3u8 << EOF &&
 #EXTM3U
 #EXT-X-VERSION:5
