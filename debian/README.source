@@ -1,7 +1,7 @@
 # Build procedure
 
 Here are the commands to manage the package:
-- Import upstream version and update debian branch with new upstream release:
+- Import upstream version and update Debian branch with new upstream release:
   - `gbp import-orig --uscan`
 
 - Refresh quilt patches:
@@ -16,7 +16,7 @@ Here are the commands to manage the package:
 - Release version with `low` urgency:
   - `gbp dch -Ra --commit -U low`
 
-- Build source package and tag debian branch:
+- Build source package and tag Debian branch:
   - `gbp buildpackage --git-tag --git-sign-tags -nc -S`
 
 - Build package using sbuild:
@@ -33,10 +33,10 @@ Here are the commands to manage the package:
 
 ## streamlink
 
-This package contains the command line tool which use the public python module available in python3-streamlink package.
+This package contains the command line tool which use the public Python module available in python3-streamlink package.
 
-This package contains the python module `streamlink_cli` which is private and so goes to /usr/share/streamlink.
-The command line script is also in /usr/share/streamlink so it can find the python module.
+This package contains the Python module `streamlink_cli` which is private and so goes to /usr/share/streamlink.
+The command line script is also in /usr/share/streamlink so it can find the Python module.
 /usr/bin/streamlink is a symlink to the command line script.
 
 See also an advice about why not putting the command line script in /usr/bin:
@@ -46,7 +46,7 @@ As recommended in dh_installman manpage, manpage installation is defined in stre
 
 ## python3-streamlink
 
-This package contains the public python module `streamlink`.
+This package contains the public Python module `streamlink`.
 
 ## python3-streamlink-doc
 

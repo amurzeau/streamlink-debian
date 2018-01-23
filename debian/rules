@@ -9,7 +9,7 @@ export STREAMLINK_USE_PYCOUNTRY=1
 
 # Debian have python3-crypto for pycrypto, use it instead of
 # python3-pycryptodome.
-# That package contains pycryptodomex python module instead of pycryptodome,
+# That package contains pycryptodomex Python module instead of pycryptodome,
 # with which streamlink is not compatible.
 export STREAMLINK_USE_PYCRYPTO=1
 

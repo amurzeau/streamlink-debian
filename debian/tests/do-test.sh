@@ -4,7 +4,7 @@ set -x
 
 test_program=${1:-"streamlink"}
 
-cd ${AUTOPKGTEST_TMP:-"."}
+cd "${AUTOPKGTEST_TMP:-"."}" || exit
 
 # This test does:
 # - Generate a AES-128 encrypted HLS fake stream from /dev/urandom to playlist.m3u8 and
@@ -18,14 +18,23 @@ cd ${AUTOPKGTEST_TMP:-"."}
 # - Echo a statement if there is no differences
 
 # Notes:
-# - An encrypted stream is used to test the use of the python encryption library (like pycrypto).
+# - An encrypted stream is used to test the use of the Python encryption library (like pycrypto).
 # - The encrypted stream is not padded as streamlink does not remove any padding.
 # - An audio stream with language=en is used so streamlink code using pycountry is triggered
 
 echo "Generating HLS stream data" &&
-for i in 0 1 2 3; do dd if=/dev/zero of=stream$i.ts bs=1K count=20 status=none; done &&
+for i in 0 1 2 3; do
+       dd if=/dev/zero of=stream$i.ts bs=1K count=20 status=none
+done &&
 dd if=/dev/urandom of=encryption_key.key bs=16 count=1 &&
-for i in 0 1 2 3; do openssl aes-128-cbc -e -in stream$i.ts -out stream$i.ts.enc -iv 67452301674523016745230167452301 -K $(hexdump encryption_key.key -e '/1 "%02X"') -nosalt; done &&
+for i in 0 1 2 3; do
+	openssl aes-128-cbc -e \
+		-in stream$i.ts \
+		-out stream$i.ts.enc \
+		-iv 67452301674523016745230167452301 \
+		-K "$(hexdump encryption_key.key -e '/1 "%02X"')" \
+		-nosalt
+done &&
 cat > playlist.m3u8 << EOF &&
 #EXTM3U
 #EXT-X-VERSION:5
@@ -68,7 +77,14 @@ playlist.m3u8
 audio_only.m3u8
 EOF
 echo "Starting $test_program" &&
-"$test_program" -l debug --config=nonexisting --hls-audio-select en "hlsvariant://file://./master.m3u8" best -f -o output_stream.ts &&
+"$test_program" \
+	-l debug \
+	--config=nonexisting \
+	--hls-audio-select en \
+	"hlsvariant://file://./master.m3u8" \
+	best \
+	-f \
+	-o output_stream.ts &&
 echo "Comparing output to expected output" &&
 cat stream*.ts > expected_stream.ts &&
 diff expected_stream.ts output_stream.ts &&
