@@ -1,19 +1,20 @@
 #! /usr/bin/make -f
 
-#export DH_VERBOSE=1
-
 # Place streamlink executable in the correct place right away.
 export PYBUILD_INSTALL_ARGS_python3 = --install-scripts usr/share/streamlink/
 
-# Debian have a python3-pycountry package but not a iso3166 package so use pycountry.
+# Debian have a python3-pycountry package but not a iso3166 package so use
+# pycountry.
 export STREAMLINK_USE_PYCOUNTRY=1
 
-# Debian have python3-crypto for pycrypto, use it instead of pycryptodome
+# Debian have python3-crypto for pycrypto, use it instead of
+# python3-pycryptodome.
+# That package contains pycryptodomex Python module instead of pycryptodome,
+# with which streamlink is not compatible.
 export STREAMLINK_USE_PYCRYPTO=1
 
-# Ensure no internet access
-export http_proxy=127.0.0.1:9
-export https_proxy=127.0.0.1:9
+# Provides DEB_VERSION
+include /usr/share/dpkg/pkg-info.mk
 
 %:
 	dh $@ --with python3,sphinxdoc --buildsystem=pybuild
@@ -26,6 +27,12 @@ override_dh_auto_install:
 # Needed to prevent docs/changelog.html from being compressed
 override_dh_compress:
 	dh_compress -X.html
+
+# livestreamer transitional package need to have a greater version than the
+# existing package version in stable which has version 1.12.2-1.
+override_dh_gencontrol:
+	dh_gencontrol -plivestreamer -- -v1.12.2+streamlink+$(DEB_VERSION)
+	dh_gencontrol --remaining-packages
 
 override_dh_installchangelogs:
 	dh_installchangelogs CHANGELOG.rst

@@ -1,2 +1,14 @@
+# Run unit tests against installed streamlink package
 Test-Command: PYTHONPATH=/usr/share/streamlink pytest-3 tests
-Depends: streamlink, python3-pytest, python3-mock
+Depends: streamlink, python3-pytest, python3-mock, python3-requests-mock
+
+# Test streamlink against a generated on-disk HLS stream
+Test-Command: sh debian/tests/do-test.sh streamlink
+Depends: streamlink, openssl, bsdmainutils
+Restrictions: allow-stderr
+
+# Same test using livestreamer (which has a transitional package to streamlink)
+Test-Command: sh debian/tests/do-test.sh livestreamer
+Depends: livestreamer, openssl, bsdmainutils
+Restrictions: allow-stderr
+
