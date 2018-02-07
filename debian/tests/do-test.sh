@@ -32,7 +32,7 @@ for i in 0 1 2 3; do
 		-in stream$i.ts \
 		-out stream$i.ts.enc \
 		-iv 67452301674523016745230167452301 \
-		-K "$(hexdump encryption_key.key -e '/1 "%02X"')" \
+		-K "$(hexdump encryption_key.key -v -e '/1 "%02X"')" \
 		-nosalt
 done &&
 cat > playlist.m3u8 << EOF &&
