@@ -1,3 +1,9 @@
+streamlink (0.10.0+dfsg-2) UNRELEASED; urgency=low
+
+  * Rearrange comments in d/rules
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 25 Jan 2018 22:01:56 +0100
+
 streamlink (0.10.0+dfsg-1~bpo9+1) stretch-backports; urgency=low
 
   * Rebuild for stretch-backports.
