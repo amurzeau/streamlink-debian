@@ -1,4 +1,4 @@
-streamlink (0.11.0+dfsg-1) UNRELEASED; urgency=medium
+streamlink (0.11.0+dfsg-1) unstable; urgency=low
 
   * Fix comments in d/rules.
   * Use streamlink's own donation page instead of opencollective one.
@@ -6,8 +6,9 @@ streamlink (0.11.0+dfsg-1) UNRELEASED; urgency=medium
      wildcards.
   * Add example directory.
   * New upstream version 0.11.0+dfsg.
+  * python3-socks is now required as a build dependency.
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 08 Mar 2018 21:21:49 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 09 Mar 2018 00:12:49 +0100
 
 streamlink (0.10.0+dfsg-1) unstable; urgency=low
 
