@@ -709,6 +709,22 @@ transport.add_argument(
     Default is 10.0.
     """)
 transport.add_argument(
+    "--hls-segment-ignore-names",
+    metavar="NAMES",
+    type=comma_list,
+    help="""
+    A comma-delimited list of segment names that will not be fetched.
+
+    Example: --hls-segment-ignore-names 000,001,002
+
+    This will ignore every segment that ends with 000.ts, 001.ts and 002.ts
+
+    Default is None.
+
+    Note: The --hls-timeout must be increased, to a time that is longer than the ignored break.
+    """
+)
+transport.add_argument(
     "--hls-audio-select",
     type=str,
     metavar="CODE",
@@ -1319,22 +1335,6 @@ plugin.add_argument(
     """
 )
 plugin.add_argument(
-    "--neulion-username",
-    "--ufctv-username",
-    metavar="USERNAME",
-    help="""
-    The username used to register with your neulion provider.
-    """
-)
-plugin.add_argument(
-    "--neulion-password",
-    "--ufctv-password",
-    metavar="PASSWORD",
-    help="""
-    A neulion provider account password to use with --neulion-username.
-    """
-)
-plugin.add_argument(
     "--zattoo-email",
     metavar="EMAIL",
     help="""
@@ -1354,6 +1354,20 @@ plugin.add_argument(
     help="""
     Purge cached zattoo credentials to initiate a new session
     and reauthenticate.
+    """
+)
+plugin.add_argument(
+    "--afreeca-username",
+    metavar="USERNAME",
+    help="""
+    The username used to register with afreecatv.com.
+    """
+)
+plugin.add_argument(
+    "--afreeca-password",
+    metavar="PASSWORD",
+    help="""
+    A afreecatv.com account password to use with --afreeca-username.
     """
 )
 
