@@ -10,6 +10,8 @@ Installation
 Linux and BSD packages
 ----------------------
 
+.. rst-class:: table-custom-layout
+
 ==================================== ===========================================
 Distribution                         Installing
 ==================================== ===========================================
@@ -22,6 +24,16 @@ Distribution                         Installing
                                         # pacaur -S streamlink-git
 
                                      `Installing AUR packages`_
+`Debian (sid, testing)`_             .. code-block:: console
+
+                                        # apt update
+                                        # apt install streamlink
+`Debian (stable)`_                   .. code-block:: console
+
+                                        # wget -qO- "https://bintray.com/user/downloadSubjectPublicKey?username=amurzeau" | apt-key add -
+                                        # echo "deb https://dl.bintray.com/amurzeau/streamlink-debian stretch-backports main" | tee "/etc/apt/sources.list.d/streamlink.list"
+                                        # apt update
+                                        # apt install streamlink
 `Fedora`_                            .. code-block:: console
 
                                         # dnf install streamlink
@@ -35,12 +47,12 @@ Distribution                         Installing
 `NixOS`_                             `Installing NixOS packages`_
 `Solus`_                             .. code-block:: console
 
-                                        # eopkg install streamlink
+                                        $ sudo eopkg install streamlink
 `Ubuntu`_                            .. code-block:: console
 
-                                        # add-apt-repository ppa:nilarimogard/webupd8
-                                        # apt update
-                                        # apt install streamlink
+                                        $ sudo add-apt-repository ppa:nilarimogard/webupd8
+                                        $ sudo apt update
+                                        $ sudo apt install streamlink
 `Void`_                              .. code-block:: console
 
                                         # xbps-install streamlink
@@ -48,6 +60,8 @@ Distribution                         Installing
 
 .. _Arch Linux: https://www.archlinux.org/packages/community/any/streamlink/
 .. _Arch Linux (aur, git): https://aur.archlinux.org/packages/streamlink-git/
+.. _Debian (sid, testing): https://packages.debian.org/unstable/streamlink
+.. _Debian (stable): https://bintray.com/amurzeau/streamlink-debian/streamlink
 .. _Fedora: https://apps.fedoraproject.org/packages/python-streamlink
 .. _Gentoo Linux: https://packages.gentoo.org/package/net-misc/streamlink
 .. _NetBSD (pkgsrc): http://pkgsrc.se/multimedia/streamlink
@@ -59,8 +73,11 @@ Distribution                         Installing
 .. _Installing AUR packages: https://wiki.archlinux.org/index.php/Arch_User_Repository#Installing_packages
 .. _Installing NixOS packages: https://nixos.org/wiki/Install/remove_software#How_to_install_software
 
+
 Other platforms
 ---------------
+
+.. rst-class:: table-custom-layout
 
 ==================================== ===========================================
 Platform                             Installing
@@ -88,14 +105,19 @@ Microsoft Windows                    See `Windows binaries`_ and `Windows portab
 .. _Installing Homebrew packages: https://brew.sh
 .. _Installing Chocolatey packages: https://chocolatey.org
 
+
 Package maintainers
 -------------------
+
+.. rst-class:: table-custom-layout
+
 ==================================== ===========================================
 Distribution/Platform                Maintainer
 ==================================== ===========================================
 Arch                                 Giancarlo Razzolini <grazzolini at archlinux.org>
 Arch (aur, git)                      Josip Ponjavic <josipponjavic at gmail.com>
 Chocolatey                           Scott Walters <me at scowalt.com>
+Debian                               Alexis Murzeau <amubtdx at gmail.com>
 Fedora                               Mohamed El Morabity <melmorabity at fedoraproject.org>
 Gentoo                               soredake <fdsfgs at krutt.org>
 NetBSD                               Maya Rashish <maya at netbsd.org>
@@ -104,7 +126,8 @@ Solus                                Bryan T. Meyers <bmeyers at datadrake.com>
 Ubuntu                               Alin Andrei <andrew at webupd8.org>
 Void                                 wkuipers <wietse at kuiprs.nl>
 Windows binaries                     beardypig <beardypig at protonmail.com>
-Windows port. version                RosadinTV <RosadinTV at outlook.com>, beardypig <beardypig at protonmail.com>
+Windows port. version                RosadinTV <RosadinTV at outlook.com> |br|
+                                     beardypig <beardypig at protonmail.com>
 ==================================== ===========================================
 
 
@@ -128,6 +151,8 @@ manager, or by checking out the latest code with
 
 
 The commands listed here will also upgrade any existing version of Streamlink.
+
+.. rst-class:: table-custom-layout
 
 ==================================== ===========================================
 Version                              Installing
@@ -158,6 +183,8 @@ Dependencies
 ^^^^^^^^^^^^
 
 To install Streamlink from source you will need these dependencies.
+
+.. rst-class:: table-custom-layout
 
 ==================================== ===========================================
 Name                                 Notes
@@ -250,7 +277,9 @@ Windows binaries
 .. important::
 
     Windows XP is not supported. |br|
-    Windows Vista requires at least SP2 to be installed. 
+    Windows Vista requires at least SP2 to be installed.
+
+.. rst-class:: table-custom-layout
 
 ==================================== ====================================
 Release                              Notes
@@ -289,19 +318,17 @@ To build the installer on your own, ``NSIS`` and ``pynsist`` need to be installe
 Windows portable version
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. rst-class:: table-custom-layout
+
 ==================================== ===========================================
 Maintainer                           Links
 ==================================== ===========================================
-RosadinTV                            `Latest precompiled stable release`__
-
-                                     `Latest builder`__
-                                     
+RosadinTV                            `Latest precompiled stable release`__ |br|
+                                     `Latest builder`__ |br|
                                      `More info`__
 
-Beardypig                            `Latest precompiled stable release`__
-
-                                     `Latest builder`__
-
+Beardypig                            `Latest precompiled stable release`__ |br|
+                                     `Latest builder`__ |br|
                                      `More info`__
 ==================================== ===========================================
 
