@@ -15,7 +15,8 @@ Build-Depends: debhelper (>= 11),
  python3-mock,
  python3-requests-mock,
  python3-websocket,
- python3-docutils
+ python3-docutils,
+ python3-socks
 X-Python3-Version: >= 3.4
 Homepage: https://streamlink.github.io/
 Vcs-Git: https://github.com/amurzeau/streamlink-debian.git
@@ -26,8 +27,7 @@ Architecture: all
 Depends: ${misc:Depends},
  ${python3:Depends}
 Recommends: rtmpdump,
-  ffmpeg,
-  python3-socks
+  ffmpeg
 Suggests: streamlink, python3-streamlink-doc
 Description: Python module for extracting video streams from various websites
  Streamlink is a CLI utility that pipes flash videos from online streaming
