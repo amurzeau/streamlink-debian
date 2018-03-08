@@ -1,12 +1,13 @@
 streamlink (0.11.0+dfsg-1) UNRELEASED; urgency=medium
 
-  * Rearrange comments in d/rules
-  * Use streamlink's own donation page instead of opencollective one
-  * Prevent hexdump output optimization with * with -v
-  * Add examples
-  * New upstream version 0.11.0+dfsg
+  * Fix comments in d/rules.
+  * Use streamlink's own donation page instead of opencollective one.
+  * Fix random test failure caused by hexdump output optimization with
+     wildcards.
+  * Add example directory.
+  * New upstream version 0.11.0+dfsg.
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 08 Mar 2018 21:04:01 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 08 Mar 2018 21:21:49 +0100
 
 streamlink (0.10.0+dfsg-1) unstable; urgency=low
 
