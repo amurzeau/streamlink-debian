@@ -1,8 +1,14 @@
-streamlink (0.10.0+dfsg-2) UNRELEASED; urgency=low
+streamlink (0.11.0+dfsg-1) unstable; urgency=low
 
-  * Rearrange comments in d/rules
+  * Fix comments in d/rules.
+  * Use streamlink's own donation page instead of opencollective one.
+  * Fix random test failure caused by hexdump output optimization with
+     wildcards.
+  * Add example directory.
+  * New upstream version 0.11.0+dfsg.
+  * python3-socks is now required as a build dependency.
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 25 Jan 2018 22:01:56 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 09 Mar 2018 00:12:49 +0100
 
 streamlink (0.10.0+dfsg-1~bpo9+1) stretch-backports; urgency=low
 

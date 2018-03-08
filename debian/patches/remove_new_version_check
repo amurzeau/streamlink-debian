@@ -11,7 +11,7 @@ Bug-Debian: https://bugs.debian.org/750502
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/streamlink_cli/argparser.py b/src/streamlink_cli/argparser.py
-index 0e734cc..01bcf22 100644
+index e6344f3..211ff2c 100644
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
 @@ -295,7 +295,7 @@ general.add_argument(
@@ -24,12 +24,12 @@ index 0e734cc..01bcf22 100644
      Default is "no".
      """
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index e094fc5..eed9d0e 100644
+index 755135f..b6f97a9 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -1032,7 +1032,7 @@ def main():
-     setup_http_session()
+@@ -1060,7 +1060,7 @@ def main():
      check_root()
+     log_current_versions()
  
 -    if args.version_check or (not args.no_version_check and args.auto_version_check):
 +    if args.version_check:

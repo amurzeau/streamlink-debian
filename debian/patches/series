@@ -4,3 +4,4 @@ use_debian_fonts
 use_debian_modernizr
 use_debian_pycountry
 0006-Remove-external-images.patch
+0006-Avoid-use-of-non-ASCII-in-plugins.patch

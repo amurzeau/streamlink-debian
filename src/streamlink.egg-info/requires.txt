@@ -1,10 +1,10 @@
-PySocks!=1.5.7,>=1.5.6
-backports.shutil_get_terminal_size
-backports.shutil_which
 futures
+singledispatch
+requests!=2.12.0,!=2.12.1,!=2.16.0,!=2.16.1,!=2.16.2,!=2.16.3,!=2.16.4,!=2.16.5,!=2.17.1,<3.0,>=2.2
+pycryptodome<4,>=3.4.3
+backports.shutil_which
+backports.shutil_get_terminal_size
 iso-639
 iso3166
-pycryptodome>=3.4.3,<4
-requests>=2.2,!=2.12.0,!=2.12.1,!=2.16.0,!=2.16.1,!=2.16.2,!=2.16.3,!=2.16.4,!=2.16.5,!=2.17.1,<3.0
-singledispatch
 websocket-client
+PySocks!=1.5.7,>=1.5.6
