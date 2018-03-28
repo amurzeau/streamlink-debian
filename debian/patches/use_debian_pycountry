@@ -11,9 +11,11 @@ Author: Alexis Murzeau <amubtdx@outlook.fr>
  src/streamlink/utils/l10n.py | 16 ++++++++++++----
  1 file changed, 12 insertions(+), 4 deletions(-)
 
+diff --git a/src/streamlink/utils/l10n.py b/src/streamlink/utils/l10n.py
+index 0164c7c..49456d1 100644
 --- a/src/streamlink/utils/l10n.py
 +++ b/src/streamlink/utils/l10n.py
-@@ -10,6 +10,14 @@
+@@ -10,6 +10,14 @@ try:
  except ImportError:  # pragma: no cover
      from pycountry import languages, countries
  
@@ -28,7 +30,7 @@ Author: Alexis Murzeau <amubtdx@outlook.fr>
      PYCOUNTRY = True
  
  DEFAULT_LANGUAGE = "en"
-@@ -29,8 +37,8 @@
+@@ -29,8 +37,8 @@ class Country(object):
      def get(cls, country):
          try:
              if PYCOUNTRY:
@@ -39,7 +41,7 @@ Author: Alexis Murzeau <amubtdx@outlook.fr>
              else:
                  c = countries.get(country)
                  return Country(c.alpha2, c.alpha3, c.numeric, c.name, c.apolitical_name)
-@@ -67,8 +75,8 @@
+@@ -67,8 +75,8 @@ class Language(object):
      def get(cls, language):
          try:
              if PYCOUNTRY:

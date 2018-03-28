@@ -1,0 +1,61 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Thu, 29 Mar 2018 00:08:47 +0200
+Subject: Don't use possibly closed file with load_module
+
+Plugins get loaded at multiple locations:
+ - find_module at line 21 create a file instance
+ - load_module at line 22 can use that file instance and close it
+ - Streamlink() at line 26 load plugins too via load_builtin_plugins()
+   but use already loaded instances if available.
+ - Generated tests use load_plugin with the previously opened file
+
+An encoding error might happen when loading plugins when load_plugin is
+given a closed file instance.
+
+In some cases, load_module (called by load_plugin) can reopen the file
+instance if it is closed.
+See open() call in imp._HackedGetData.get_data function.
+
+This causes the file to be opened using default system encoding which is
+ASCII when in a container chroot.
+
+This commit ensure the file instance is opened when calling load_plugin.
+
+Forwarded: https://github.com/streamlink/streamlink/pull/1582
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ tests/test_plugins.py | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/tests/test_plugins.py b/tests/test_plugins.py
+index af8c8bc..053817d 100644
+--- a/tests/test_plugins.py
++++ b/tests/test_plugins.py
+@@ -21,18 +21,23 @@ class PluginTestMeta(type):
+             file, pathname, desc = imp.find_module(pname, [plugin_path])
+             module = imp.load_module(pname, file, pathname, desc)
+             if hasattr(module, "__plugin__"):
+-                plugins.append((pname, file, pathname, desc))
++                plugins.append((pname))
+ 
+         session = Streamlink()
+ 
+-        def gentest(pname, file, pathname, desc):
++        def gentest(pname):
+             def load_plugin_test(self):
++                # Reset file variable to ensure it is still open when doing
++                # load_plugin else python might open the plugin source .py
++                # using ascii encoding instead of utf-8.
++                # See also open() call here: imp._HackedGetData.get_data
++                file, pathname, desc = imp.find_module(pname, [plugin_path])
+                 session.load_plugin(pname, file, pathname, desc)
+ 
+             return load_plugin_test
+ 
+-        for pname, file, pathname, desc in plugins:
+-            dict['test_{0}_load'.format(pname)] = gentest(pname, file, pathname, desc)
++        for pname in plugins:
++            dict['test_{0}_load'.format(pname)] = gentest(pname)
+ 
+         return type.__new__(mcs, name, bases, dict)
+ 
