@@ -3,12 +3,15 @@ Test-Command: PYTHONPATH=/usr/share/streamlink pytest-3 tests
 Depends: streamlink, python3-pytest, python3-mock, python3-requests-mock
 
 # Test streamlink against a generated on-disk HLS stream
-Test-Command: sh debian/tests/do-test.sh streamlink
-Depends: streamlink, openssl, bsdmainutils
+Test-Command: sh debian/tests/do-test.sh streamlink && sh debian/tests/check_manpage.sh streamlink
+Depends: streamlink, openssl, bsdmainutils, man-db
 Restrictions: allow-stderr
 
 # Same test using livestreamer (which has a transitional package to streamlink)
-Test-Command: sh debian/tests/do-test.sh livestreamer
-Depends: livestreamer, openssl, bsdmainutils
+Test-Command: sh debian/tests/do-test.sh livestreamer && sh debian/tests/check_manpage.sh livestreamer
+Depends: livestreamer, openssl, bsdmainutils, man-db
 Restrictions: allow-stderr
 
+# Test doc package
+Test-Command: sh debian/tests/check_docs.sh
+Depends: python3-streamlink-doc
