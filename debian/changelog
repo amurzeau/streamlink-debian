@@ -1,3 +1,11 @@
+streamlink (0.11.0+dfsg-2) UNRELEASED; urgency=low
+
+  * Fix encoding errors in plugins tests
+  * Recommends vlc as default player
+  * Test manpage and docs installation
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 01 Apr 2018 01:25:39 +0200
+
 streamlink (0.11.0+dfsg-1) unstable; urgency=low
 
   * Fix comments in d/rules.
