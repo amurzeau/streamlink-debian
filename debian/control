@@ -17,7 +17,6 @@ Build-Depends: debhelper (>= 11),
  python3-websocket,
  python3-docutils,
  python3-socks
-X-Python3-Version: >= 3.4
 Homepage: https://streamlink.github.io/
 Vcs-Git: https://github.com/amurzeau/streamlink-debian.git
 Vcs-Browser: https://github.com/amurzeau/streamlink-debian
