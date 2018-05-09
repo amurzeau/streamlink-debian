@@ -3,4 +3,3 @@ remove_github_buttons
 use_debian_fonts
 use_debian_modernizr
 0006-Remove-external-images.patch
-0007-Don-t-use-possibly-closed-file-with-load_module.patch
