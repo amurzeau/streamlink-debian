@@ -1,11 +1,12 @@
-streamlink (0.12.1+dfsg-1) UNRELEASED; urgency=medium
+streamlink (0.12.1+dfsg-1) unstable; urgency=low
 
   * Recommends vlc as default player
   * Test manpage and docs installation
   * New upstream version 0.12.1+dfsg
-  * Bum standard version to 4.1.4, no change required
+  * Bump standard version to 4.1.4, no change required
+  * Remove X-Python3-Version not needed anymore
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 09 May 2018 23:05:51 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 10 May 2018 00:45:54 +0200
 
 streamlink (0.11.0+dfsg-1) unstable; urgency=low
 
