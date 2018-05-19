@@ -2,7 +2,7 @@ Source: streamlink
 Maintainer: Alexis Murzeau <amubtdx@gmail.com>
 Section: python
 Priority: optional
-Standards-Version: 4.1.3
+Standards-Version: 4.1.4
 Build-Depends: debhelper (>= 10),
  dh-python,
  python3 (>= 3.4),
@@ -17,7 +17,6 @@ Build-Depends: debhelper (>= 10),
  python3-websocket,
  python3-docutils,
  python3-socks
-X-Python3-Version: >= 3.4
 Homepage: https://streamlink.github.io/
 Vcs-Git: https://github.com/amurzeau/streamlink-debian.git
 Vcs-Browser: https://github.com/amurzeau/streamlink-debian
@@ -76,6 +75,7 @@ Architecture: all
 Depends: ${misc:Depends},
   ${python3:Depends},
   python3-streamlink (= ${source:Version})
+Recommends: vlc
 Description: CLI for extracting video streams from various websites to a video player
  Streamlink is a CLI utility that pipes flash videos from online streaming
  services to a variety of video players such as VLC, or alternatively, a

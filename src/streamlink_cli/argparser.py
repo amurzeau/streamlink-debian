@@ -541,8 +541,23 @@ stream.add_argument(
     metavar="DELAY",
     type=num(float, min=0),
     help="""
-    Will retry fetching streams until streams are found while
-    waiting DELAY (seconds) between each attempt.
+    Retry fetching the list of available streams until streams are found
+    while waiting DELAY second(s) between each attempt. If unset, only one
+    attempt will be made to fetch the list of streams available.
+
+    The number of fetch retry attempts can be capped with --retry-max.
+    """
+)
+stream.add_argument(
+    "--retry-max",
+    metavar="COUNT",
+    type=num(int, min=-1),
+    help="""
+    When using --retry-streams, stop retrying the fetch after COUNT retry
+    attempt(s). Fetch will retry infinitely if COUNT is zero or unset.
+
+    If --retry-max is set without setting --retry-streams, the delay between
+    retries will default to 1 second.
     """
 )
 stream.add_argument(
@@ -551,7 +566,8 @@ stream.add_argument(
     type=num(int, min=0),
     default=1,
     help="""
-    Will try ATTEMPTS times to open the stream until giving up.
+    After a successful fetch, try ATTEMPTS time(s)
+    to open the stream until giving up.
 
     Default is 1.
     """
@@ -726,12 +742,22 @@ transport.add_argument(
 )
 transport.add_argument(
     "--hls-audio-select",
-    type=str,
+    type=comma_list,
     metavar="CODE",
     help="""
-    Selects a specific audio source, by language code, when multiple audio sources are available.
+    Selects a specific audio source or sources, by language code or name,
+    when multiple audio sources are available. Can be * to download all audio
+    sources.
 
-    Note: This is only useful in special circumstances where the regular locale option fails.
+    Examples:
+
+      --hls-audio-select "English,German"
+      --hls-audio-select "en,de"
+      --hls-audio-select "*"
+
+    Note: This is only useful in special circumstances where the
+    regular locale option fails, such as when multiple sources of the
+    same language exists.
     """)
 transport.add_argument(
     "--hls-timeout",
@@ -1218,13 +1244,6 @@ plugin.add_argument(
     """
 )
 plugin.add_argument(
-    "--daisuki-mux-subtitles",
-    action="store_true",
-    help="""
-    Automatically mux available subtitles in to the output stream.
-    """
-)
-plugin.add_argument(
     "--rtve-mux-subtitles",
     action="store_true",
     help="""
@@ -1370,6 +1389,42 @@ plugin.add_argument(
     A afreecatv.com account password to use with --afreeca-username.
     """
 )
+plugin.add_argument(
+    "--pixiv-username",
+    metavar="USERNAME",
+    help="""
+    The email/username used to register with pixiv.net
+    """
+)
+plugin.add_argument(
+    "--pixiv-password",
+    metavar="PASSWORD",
+    help="""
+    A pixiv.net account password to use with --pixiv-username
+    """
+)
+plugin.add_argument(
+    "--abweb-username",
+    metavar="USERNAME",
+    help="""
+    The username associated with your ABweb account, required to access any ABweb stream.
+    """
+)
+plugin.add_argument(
+    "--abweb-password",
+    metavar="PASSWORD",
+    help="""
+    A ABweb account password to use with --abweb-username.
+    """
+)
+plugin.add_argument(
+    "--abweb-purge-credentials",
+    action="store_true",
+    help="""
+    Purge cached ABweb credentials to initiate a new session
+    and reauthenticate.
+    """
+)
 
 # Deprecated options
 stream.add_argument(
@@ -1386,37 +1441,6 @@ transport.add_argument(
     "--hds-fragment-buffer",
     type=int,
     metavar="fragments",
-    help=argparse.SUPPRESS
-)
-plugin.add_argument(
-    "--jtv-legacy-names", "--twitch-legacy-names",
-    action="store_true",
-    help=argparse.SUPPRESS
-)
-plugin.add_argument(
-    "--gomtv-cookie",
-    metavar="cookie",
-    help=argparse.SUPPRESS
-)
-plugin.add_argument(
-    "--gomtv-username",
-    metavar="username",
-    help=argparse.SUPPRESS
-)
-plugin.add_argument(
-    "--gomtv-password",
-    metavar="password",
-    nargs="?",
-    const=True,
-    default=None,
-    help=argparse.SUPPRESS
-)
-plugin.add_argument(
-    "--jtv-cookie",
-    help=argparse.SUPPRESS
-)
-plugin.add_argument(
-    "--jtv-password", "--twitch-password",
     help=argparse.SUPPRESS
 )
 http.add_argument(
