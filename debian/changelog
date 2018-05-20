@@ -1,3 +1,10 @@
+streamlink (0.12.1+dfsg-1~bpo9+1) stretch-backports; urgency=low
+
+  * Rebuild for stretch-backports.
+  * Recommends all supported players (suggested by #898351)
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 20 May 2018 21:12:22 +0200
+
 streamlink (0.12.1+dfsg-1) unstable; urgency=low
 
   * Recommends vlc as default player
