@@ -3,3 +3,4 @@ remove_github_buttons
 use_debian_fonts
 use_debian_modernizr
 0006-Remove-external-images.patch
+0006-Use-font-awesome-5-shim.patch
