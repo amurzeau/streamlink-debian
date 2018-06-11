@@ -24,10 +24,10 @@ override_dh_auto_install:
 	python3 setup.py build_sphinx -b html
 	dh_auto_install
 
-# Explicitly uses CHANGELOG.rst instead of docs/changelog.rst (the default
+# Explicitly uses CHANGELOG.md instead of docs/changelog.md (the default
 # file used by dh_installchangelogs)
 override_dh_installchangelogs:
-	dh_installchangelogs CHANGELOG.rst
+	dh_installchangelogs CHANGELOG.md
 
 # Needed to prevent docs/changelog.html from being compressed
 override_dh_compress:

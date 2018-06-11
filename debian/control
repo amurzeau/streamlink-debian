@@ -16,7 +16,10 @@ Build-Depends: debhelper (>= 11),
  python3-requests-mock,
  python3-websocket,
  python3-docutils,
- python3-socks
+ python3-socks,
+ python3-freezegun,
+ python3-recommonmark,
+ python3-isodate
 Homepage: https://streamlink.github.io/
 Vcs-Git: https://github.com/amurzeau/streamlink-debian.git
 Vcs-Browser: https://github.com/amurzeau/streamlink-debian
