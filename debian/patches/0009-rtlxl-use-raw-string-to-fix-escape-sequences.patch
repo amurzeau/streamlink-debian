@@ -1,0 +1,21 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Tue, 12 Jun 2018 00:25:51 +0200
+Subject: rtlxl: use raw string to fix escape sequences
+
+---
+ src/streamlink/plugins/rtlxl.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/streamlink/plugins/rtlxl.py b/src/streamlink/plugins/rtlxl.py
+index c44cc41..28c6377 100644
+--- a/src/streamlink/plugins/rtlxl.py
++++ b/src/streamlink/plugins/rtlxl.py
+@@ -5,7 +5,7 @@ from streamlink.plugin import Plugin
+ from streamlink.plugin.api import http, validate
+ from streamlink.stream import HDSStream, HLSStream, RTMPStream
+ 
+-_url_re = re.compile("""http(?:s)?://(?:\w+\.)?rtl.nl/video/(?P<uuid>.*?)\Z""", re.IGNORECASE)
++_url_re = re.compile(r"http(?:s)?://(?:\w+\.)?rtl.nl/video/(?P<uuid>.*?)\Z", re.IGNORECASE)
+ 
+ 
+ class rtlxl(Plugin):
