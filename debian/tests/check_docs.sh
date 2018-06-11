@@ -37,14 +37,15 @@ if ! [ -f "$INDEX_HTML_LOCATION" ]; then
 	exit 3
 fi
 
-echo "Checking fonts symlinks:"
 HTML_BASE_DIR=$(dirname "$INDEX_HTML_LOCATION")
-FONTS_NAME="FontAwesome.otf fontawesome-webfont.eot fontawesome-webfont.svg fontawesome-webfont.ttf fontawesome-webfont.woff"
-for  font in $FONTS_NAME; do
-	echo "Checking $HTML_BASE_DIR/_static/fonts/$font"
-	if ! [ -f "$HTML_BASE_DIR/_static/fonts/$font" ]; then
-		echo "Missing font: \"$HTML_BASE_DIR/_static/fonts/$font\"" >&2
-		exit 4
+
+echo "Checking additional files:"
+SYMLINKS_NAME="_static/webfonts/fa-brands-400.eot _static/css/font-awesome.css _static/js/modernizr.min.js"
+for file in $SYMLINKS_NAME; do
+	echo "Checking $HTML_BASE_DIR/$file"
+	if ! [ -f "$HTML_BASE_DIR/$file" ]; then
+		echo "Missing file: \"$HTML_BASE_DIR/$file\"" >&2
+		exit 5
 	fi
 done
 
