@@ -1,3 +1,13 @@
+streamlink (0.13.0+dfsg-1) UNRELEASED; urgency=medium
+
+  * Recommends all supported players (Closes: #898351)
+  * Use font-awesome 5 shim
+  * Use modernizr.js symlink
+  * Update upstream signing key
+  * New upstream version 0.13.0+dfsg
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 11 Jun 2018 20:09:36 +0200
+
 streamlink (0.12.1+dfsg-1) unstable; urgency=low
 
   * Recommends vlc as default player
