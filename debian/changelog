@@ -1,12 +1,20 @@
-streamlink (0.13.0+dfsg-1) UNRELEASED; urgency=medium
+streamlink (0.13.0+dfsg-1) unstable; urgency=low
 
   * Recommends all supported players (Closes: #898351)
-  * Use font-awesome 5 shim
-  * Use modernizr.js symlink
-  * Update upstream signing key
+  * Update upstream signing key with 0xE3DB9E282E390FA0
   * New upstream version 0.13.0+dfsg
+  * Patches changes:
+    - Use font-awesome 5 shim
+    - Use modernizr.js symlink
+    - Fix tests executions by adding missing mpd files
+    - Avoid lambda with freezegun to support <= v0.3.9
+    - rtlxl plugin: use raw string to fix escape sequences
+    - Forwarded new patches to upstream
+    - Update patch remove_new_version_check
+  * Add new build dependencies freezegun, recommonmark and isodate
+  * Update autopkgtests for font files and js symlinks
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 11 Jun 2018 20:09:36 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 12 Jun 2018 23:52:56 +0200
 
 streamlink (0.12.1+dfsg-1) unstable; urgency=low
 
