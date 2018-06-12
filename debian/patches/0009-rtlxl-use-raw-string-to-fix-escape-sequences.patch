@@ -2,6 +2,8 @@ From: Alexis Murzeau <amubtdx@gmail.com>
 Date: Tue, 12 Jun 2018 00:25:51 +0200
 Subject: rtlxl: use raw string to fix escape sequences
 
+Forwarded: https://github.com/streamlink/streamlink/pull/1786
+Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  src/streamlink/plugins/rtlxl.py | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

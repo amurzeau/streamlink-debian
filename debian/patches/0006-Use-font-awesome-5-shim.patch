@@ -2,6 +2,10 @@ From: Alexis Murzeau <amubtdx@gmail.com>
 Date: Sat, 26 May 2018 16:57:16 +0200
 Subject: Use font-awesome 5 shim
 
+Specific to Debian: fonts-font-awesome package upgraded to version 5 in sid.
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  .../static/css/badge_only.css                      |   40 -
  .../sphinx_rtd_theme_violet/static/css/theme.css   | 2047 +-------------------

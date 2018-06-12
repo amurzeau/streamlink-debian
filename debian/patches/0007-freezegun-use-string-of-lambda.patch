@@ -3,6 +3,9 @@ Date: Mon, 11 Jun 2018 23:48:21 +0200
 Subject: freezegun: use string of lambda
 
 Debian package for freezegun does not support lamdas.
+
+Forwarded: https://github.com/streamlink/streamlink/pull/1787
+Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  tests/test_plugin.py | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

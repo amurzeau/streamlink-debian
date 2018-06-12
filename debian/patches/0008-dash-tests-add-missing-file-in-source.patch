@@ -3,6 +3,9 @@ Date: Tue, 12 Jun 2018 00:09:14 +0200
 Subject: dash tests: add missing file in source
 
 Retrieved from upstream git.
+
+Forwarded: https://github.com/streamlink/streamlink/pull/1785
+Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  tests/resources/dash/test_1.mpd    |  66 ++++++++++++++++++
  tests/resources/dash/test_2.mpd    |  71 ++++++++++++++++++++
