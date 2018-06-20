@@ -50,11 +50,11 @@ Section: doc
 Architecture: all
 Depends: ${sphinxdoc:Depends},
   ${misc:Depends},
-  libjs-modernizr,
-  fonts-font-awesome
 Recommends: fonts-lato,
   fonts-inconsolata,
-  fonts-roboto-slab
+  fonts-roboto-slab,
+  fonts-font-awesome >= 5,
+  libjs-modernizr
 Built-Using: ${sphinxdoc:Built-Using}
 Suggests: python3-streamlink
 Description: CLI for extracting video streams from various websites (documentation)
