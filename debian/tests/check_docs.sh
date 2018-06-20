@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if ! [ -f /usr/share/doc-base/python3-streamlink-doc ]; then
 	echo "Cannot read /usr/share/doc-base/python3-streamlink-doc" >&2
@@ -12,12 +12,15 @@ echo "---------"
 echo "Checking Files field"
 DOC_FILES_WILDCARD=$(grep Files /usr/share/doc-base/python3-streamlink-doc | sed 's/Files: //')
 echo "Content of $DOC_FILES_WILDCARD:"
+# no quotes intended: doc-base file use wildcards and we want them to be expanded
+# shellcheck disable=SC2086
 ls -l $DOC_FILES_WILDCARD
 echo "---------"
 
-DOC_FILES_COUNT=$(ls -1 $DOC_FILES_WILDCARD | wc -l)
-if ! [ $DOC_FILES_COUNT -gt 0 ]; then
-	echo "$DOC_FILES_COUNT file found in $DOC_FILES_WILDCARD" >&2
+# shellcheck disable=SC2206
+DOC_FILES_COUNT=( $DOC_FILES_WILDCARD )
+if ! [ -f "${DOC_FILES_COUNT[0]}" ]; then
+	echo "$DOC_FILES_WILDCARD match no files" >&2
 	exit 2
 fi
 
