@@ -124,6 +124,7 @@ src/streamlink/plugins/cdnbg.py
 src/streamlink/plugins/ceskatelevize.py
 src/streamlink/plugins/chaturbate.py
 src/streamlink/plugins/cinergroup.py
+src/streamlink/plugins/cnews.py
 src/streamlink/plugins/common_jwplayer.py
 src/streamlink/plugins/common_swf.py
 src/streamlink/plugins/crunchyroll.py
@@ -131,6 +132,7 @@ src/streamlink/plugins/cybergame.py
 src/streamlink/plugins/cyro.py
 src/streamlink/plugins/dailymotion.py
 src/streamlink/plugins/dash.py
+src/streamlink/plugins/delfi.py
 src/streamlink/plugins/deutschewelle.py
 src/streamlink/plugins/dingittv.py
 src/streamlink/plugins/dogan.py
@@ -174,6 +176,7 @@ src/streamlink/plugins/liveedu.py
 src/streamlink/plugins/liveme.py
 src/streamlink/plugins/livestream.py
 src/streamlink/plugins/looch.py
+src/streamlink/plugins/lrt.py
 src/streamlink/plugins/media_ccc_de.py
 src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/mips.py
@@ -226,6 +229,7 @@ src/streamlink/plugins/sportschau.py
 src/streamlink/plugins/srgssr.py
 src/streamlink/plugins/ssh101.py
 src/streamlink/plugins/startv.py
+src/streamlink/plugins/steam.py
 src/streamlink/plugins/streamable.py
 src/streamlink/plugins/streamboat.py
 src/streamlink/plugins/streamingvideoprovider.py
@@ -240,6 +244,7 @@ src/streamlink/plugins/tf1.py
 src/streamlink/plugins/tga.py
 src/streamlink/plugins/theplatform.py
 src/streamlink/plugins/tigerdile.py
+src/streamlink/plugins/tlctr.py
 src/streamlink/plugins/trt.py
 src/streamlink/plugins/trtspor.py
 src/streamlink/plugins/turkuvaz.py
@@ -263,6 +268,7 @@ src/streamlink/plugins/vaughnlive.py
 src/streamlink/plugins/vgtv.py
 src/streamlink/plugins/viasat.py
 src/streamlink/plugins/vidio.py
+src/streamlink/plugins/vinhlongtv.py
 src/streamlink/plugins/vk.py
 src/streamlink/plugins/vrtbe.py
 src/streamlink/plugins/webcast_india_gov.py
@@ -272,6 +278,7 @@ src/streamlink/plugins/welt.py
 src/streamlink/plugins/wwenetwork.py
 src/streamlink/plugins/younow.py
 src/streamlink/plugins/youtube.py
+src/streamlink/plugins/yupptv.py
 src/streamlink/plugins/zattoo.py
 src/streamlink/plugins/zdf_mediathek.py
 src/streamlink/plugins/zengatv.py
@@ -297,6 +304,7 @@ src/streamlink/utils/__init__.py
 src/streamlink/utils/crypto.py
 src/streamlink/utils/l10n.py
 src/streamlink/utils/named_pipe.py
+src/streamlink/utils/times.py
 src/streamlink_cli/__init__.py
 src/streamlink_cli/argparser.py
 src/streamlink_cli/compat.py
@@ -321,6 +329,7 @@ tests/test_hls.py
 tests/test_hls_playlist.py
 tests/test_localization.py
 tests/test_log.py
+tests/test_meta.py
 tests/test_options.py
 tests/test_plugin.py
 tests/test_plugin_abweb.py
@@ -339,13 +348,13 @@ tests/test_plugin_btsports.py
 tests/test_plugin_btv.py
 tests/test_plugin_camsoda.py
 tests/test_plugin_canalplus.py
-tests/test_plugin_canlitv.py
 tests/test_plugin_cdnbg.py
 tests/test_plugin_chaturbate.py
+tests/test_plugin_cnews.py
 tests/test_plugin_crunchyroll.py
-tests/test_plugin_cyro.py
 tests/test_plugin_dailymotion.py
 tests/test_plugin_dash.py
+tests/test_plugin_delfi.py
 tests/test_plugin_deutschewelle.py
 tests/test_plugin_eltrecetv.py
 tests/test_plugin_eurocom.py
@@ -361,6 +370,7 @@ tests/test_plugin_idf1.py
 tests/test_plugin_kingkong.py
 tests/test_plugin_liveme.py
 tests/test_plugin_liverussiatv.py
+tests/test_plugin_lrt.py
 tests/test_plugin_mitele.py
 tests/test_plugin_mixer.py
 tests/test_plugin_mlgtv.py
@@ -382,6 +392,7 @@ tests/test_plugin_ruv.py
 tests/test_plugin_showroom.py
 tests/test_plugin_sportal.py
 tests/test_plugin_srgssr.py
+tests/test_plugin_steam.py
 tests/test_plugin_stream.py
 tests/test_plugin_streamme.py
 tests/test_plugin_streann.py
@@ -390,6 +401,7 @@ tests/test_plugin_teamliquid.py
 tests/test_plugin_telefe.py
 tests/test_plugin_tf1.py
 tests/test_plugin_tigerdile.py
+tests/test_plugin_tlctr.py
 tests/test_plugin_tv1channel.py
 tests/test_plugin_tv5monde.py
 tests/test_plugin_tv8cat.py
@@ -402,14 +414,17 @@ tests/test_plugin_ustreamtv.py
 tests/test_plugin_ustvnow.py
 tests/test_plugin_viasat.py
 tests/test_plugin_vidio.py
+tests/test_plugin_vinhlongtv.py
 tests/test_plugin_vk.py
 tests/test_plugin_vrtbe.py
 tests/test_plugin_webtv.py
 tests/test_plugin_welt.py
 tests/test_plugin_youtube.py
+tests/test_plugin_yupptv.py
 tests/test_plugin_zattoo.py
 tests/test_plugin_zengatv.py
 tests/test_plugins.py
+tests/test_plugins_input.py
 tests/test_session.py
 tests/test_stream_json.py
 tests/test_stream_streamprocess.py
@@ -418,11 +433,19 @@ tests/test_stream_wrappers.py
 tests/test_streamlink_api.py
 tests/test_utils.py
 tests/test_utils_crypto.py
+tests/test_utils_times.py
 tests/test_webcast_india_gov.py
 tests/plugins/__init__.py
 tests/plugins/testplugin.py
 tests/plugins/testplugin_support.py
 tests/resources/__init__.py
+tests/resources/dash/test_1.mpd
+tests/resources/dash/test_2.mpd
+tests/resources/dash/test_3.mpd
+tests/resources/dash/test_4.mpd
+tests/resources/dash/test_5.mpd
+tests/resources/dash/test_6_p1.mpd
+tests/resources/dash/test_6_p2.mpd
 tests/streams/__init__.py
 tests/streams/test_dash.py
 tests/streams/test_dash_parser.py
