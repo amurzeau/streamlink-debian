@@ -3,7 +3,6 @@ remove_github_buttons
 use_debian_fonts
 use_debian_modernizr
 0006-Remove-external-images.patch
-0006-Use-font-awesome-5-shim.patch
 0007-freezegun-use-string-of-lambda.patch
 0008-dash-tests-add-missing-file-in-source.patch
 0009-rtlxl-use-raw-string-to-fix-escape-sequences.patch
