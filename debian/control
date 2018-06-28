@@ -53,7 +53,7 @@ Depends: ${sphinxdoc:Depends},
 Recommends: fonts-lato,
   fonts-inconsolata,
   fonts-roboto-slab,
-  fonts-font-awesome >= 5,
+  fonts-font-awesome,
   libjs-modernizr
 Built-Using: ${sphinxdoc:Built-Using}
 Suggests: python3-streamlink
