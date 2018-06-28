@@ -13,10 +13,10 @@ Author: Stefan Breunig <stefan-debian@yrden.de>
  1 file changed, 4 deletions(-)
 
 diff --git a/docs/_themes/sphinx_rtd_theme_violet/layout.html b/docs/_themes/sphinx_rtd_theme_violet/layout.html
-index f59c23b..a164461 100644
+index affe907..f6e5f1d 100644
 --- a/docs/_themes/sphinx_rtd_theme_violet/layout.html
 +++ b/docs/_themes/sphinx_rtd_theme_violet/layout.html
-@@ -176,10 +176,6 @@
+@@ -181,10 +181,6 @@
    {% endif %}
  
  
