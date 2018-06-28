@@ -1,15 +1,15 @@
-streamlink (0.14.0+dfsg-1) UNRELEASED; urgency=medium
+streamlink (0.14.0+dfsg-1) unstable; urgency=low
 
   * tests: fix shellcheck warnings
   * docs: move fonts-font-awesome and lib-modernizr to recommends
-  * Revert "font-awesome 5: also patch badge-only.css"
-  * Revert "Update autopkgtests for font files and js symlinks"
-  * Revert "Use font-awesome 5 shim"
-  * Remove version 5 constraint on fonts-font-awesome recommends
-  * Check modernizr symlink in check_docs and refactor it
+  * docs: revert to fonts-font-awesome v4
+  * tests: check modernizr symlink in check_docs and refactor it
   * New upstream version 0.14.0+dfsg
+  * Remove patches applied upstream: freezegun, missing test files,
+    escape sequences
+  * Update patches
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 28 Jun 2018 23:52:07 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 29 Jun 2018 00:16:46 +0200
 
 streamlink (0.13.0+dfsg-1) unstable; urgency=low
 
