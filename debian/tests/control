@@ -13,5 +13,5 @@ Depends: livestreamer, openssl, bsdmainutils, man-db
 Restrictions: allow-stderr
 
 # Test doc package
-Test-Command: sh debian/tests/check_docs.sh
-Depends: bash, python3-streamlink-doc
+Test-Command: bash debian/tests/check_docs.sh
+Depends: bash, python3-streamlink-doc, fonts-font-awesome, libjs-modernizr

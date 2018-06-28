@@ -1,5 +1,19 @@
 #!/bin/bash
 
+RESULT=0
+
+check-file() {
+	local TARGET_FILE="$1"
+	echo -n "Checking file $TARGET_FILE"
+	if ! [ -f "$TARGET_FILE" ]; then
+		echo " MISSING"
+		return 1
+	else
+		echo " OK"
+	fi
+	return 0
+}
+
 if ! [ -f /usr/share/doc-base/python3-streamlink-doc ]; then
 	echo "Cannot read /usr/share/doc-base/python3-streamlink-doc" >&2
 	exit 1
@@ -24,7 +38,7 @@ if ! [ -f "${DOC_FILES_COUNT[0]}" ]; then
 	exit 2
 fi
 
-echo "Checking Index field"
+echo "Checking files:"
 INDEX_HTML_LOCATION=$(grep Index /usr/share/doc-base/python3-streamlink-doc | sed 's/Index: //')
 
 case $INDEX_HTML_LOCATION in /usr/share/doc/*)
@@ -34,20 +48,14 @@ case $INDEX_HTML_LOCATION in /usr/share/doc/*)
 	exit 2
 esac
 
-echo "Checking $INDEX_HTML_LOCATION file"
-if ! [ -f "$INDEX_HTML_LOCATION" ]; then
-	echo "File \"$INDEX_HTML_LOCATION\" does not exists" >&2
-	exit 3
-fi
-
-echo "Checking fonts symlinks:"
 HTML_BASE_DIR=$(dirname "$INDEX_HTML_LOCATION")
-FONTS_NAME="FontAwesome.otf fontawesome-webfont.eot fontawesome-webfont.svg fontawesome-webfont.ttf fontawesome-webfont.woff"
-for  font in $FONTS_NAME; do
-	echo "Checking $HTML_BASE_DIR/_static/fonts/$font"
-	if ! [ -f "$HTML_BASE_DIR/_static/fonts/$font" ]; then
-		echo "Missing font: \"$HTML_BASE_DIR/_static/fonts/$font\"" >&2
-		exit 4
-	fi
-done
 
+check-file "$INDEX_HTML_LOCATION" || exit 3
+check-file "$HTML_BASE_DIR/_static/fonts/FontAwesome.otf" || RESULT=4
+check-file "$HTML_BASE_DIR/_static/fonts/fontawesome-webfont.eot" || RESULT=4
+check-file "$HTML_BASE_DIR/_static/fonts/fontawesome-webfont.svg" || RESULT=4
+check-file "$HTML_BASE_DIR/_static/fonts/fontawesome-webfont.ttf" || RESULT=4
+check-file "$HTML_BASE_DIR/_static/fonts/fontawesome-webfont.woff" || RESULT=4
+check-file "$HTML_BASE_DIR/_static/js/modernizr.min.js" || RESULT=5
+
+exit "$RESULT"
