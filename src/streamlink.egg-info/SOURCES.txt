@@ -182,6 +182,7 @@ src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/mips.py
 src/streamlink/plugins/mitele.py
 src/streamlink/plugins/mixer.py
+src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mlgtv.py
 src/streamlink/plugins/nbc.py
 src/streamlink/plugins/nbcsports.py
@@ -373,6 +374,7 @@ tests/test_plugin_liverussiatv.py
 tests/test_plugin_lrt.py
 tests/test_plugin_mitele.py
 tests/test_plugin_mixer.py
+tests/test_plugin_mjunoon.py
 tests/test_plugin_mlgtv.py
 tests/test_plugin_ok_live.py
 tests/test_plugin_oldlivestream.py
@@ -404,7 +406,6 @@ tests/test_plugin_tigerdile.py
 tests/test_plugin_tlctr.py
 tests/test_plugin_tv1channel.py
 tests/test_plugin_tv5monde.py
-tests/test_plugin_tv8cat.py
 tests/test_plugin_tvcatchup.py
 tests/test_plugin_tvp.py
 tests/test_plugin_tvplayer.py
@@ -446,6 +447,7 @@ tests/resources/dash/test_4.mpd
 tests/resources/dash/test_5.mpd
 tests/resources/dash/test_6_p1.mpd
 tests/resources/dash/test_6_p2.mpd
+tests/resources/dash/test_7.mpd
 tests/streams/__init__.py
 tests/streams/test_dash.py
 tests/streams/test_dash_parser.py
