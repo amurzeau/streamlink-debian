@@ -1,8 +1,8 @@
-streamlink (0.14.2+dfsg-1) UNRELEASED; urgency=medium
+streamlink (0.14.2+dfsg-1) unstable; urgency=low
 
   * New upstream version 0.14.2+dfsg
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 01 Jul 2018 00:29:44 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 01 Jul 2018 00:48:11 +0200
 
 streamlink (0.14.0+dfsg-1) unstable; urgency=low
 
