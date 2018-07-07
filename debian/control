@@ -48,6 +48,7 @@ Description: Python module for extracting video streams from various websites
 Package: python3-streamlink-doc
 Section: doc
 Architecture: all
+Multi-Arch: foreign
 Depends: ${sphinxdoc:Depends},
   ${misc:Depends},
 Recommends: fonts-lato,
