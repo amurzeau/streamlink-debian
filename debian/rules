@@ -19,6 +19,12 @@ include /usr/share/dpkg/pkg-info.mk
 %:
 	dh $@ --with python3,sphinxdoc --buildsystem=pybuild
 
+# Old pybuild does not support debian/pybuild.testfiles, do it manually
+override_dh_auto_test:
+	dh_auto_test -- \
+		--before-test "cp -r {dir}/docs {build_dir}/" \
+		--after-test "rm -rf {build_dir}/docs"
+
 override_dh_auto_install:
 	python3 setup.py build_sphinx -b man
 	python3 setup.py build_sphinx -b html
