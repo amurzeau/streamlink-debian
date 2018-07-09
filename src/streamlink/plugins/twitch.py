@@ -4,14 +4,16 @@ import warnings
 from random import random
 
 import requests
+
 from streamlink.compat import urlparse
 from streamlink.exceptions import NoStreamsError, PluginError, StreamError
-from streamlink.plugin import Plugin, PluginOptions
+from streamlink.plugin import Plugin, PluginArguments, PluginArgument
 from streamlink.plugin.api import http, validate
 from streamlink.plugin.api.utils import parse_json, parse_query
 from streamlink.stream import (
     HTTPStream, HLSStream, FLVPlaylist, extract_flv_header_tags
 )
+from streamlink.utils.times import hours_minutes_seconds
 
 try:
     from itertools import izip as zip
@@ -29,7 +31,6 @@ QUALITY_WEIGHTS = {
     "low": 240,
     "mobile": 120,
 }
-
 
 TWITCH_CLIENT_ID = "pwkzresl8kj2rdj6g7bvxl9ys1wly3j"
 
@@ -53,17 +54,6 @@ _url_re = re.compile(r"""
     (?:
         /
         (?P<clip_name>[\w]+)
-    )?
-""", re.VERBOSE)
-_time_re = re.compile(r"""
-    (?:
-        (?P<hours>\d+)h
-    )?
-    (?:
-        (?P<minutes>\d+)m
-    )?
-    (?:
-        (?P<seconds>\d+)s
     )?
 """, re.VERBOSE)
 
@@ -136,18 +126,6 @@ _quality_options_schema = validate.Schema(
     },
     validate.get("quality_options")
 )
-
-
-def time_to_offset(t):
-    match = _time_re.match(t)
-    if match:
-        offset = int(match.group("hours") or "0") * 60 * 60
-        offset += int(match.group("minutes") or "0") * 60
-        offset += int(match.group("seconds") or "0")
-    else:
-        offset = 0
-
-    return offset
 
 
 class UsherService(object):
@@ -246,7 +224,8 @@ class TwitchAPI(object):
         return self.call_subdomain("tmi", "/hosts", format="", **params)
 
     def clip_status(self, channel, clip_name, schema):
-        return http.json(self.call_subdomain("clips", "/api/v2/clips/" + clip_name + "/status", format=""), schema=schema)
+        return http.json(self.call_subdomain("clips", "/api/v2/clips/" + clip_name + "/status", format=""),
+                         schema=schema)
 
     # Unsupported/Removed private API calls
 
@@ -261,11 +240,35 @@ class TwitchAPI(object):
 
 
 class Twitch(Plugin):
-    options = PluginOptions({
-        "cookie": None,
-        "oauth_token": None,
-        "disable_hosting": False,
-    })
+    arguments = PluginArguments(
+        PluginArgument("oauth-token",
+                       sensitive=True,
+                       metavar="TOKEN",
+                       help="""
+        An OAuth token to use for Twitch authentication.
+        Use --twitch-oauth-authenticate to create a token.
+        """),
+        PluginArgument("cookie",
+                       sensitive=True,
+                       metavar="COOKIES",
+                       help="""
+        Twitch cookies to authenticate to allow access to subscription channels.
+
+        Example:
+
+          "_twitch_session_id=xxxxxx; persistent=xxxxx"
+
+        Note: This method is the old and clunky way of authenticating with
+        Twitch, using --twitch-oauth-authenticate is the recommended and
+        simpler way of doing it now.
+        """
+                       ),
+        PluginArgument("disable-hosting",
+                       action="store_true",
+                       help="""
+        Do not open the stream if the target channel is hosting another channel.
+        """
+                       ))
 
     @classmethod
     def stream_weight(cls, key):
@@ -516,7 +519,12 @@ class Twitch(Plugin):
         # start offset if needed.
         time_offset = self.params.get("t")
         if time_offset:
-            videos["start_offset"] += time_to_offset(self.params.get("t"))
+            try:
+                time_offset = hours_minutes_seconds(time_offset)
+            except ValueError:
+                time_offset = 0
+
+            videos["start_offset"] += time_offset
 
         return self._create_playlist_streams(videos)
 
@@ -558,14 +566,15 @@ class Twitch(Plugin):
                 self.logger.info("switching to {0}", hosted_channel)
                 if hosted_channel in self._hosted_chain:
                     self.logger.error(u"A loop of hosted channels has been detected, "
-                                      "cannot find a playable stream. ({0})".format(u" -> ".join(self._hosted_chain + [hosted_channel])))
+                                      "cannot find a playable stream. ({0})".format(
+                        u" -> ".join(self._hosted_chain + [hosted_channel])))
                     return {}
                 self.channel = hosted_channel
                 return self._get_hls_streams(stream_type)
 
             # only get the token once the channel has been resolved
             sig, token = self._access_token(stream_type)
-            url = self.usher.channel(self.channel, sig=sig, token=token)
+            url = self.usher.channel(self.channel, sig=sig, token=token, fast_bread=True)
         elif stream_type == "video":
             sig, token = self._access_token(stream_type)
             url = self.usher.video(self.video_id, nauthsig=sig, nauth=token)
@@ -573,10 +582,18 @@ class Twitch(Plugin):
             self.logger.debug("Unknown HLS stream type: {0}".format(stream_type))
             return {}
 
+        time_offset = self.params.get("t", 0)
+        if time_offset:
+            try:
+                time_offset = hours_minutes_seconds(time_offset)
+            except ValueError:
+                time_offset = 0
+
         try:
             # If the stream is a VOD that is still being recorded the stream should start at the
             # beginning of the recording
             streams = HLSStream.parse_variant_playlist(self.session, url,
+                                                       start_offset=time_offset,
                                                        force_restart=not stream_type == "live")
         except IOError as err:
             err = str(err)

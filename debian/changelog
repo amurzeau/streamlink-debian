@@ -1,3 +1,40 @@
+streamlink (0.14.2+dfsg-1) unstable; urgency=low
+
+  * New upstream version 0.14.2+dfsg
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 01 Jul 2018 00:48:11 +0200
+
+streamlink (0.14.0+dfsg-1) unstable; urgency=low
+
+  * tests: fix shellcheck warnings
+  * docs: move fonts-font-awesome and lib-modernizr to recommends
+  * docs: revert to fonts-font-awesome v4
+  * tests: check modernizr symlink in check_docs and refactor it
+  * New upstream version 0.14.0+dfsg
+  * Remove patches applied upstream: freezegun, missing test files,
+    escape sequences
+  * Update patches
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 29 Jun 2018 00:16:46 +0200
+
+streamlink (0.13.0+dfsg-1) unstable; urgency=low
+
+  * Recommends all supported players (Closes: #898351)
+  * Update upstream signing key with 0xE3DB9E282E390FA0
+  * New upstream version 0.13.0+dfsg
+  * Patches changes:
+    - Use font-awesome 5 shim
+    - Use modernizr.js symlink
+    - Fix tests executions by adding missing mpd files
+    - Avoid lambda with freezegun to support <= v0.3.9
+    - rtlxl plugin: use raw string to fix escape sequences
+    - Forwarded new patches to upstream
+    - Update patch remove_new_version_check
+  * Add new build dependencies freezegun, recommonmark and isodate
+  * Update autopkgtests for font files and js symlinks
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 12 Jun 2018 23:52:56 +0200
+
 streamlink (0.12.1+dfsg-1~bpo9+1) stretch-backports; urgency=low
 
   * Rebuild for stretch-backports.

@@ -44,8 +44,8 @@ even on Windows.
 
 .. code-block:: console
 
-    $ streamlink hlsvariant://file://C:/hls/playlist.m3u8
-    [cli][info] Found matching plugin stream for URL hlsvariant://file://C:/hls/playlist.m3u8
+    $ streamlink hls://file://C:/hls/playlist.m3u8
+    [cli][info] Found matching plugin stream for URL hls://file://C:/hls/playlist.m3u8
     Available streams: 180p (worst), 272p, 408p, 554p, 818p, 1744p (best)
 
 
@@ -100,13 +100,6 @@ Unix-like (POSIX) - $XDG_CONFIG_HOME/streamlink/config
                   - ~/.streamlinkrc
 Windows           %APPDATA%\\streamlink\\streamlinkrc
 ================= ====================================================
-
-.. note::
-  Currently the Windows installer does not create the streamlinkrc file. This
-  is a known issue being tracked
-  `here <https://github.com/streamlink/streamlink/issues/81>`_. An example
-  configuration file is available in the
-  `repo <https://github.com/streamlink/streamlink/blob/master/win32/streamlinkrc>`_.
 
 You can also specify the location yourself using the :option:`--config` option.
 
@@ -321,12 +314,14 @@ Name                           Prefix
 ============================== =================================================
 Adobe HTTP Dynamic Streaming   hds://
 Akamai HD Adaptive Streaming   akamaihd://
-Apple HTTP Live Streaming      hls:// hlsvariant:// [1]_
+Apple HTTP Live Streaming      hls:// [1]_
+MPEG-DASH [2]_                 dash://
 Real Time Messaging Protocol   rtmp:// rtmpe:// rtmps:// rtmpt:// rtmpte://
 Progressive HTTP, HTTPS, etc   httpstream:// [1]_
 ============================== =================================================
 
 .. [1] supports local files using the file:// protocol
+.. [2] Dynamic Adaptive Streaming over HTTP
 .. _cli-options:
 
 Proxy Support
@@ -337,14 +332,19 @@ change the proxy server that Streamlink will use for HTTP and HTTPS requests res
 As HTTP and HTTPS requests can be handled by separate proxies, you may need to specify both
 options if the plugin you use makes HTTP and HTTPS requests.
 
-Both HTTP and SOCKS5 proxies are supported, authentication is supported for both types.
+Both HTTP and SOCKS proxies are supported, authentication is supported for both types.
+
+.. note::
+    When using a SOCKS proxy the ``socks4`` and ``socks5`` schemes mean that DNS lookups are done
+    locally, rather than on the proxy server. To have the proxy server perform the DNS lookups, the
+    ``socks4a`` and ``socks5h`` schemes should be used instead.
 
 For example:
 
 .. code-block:: console
 
     $ streamlink --http-proxy "http://user:pass@10.10.1.10:3128/" --https-proxy "socks5://10.10.1.10:1242"
-
+    $ streamlink --http-proxy "socks4a://10.10.1.10:1235" --https-proxy "socks5h://10.10.1.10:1234"
 
 Command-line usage
 ------------------
@@ -355,5 +355,5 @@ Command-line usage
 
 
 .. argparse::
-    :module: streamlink_cli.argparser
-    :attr: parser
+    :module: streamlink_cli.main
+    :attr: parser_helper

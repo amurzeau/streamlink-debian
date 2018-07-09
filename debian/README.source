@@ -28,6 +28,17 @@ Here are the commands to manage the package:
 
 - Don't forget to push `stretch-backports` and `upstream` branches along with new tags (`debian/<version>`, `upstream/<version>`)
 
+# Changes checks
+
+Check copyrights
+Check dependencies in https://streamlink.github.io/install.html
+Check doc dependencies:
+	- libjs-modernizr
+	- fonts-font-awesome
+	- fonts-lato
+	- fonts-inconsolata
+	- fonts-roboto-slab
+Check supported players in https://streamlink.github.io/players.html
 
 # Packages structure
 

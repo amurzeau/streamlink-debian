@@ -3,8 +3,11 @@ import unittest
 import tempfile
 import os.path
 
+import datetime
+
 import streamlink.cache
 from shutil import rmtree
+import time
 
 try:
     from unittest.mock import patch
@@ -52,8 +55,20 @@ class TestCache(unittest.TestCase):
         self.assertEqual({}, self.cache._cache)
 
     def test_expired(self):
-        self.cache.set("value", 10, expires=-1)
+        self.cache.set("value", 10, expires=-20)
         self.assertEqual(None, self.cache.get("value"))
+
+    def test_expired_at(self):
+        self.cache.set("value", 10, expires_at=datetime.datetime.now() - datetime.timedelta(seconds=20))
+        self.assertEqual(None, self.cache.get("value"))
+
+    def test_not_expired(self):
+        self.cache.set("value", 10, expires=20)
+        self.assertEqual(10, self.cache.get("value"))
+
+    def test_expired_at(self):
+        self.cache.set("value", 10, expires_at=datetime.datetime.now() + datetime.timedelta(seconds=20))
+        self.assertEqual(10, self.cache.get("value"))
 
     def test_create_directory(self):
         try:
@@ -75,3 +90,32 @@ class TestCache(unittest.TestCase):
             self.assertFalse(os.path.exists(cache.filename))
         finally:
             rmtree(streamlink.cache.cache_dir, ignore_errors=True)
+
+    def test_get_all(self):
+        self.cache.set("test1", 1)
+        self.cache.set("test2", 2)
+
+        self.assertDictEqual(
+            {"test1": 1, "test2": 2},
+            self.cache.get_all())
+
+    def test_get_all_prefix(self):
+        self.cache.set("test1", 1)
+        self.cache.set("test2", 2)
+        self.cache.key_prefix = "test"
+        self.cache.set("test3", 3)
+        self.cache.set("test4", 4)
+
+
+        self.assertDictEqual(
+            {"test3": 3, "test4": 4},
+            self.cache.get_all())
+
+    def test_get_all_prune(self):
+        self.cache.set("test1", 1)
+        self.cache.set("test2", 2, -1)
+
+
+        self.assertDictEqual(
+            {"test1": 1},
+            self.cache.get_all())

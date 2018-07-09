@@ -2,12 +2,6 @@ import os
 import unittest
 
 from streamlink.plugin.plugin import HIGH_PRIORITY, LOW_PRIORITY
-
-try:
-    from unittest.mock import MagicMock
-except ImportError:
-    from mock import MagicMock
-
 from streamlink import Streamlink, NoPluginError
 from streamlink.plugins import Plugin
 from streamlink.stream import *
@@ -21,11 +15,7 @@ class TestSession(unittest.TestCase):
         self.session.load_plugins(self.PluginPath)
 
     def test_exceptions(self):
-        try:
-            self.session.resolve_url("invalid url")
-            self.assertTrue(False)
-        except NoPluginError:
-            self.assertTrue(True)
+        self.assertRaises(NoPluginError, self.session.resolve_url, "invalid url")
 
     def test_load_plugins(self):
         plugins = self.session.get_plugins()

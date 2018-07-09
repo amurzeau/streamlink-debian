@@ -16,7 +16,10 @@ Build-Depends: debhelper (>= 10),
  python3-requests-mock,
  python3-websocket,
  python3-docutils,
- python3-socks
+ python3-socks,
+ python3-freezegun,
+ python3-recommonmark,
+ python3-isodate
 Homepage: https://streamlink.github.io/
 Vcs-Git: https://github.com/amurzeau/streamlink-debian.git
 Vcs-Browser: https://github.com/amurzeau/streamlink-debian
@@ -47,11 +50,11 @@ Section: doc
 Architecture: all
 Depends: ${sphinxdoc:Depends},
   ${misc:Depends},
-  libjs-modernizr,
-  fonts-font-awesome
 Recommends: fonts-lato,
   fonts-inconsolata,
-  fonts-roboto-slab
+  fonts-roboto-slab,
+  fonts-font-awesome,
+  libjs-modernizr
 Built-Using: ${sphinxdoc:Built-Using}
 Suggests: python3-streamlink
 Description: CLI for extracting video streams from various websites (documentation)
