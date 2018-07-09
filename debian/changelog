@@ -1,3 +1,10 @@
+streamlink (0.14.2+dfsg-1~bpo9+1) stretch-backports; urgency=medium
+
+  * Rebuild for stretch-backports.
+  * pybuild test: implement d/pybuild.testfiles in d/rules
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 09 Jul 2018 23:49:53 +0200
+
 streamlink (0.14.2+dfsg-1) unstable; urgency=low
 
   * New upstream version 0.14.2+dfsg
