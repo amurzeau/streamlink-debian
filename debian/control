@@ -2,7 +2,7 @@ Source: streamlink
 Maintainer: Alexis Murzeau <amubtdx@gmail.com>
 Section: python
 Priority: optional
-Standards-Version: 4.1.4
+Standards-Version: 4.3.0
 Build-Depends: debhelper (>= 11),
  dh-python,
  python3 (>= 3.4),
