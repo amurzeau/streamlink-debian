@@ -1,3 +1,13 @@
+streamlink (1.0.0+dfsg-1) UNRELEASED; urgency=medium
+
+  * docs: mark Multi-Arch: foreign
+  * Update README.source
+  * Update d/copyright years to 2019
+  * Bump standard version to 4.3.0, no change required
+  * New upstream version 1.0.0+dfsg
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 31 Jan 2019 20:04:20 +0100
+
 streamlink (0.14.2+dfsg-1) unstable; urgency=low
 
   * New upstream version 0.14.2+dfsg
