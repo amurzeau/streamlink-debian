@@ -4,8 +4,8 @@ Here are the commands to manage the package:
 - Import upstream version and update Debian branch with new upstream release:
   - `gbp import-orig --uscan`
 
-- Refresh quilt patches:
-  - `quilt pop -a; while quilt push; do quilt refresh; done && quilt pop -a`
+- Refresh patches:
+  - `gbp pq import && gbp pq export`
 
 - Check for important changes that may need other package changes (copyright, new patch, ...):
   - `https://github.com/streamlink/streamlink/compare/<old_tag>...<new_tag>`
