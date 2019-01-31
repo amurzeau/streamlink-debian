@@ -1,10 +1,20 @@
 import os
 
 from streamlink import __version__ as LIVESTREAMER_VERSION
-
 from .compat import is_win32
 
-DEFAULT_PLAYER_ARGUMENTS = "{filename}"
+DEFAULT_PLAYER_ARGUMENTS = u"{filename}"
+DEFAULT_STREAM_METADATA = {
+    "title": u"Unknown Title",
+    "author": u"Unknown Author",
+    "category": u"No Category",
+    "game": u"No Game/Category"
+}
+SUPPORTED_PLAYERS = {  # these are the players that streamlink knows how to set the window title for with `--title`. key names are used in help text
+    # name: possible binary names (linux/mac and windows)
+    "vlc": ["vlc", "vlc.exe"],
+    "mpv": ["mpv", "mpv.exe"]
+}
 
 if is_win32:
     APPDATA = os.environ["APPDATA"]
@@ -18,7 +28,7 @@ else:
     ]
     PLUGINS_DIR = os.path.expanduser(XDG_CONFIG_HOME + "/streamlink/plugins")
 
-STREAM_SYNONYMS = ["best", "worst"]
+STREAM_SYNONYMS = ["best", "worst", "best-unfiltered", "worst-unfiltered"]
 STREAM_PASSTHROUGH = ["hls", "http", "rtmp"]
 
 __all__ = [

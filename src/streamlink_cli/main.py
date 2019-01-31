@@ -1,3 +1,4 @@
+import argparse
 import errno
 import logging
 import os
@@ -26,12 +27,14 @@ from streamlink.exceptions import FatalPluginError
 from streamlink.stream import StreamProcess
 from streamlink.plugins.twitch import TWITCH_CLIENT_ID
 from streamlink.plugin import PluginOptions
+from streamlink.utils import LazyFormatter
 
 import streamlink.logger as logger
 from .argparser import build_parser
 from .compat import stdout, is_win32
+from streamlink.utils.encoding import maybe_encode
 from .console import ConsoleOutput, ConsoleUserInputRequester
-from .constants import CONFIG_FILES, PLUGINS_DIR, STREAM_SYNONYMS
+from .constants import CONFIG_FILES, PLUGINS_DIR, STREAM_SYNONYMS, DEFAULT_STREAM_METADATA
 from .output import FileOutput, PlayerOutput
 from .utils import NamedPipe, HTTPServer, ignored, progress, stream_to_url
 
@@ -54,16 +57,20 @@ def check_file_output(filename, force):
     log.debug("Checking file output")
 
     if os.path.isfile(filename) and not force:
-        answer = console.ask("File {0} already exists! Overwrite it? [y/N] ",
-                             filename)
+        if sys.stdin.isatty():
+            answer = console.ask("File {0} already exists! Overwrite it? [y/N] ",
+                                 filename)
 
-        if answer.lower() != "y":
+            if answer.lower() != "y":
+                sys.exit()
+        else:
+            log.error("File {0} already exists, use --force to overwrite it.".format(filename))
             sys.exit()
 
     return FileOutput(filename)
 
 
-def create_output():
+def create_output(plugin):
     """Decides where to write the stream.
 
     Depending on arguments it can be one of these:
@@ -74,6 +81,9 @@ def create_output():
 
     """
 
+    if (args.output or args.stdout) and (args.record or args.record_and_pipe):
+        console.exit("Cannot use record options with other file output options.")
+
     if args.output:
         if args.output == "-":
             out = FileOutput(fd=stdout)
@@ -81,8 +91,11 @@ def create_output():
             out = check_file_output(args.output, args.force)
     elif args.stdout:
         out = FileOutput(fd=stdout)
+    elif args.record_and_pipe:
+        record = check_file_output(args.record_and_pipe, args.force)
+        out = FileOutput(fd=stdout, record=record)
     else:
-        http = namedpipe = None
+        http = namedpipe = record = None
 
         if not args.player:
             console.exit("The default player (VLC) does not seem to be "
@@ -100,11 +113,18 @@ def create_output():
         elif args.player_http:
             http = create_http_server()
 
+        title = create_title(plugin)
+
+        if args.record:
+            record = check_file_output(args.record, args.force)
+
         log.info("Starting player: {0}", args.player)
+
         out = PlayerOutput(args.player, args=args.player_args,
                            quiet=not args.verbose_player,
                            kill=not args.player_no_close,
-                           namedpipe=namedpipe, http=http)
+                           namedpipe=namedpipe, http=http,
+                           record=record, title=title)
 
     return out
 
@@ -123,6 +143,20 @@ def create_http_server(host=None, port=0):
         console.exit("Failed to create HTTP server: {0}", err)
 
     return http
+
+
+def create_title(plugin=None):
+    if args.title and plugin:
+        title = LazyFormatter.format(
+            maybe_encode(args.title),
+            title=lambda: plugin.get_title() or DEFAULT_STREAM_METADATA["title"],
+            author=lambda: plugin.get_author() or DEFAULT_STREAM_METADATA["author"],
+            category=lambda: plugin.get_category() or DEFAULT_STREAM_METADATA["category"],
+            game=lambda: plugin.get_category() or DEFAULT_STREAM_METADATA["game"]
+        )
+    else:
+        title = args.url
+    return title
 
 
 def iter_http_requests(server, player):
@@ -149,10 +183,12 @@ def output_stream_http(plugin, initial_streams, external=False, port=0):
                          "installed. You must specify the path to a player "
                          "executable with --player.")
 
+        title = create_title(plugin)
         server = create_http_server()
         player = output = PlayerOutput(args.player, args=args.player_args,
                                        filename=server.url,
-                                       quiet=not args.verbose_player)
+                                       quiet=not args.verbose_player,
+                                       title=title)
 
         try:
             log.info("Starting player: {0}", args.player)
@@ -209,14 +245,16 @@ def output_stream_http(plugin, initial_streams, external=False, port=0):
     server.close()
 
 
-def output_stream_passthrough(stream):
+def output_stream_passthrough(plugin, stream):
     """Prepares a filename to be passed to the player."""
     global output
 
+    title = create_title(plugin)
     filename = '"{0}"'.format(stream_to_url(stream))
     output = PlayerOutput(args.player, args=args.player_args,
                           filename=filename, call=True,
-                          quiet=not args.verbose_player)
+                          quiet=not args.verbose_player,
+                          title=title)
 
     try:
         log.info("Starting player: {0}", args.player)
@@ -259,7 +297,7 @@ def open_stream(stream):
     return stream_fd, prebuffer
 
 
-def output_stream(stream):
+def output_stream(plugin, stream):
     """Open stream, create output and finally write the stream to output."""
     global output
 
@@ -275,7 +313,7 @@ def output_stream(stream):
     if not success_open:
         console.exit("Could not open stream {0}, tried {1} times, exiting", stream, args.retry_open)
 
-    output = create_output()
+    output = create_output(plugin)
 
     try:
         output.open()
@@ -299,7 +337,8 @@ def read_stream(stream, output, prebuffer, chunk_size=8192):
     is_player = isinstance(output, PlayerOutput)
     is_http = isinstance(output, HTTPServer)
     is_fifo = is_player and output.namedpipe
-    show_progress = isinstance(output, FileOutput) and output.fd is not stdout
+    show_progress = isinstance(output, FileOutput) and output.fd is not stdout and sys.stdout.isatty()
+    show_record_progress = hasattr(output, "record") and isinstance(output.record, FileOutput) and output.record.fd is not stdout and sys.stdout.isatty()
 
     stream_iterator = chain(
         [prebuffer],
@@ -308,6 +347,9 @@ def read_stream(stream, output, prebuffer, chunk_size=8192):
     if show_progress:
         stream_iterator = progress(stream_iterator,
                                    prefix=os.path.basename(args.output))
+    elif show_record_progress:
+        stream_iterator = progress(stream_iterator,
+                                   prefix=os.path.basename(args.record))
 
     try:
         for data in stream_iterator:
@@ -391,7 +433,7 @@ def handle_stream(plugin, streams, stream_name):
             if stream_type in args.player_passthrough and not file_output:
                 log.info("Opening stream: {0} ({1})", stream_name,
                          stream_type)
-                success = output_stream_passthrough(stream)
+                success = output_stream_passthrough(plugin, stream)
             elif args.player_external_http:
                 return output_stream_http(plugin, streams, external=True,
                                           port=args.player_external_http_port)
@@ -400,7 +442,8 @@ def handle_stream(plugin, streams, stream_name):
             else:
                 log.info("Opening stream: {0} ({1})", stream_name,
                          stream_type)
-                success = output_stream(stream)
+
+                success = output_stream(plugin, stream)
 
             if success:
                 break
@@ -409,8 +452,8 @@ def handle_stream(plugin, streams, stream_name):
 def fetch_streams(plugin):
     """Fetches streams using correct parameters."""
 
-    return plugin.get_streams(stream_types=args.stream_types,
-                              sorting_excludes=args.stream_sorting_excludes)
+    return plugin.streams(stream_types=args.stream_types,
+                          sorting_excludes=args.stream_sorting_excludes)
 
 
 def fetch_streams_with_retry(plugin, interval, count):
@@ -539,9 +582,6 @@ def handle_url():
     if not streams:
         console.exit("No playable streams found on this URL: {0}", args.url)
 
-    if args.best_stream_default:
-        args.default_stream = ["best"]
-
     if args.default_stream and not args.stream and not args.json:
         args.stream = args.default_stream
 
@@ -665,17 +705,6 @@ def setup_console(output):
 
     # All console related operations is handled via the ConsoleOutput class
     console = ConsoleOutput(output, streamlink)
-
-    if args.quiet_player:
-        log.warning("The option --quiet-player is deprecated since "
-                    "version 1.4.3 as hiding player output is now "
-                    "the default.")
-
-    if args.best_stream_default:
-        log.warning("The option --best-stream-default is deprecated "
-                    "since version 1.9.0, use '--default-stream best' "
-                    "instead.")
-
     console.json = args.json
 
     # Handle SIGTERM just like SIGINT
@@ -763,6 +792,9 @@ def setup_options():
     if args.hls_segment_ignore_names:
         streamlink.set_option("hls-segment-ignore-names", args.hls_segment_ignore_names)
 
+    if args.hls_segment_key_uri:
+        streamlink.set_option("hls-segment-key-uri", args.hls_segment_key_uri)
+
     if args.hls_timeout:
         streamlink.set_option("hls-timeout", args.hls_timeout)
 
@@ -835,12 +867,6 @@ def setup_options():
     streamlink.set_option("subprocess-errorlog-path", args.subprocess_errorlog_path)
     streamlink.set_option("locale", args.locale)
 
-    # Deprecated options
-    if args.hds_fragment_buffer:
-        log.warning("The option --hds-fragment-buffer is deprecated "
-                    "and will be removed in the future. Use "
-                    "--ringbuffer-size instead")
-
 
 def setup_plugin_args(session, parser):
     """Sets Streamlink plugin options."""
@@ -860,19 +886,20 @@ def setup_plugin_options(session, plugin):
     pname = plugin.module
     required = OrderedDict({})
     for parg in plugin.arguments:
-        if parg.required:
-            required[parg.name] = parg
-        value = getattr(args, parg.namespace_dest(pname))
-        session.set_plugin_option(pname, parg.dest, value)
-        # if the value is set, check to see if any of the required arguments are not set
-        if parg.required or value:
-            try:
-                for rparg in plugin.arguments.requires(parg.name):
-                    required[rparg.name] = rparg
-            except RuntimeError:
-                console.logger.error("{0} plugin has a configuration error and the arguments "
-                                     "cannot be parsed".format(pname))
-                break
+        if parg.options.get("help") != argparse.SUPPRESS:
+            if parg.required:
+                required[parg.name] = parg
+            value = getattr(args, parg.namespace_dest(pname))
+            session.set_plugin_option(pname, parg.dest, value)
+            # if the value is set, check to see if any of the required arguments are not set
+            if parg.required or value:
+                try:
+                    for rparg in plugin.arguments.requires(parg.name):
+                        required[rparg.name] = rparg
+                except RuntimeError:
+                    console.logger.error("{0} plugin has a configuration error and the arguments "
+                                         "cannot be parsed".format(pname))
+                    break
     if required:
         for req in required.values():
             if not session.get_plugin_option(pname, req.dest):
@@ -953,7 +980,7 @@ def main():
 
     # Console output should be on stderr if we are outputting
     # a stream to stdout.
-    if args.stdout or args.output == "-":
+    if args.stdout or args.output == "-" or args.record_and_pipe:
         console_out = sys.stderr
     else:
         console_out = sys.stdout

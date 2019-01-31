@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 from io import BytesIO
 
 from streamlink import NoStreamsError
@@ -24,9 +25,26 @@ class TestPlugin(Plugin):
     def can_handle_url(self, url):
         return "test.se" in url
 
+    def get_title(self):
+        return "Test Title"
+
+    def get_author(self):
+        return u"Tѥst Āuƭhǿr"
+
+    def get_category(self):
+        return None
+
     def _get_streams(self):
         if "empty" in self.url:
             return
+
+        if "UnsortableStreamNames" in self.url:
+            def gen():
+                for i in range(3):
+                    yield "vod", HTTPStream(self.session, "http://test.se/stream")
+
+            return gen()
+
         if "NoStreamsError" in self.url:
             raise NoStreamsError(self.url)
 

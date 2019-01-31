@@ -1,10 +1,12 @@
-import os
 import unittest
+import os
 
-from streamlink.plugin.plugin import HIGH_PRIORITY, LOW_PRIORITY
 from streamlink import Streamlink, NoPluginError
+from streamlink.plugin.plugin import HIGH_PRIORITY, LOW_PRIORITY
 from streamlink.plugins import Plugin
-from streamlink.stream import *
+from streamlink.session import print_small_exception
+from streamlink.stream import AkamaiHDStream, HLSStream, HTTPStream, RTMPStream
+from tests.mock import patch, call
 
 
 class TestSession(unittest.TestCase):
@@ -15,7 +17,7 @@ class TestSession(unittest.TestCase):
         self.session.load_plugins(self.PluginPath)
 
     def test_exceptions(self):
-        self.assertRaises(NoPluginError, self.session.resolve_url, "invalid url")
+        self.assertRaises(NoPluginError, self.session.resolve_url, "invalid url", follow_redirect=False)
 
     def test_load_plugins(self):
         plugins = self.session.get_plugins()
@@ -74,7 +76,7 @@ class TestSession(unittest.TestCase):
 
     def test_plugin(self):
         channel = self.session.resolve_url("http://test.se/channel")
-        streams = channel.get_streams()
+        streams = channel.streams()
 
         self.assertTrue("best" in streams)
         self.assertTrue("worst" in streams)
@@ -87,36 +89,82 @@ class TestSession(unittest.TestCase):
 
     def test_plugin_stream_types(self):
         channel = self.session.resolve_url("http://test.se/channel")
-        streams = channel.get_streams(stream_types=["http", "rtmp"])
+        streams = channel.streams(stream_types=["http", "rtmp"])
 
         self.assertTrue(isinstance(streams["480p"], HTTPStream))
         self.assertTrue(isinstance(streams["480p_rtmp"], RTMPStream))
 
-        streams = channel.get_streams(stream_types=["rtmp", "http"])
+        streams = channel.streams(stream_types=["rtmp", "http"])
 
         self.assertTrue(isinstance(streams["480p"], RTMPStream))
         self.assertTrue(isinstance(streams["480p_http"], HTTPStream))
 
-    def test_plugin_stream_sorted_excludes(self):
+    def test_plugin_stream_sorting_excludes(self):
         channel = self.session.resolve_url("http://test.se/channel")
-        streams = channel.get_streams(sorting_excludes=["1080p", "3000k"])
 
+        streams = channel.streams(sorting_excludes=[])
         self.assertTrue("best" in streams)
         self.assertTrue("worst" in streams)
+        self.assertFalse("best-unfiltered" in streams)
+        self.assertFalse("worst-unfiltered" in streams)
+        self.assertTrue(streams["worst"] is streams["350k"])
+        self.assertTrue(streams["best"] is streams["1080p"])
+
+        streams = channel.streams(sorting_excludes=["1080p", "3000k"])
+        self.assertTrue("best" in streams)
+        self.assertTrue("worst" in streams)
+        self.assertFalse("best-unfiltered" in streams)
+        self.assertFalse("worst-unfiltered" in streams)
+        self.assertTrue(streams["worst"] is streams["350k"])
         self.assertTrue(streams["best"] is streams["1500k"])
 
-        streams = channel.get_streams(sorting_excludes=[">=1080p", ">1500k"])
+        streams = channel.streams(sorting_excludes=[">=1080p", ">1500k"])
         self.assertTrue(streams["best"] is streams["1500k"])
 
-        streams = channel.get_streams(sorting_excludes=lambda q: not q.endswith("p"))
+        streams = channel.streams(sorting_excludes=lambda q: not q.endswith("p"))
         self.assertTrue(streams["best"] is streams["3000k"])
+
+        streams = channel.streams(sorting_excludes=lambda q: False)
+        self.assertFalse("best" in streams)
+        self.assertFalse("worst" in streams)
+        self.assertTrue("best-unfiltered" in streams)
+        self.assertTrue("worst-unfiltered" in streams)
+        self.assertTrue(streams["worst-unfiltered"] is streams["350k"])
+        self.assertTrue(streams["best-unfiltered"] is streams["1080p"])
+
+        channel = self.session.resolve_url("http://test.se/UnsortableStreamNames")
+        streams = channel.streams()
+        self.assertFalse("best" in streams)
+        self.assertFalse("worst" in streams)
+        self.assertFalse("best-unfiltered" in streams)
+        self.assertFalse("worst-unfiltered" in streams)
+        self.assertTrue("vod" in streams)
+        self.assertTrue("vod_alt" in streams)
+        self.assertTrue("vod_alt2" in streams)
 
     def test_plugin_support(self):
         channel = self.session.resolve_url("http://test.se/channel")
-        streams = channel.get_streams()
+        streams = channel.streams()
 
         self.assertTrue("support" in streams)
         self.assertTrue(isinstance(streams["support"], HTTPStream))
+
+    @patch("streamlink.session.sys.stderr")
+    def test_short_exception(self, stderr):
+        try:
+            raise RuntimeError("test exception")
+        except RuntimeError:
+            print_small_exception("test_short_exception")
+            self.assertSequenceEqual(
+                [call('RuntimeError: test exception\n'), call('\n')],
+                stderr.write.mock_calls)
+
+    def test_set_and_get_locale(self):
+        session = Streamlink()
+        session.set_option("locale", "en_US")
+        self.assertEqual(session.localization.country.alpha2, "US")
+        self.assertEqual(session.localization.language.alpha2, "en")
+        self.assertEqual(session.localization.language_code, "en_US")
 
 
 if __name__ == "__main__":

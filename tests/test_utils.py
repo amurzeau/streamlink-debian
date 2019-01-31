@@ -1,8 +1,9 @@
-import sys
+import base64
 import os.path
+import sys
+import unittest
 
 from streamlink.plugin.api.validate import xml_element, text
-from streamlink.utils import update_scheme, url_equal, search_dict, load_module
 
 try:
     import xml.etree.cElementTree as ET
@@ -10,9 +11,18 @@ except ImportError:
     import xml.etree.ElementTree as ET
 from streamlink import PluginError
 from streamlink.plugin.api import validate
-from streamlink.utils import *
-
-import unittest
+from streamlink.utils import (
+    absolute_url,
+    load_module,
+    parse_json,
+    parse_qsd,
+    parse_xml,
+    prepend_www,
+    rtmpparse,
+    search_dict,
+    swfdecompress,
+    verifyjson,
+)
 
 # used in the import test to verify that this module was imported
 __test_marker__ = "test_marker"
@@ -58,6 +68,12 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(expected.tag, actual.tag)
         self.assertEqual(expected.attrib, actual.attrib)
 
+    def test_parse_xml_ns_ignore_tab(self):
+        expected = ET.Element("test", {"foo": "bar"})
+        actual = parse_xml(u"""<test	foo="bar"	xmlns="foo:bar"/>""", ignore_ns=True)
+        self.assertEqual(expected.tag, actual.tag)
+        self.assertEqual(expected.attrib, actual.attrib)
+
     def test_parse_xml_ns(self):
         expected = ET.Element("{foo:bar}test", {"foo": "bar"})
         actual = parse_xml(u"""<h:test foo="bar" xmlns:h="foo:bar"/>""")
@@ -81,7 +97,6 @@ class TestUtil(unittest.TestCase):
         self.assertRaises(PluginError,
                           parse_xml, u"""<test foo="bar &"/>""")
 
-
     def test_parse_xml_entities(self):
         expected = ET.Element("test", {"foo": "bar &"})
         actual = parse_xml(u"""<test foo="bar &"/>""",
@@ -90,41 +105,28 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(expected.tag, actual.tag)
         self.assertEqual(expected.attrib, actual.attrib)
 
-
     def test_parse_qsd(self):
         self.assertEqual(
             {"test": "1", "foo": "bar"},
             parse_qsd("test=1&foo=bar", schema=validate.Schema({"test": validate.text, "foo": "bar"})))
 
-    def test_update_scheme(self):
+    def test_rtmpparse(self):
         self.assertEqual(
-            "https://example.com/foo",  # becomes https
-            update_scheme("https://other.com/bar", "//example.com/foo")
-        )
+            ("rtmp://testserver.com:1935/app", "playpath?arg=1"),
+            rtmpparse("rtmp://testserver.com/app/playpath?arg=1"))
         self.assertEqual(
-            "http://example.com/foo",  # becomes http
-            update_scheme("http://other.com/bar", "//example.com/foo")
-        )
+            ("rtmp://testserver.com:1935/long/app", "playpath?arg=1"),
+            rtmpparse("rtmp://testserver.com/long/app/playpath?arg=1"))
         self.assertEqual(
-            "http://example.com/foo",  # remains unchanged
-            update_scheme("https://other.com/bar", "http://example.com/foo")
-        )
-        self.assertEqual(
-            "https://example.com/foo",  # becomes https
-            update_scheme("https://other.com/bar", "example.com/foo")
-        )
+            ("rtmp://testserver.com:1935/app", None),
+            rtmpparse("rtmp://testserver.com/app"))
 
-    def test_url_equal(self):
-        self.assertTrue(url_equal("http://test.com/test", "http://test.com/test"))
-        self.assertFalse(url_equal("http://test.com/test", "http://test.com/test2"))
-
-        self.assertTrue(url_equal("http://test.com/test", "http://test.com/test2", ignore_path=True))
-        self.assertTrue(url_equal("http://test.com/test", "https://test.com/test", ignore_scheme=True))
-        self.assertFalse(url_equal("http://test.com/test", "https://test.com/test"))
-
-        self.assertTrue(url_equal("http://test.com/test", "http://test.com/test#hello", ignore_fragment=True))
-        self.assertTrue(url_equal("http://test.com/test", "http://test2.com/test", ignore_netloc=True))
-        self.assertFalse(url_equal("http://test.com/test", "http://test2.com/test1", ignore_netloc=True))
+    def test_swf_decompress(self):
+        # FYI, not a valid SWF
+        swf = b"FWS " + b"0000" + b"test data 12345"
+        swf_compressed = b"CWS " + b"0000" + base64.b64decode(b"eJwrSS0uUUhJLElUMDQyNjEFACpTBJo=")
+        self.assertEqual(swf, swfdecompress(swf_compressed))
+        self.assertEqual(swf, swfdecompress(swf))
 
     def test_search_dict(self):
 

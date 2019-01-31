@@ -2,7 +2,6 @@ import re
 
 from streamlink.plugin import Plugin
 from streamlink.plugin import PluginArguments, PluginArgument
-from streamlink.plugin.api import http
 from streamlink.plugin.api import validate
 from streamlink.stream import HLSStream
 
@@ -20,7 +19,7 @@ QUALITY_WEIGHTS = {
     "sd": 480
 }
 
-_url_re = re.compile(r"http(s)?://(?P<cdn>\w+\.)?afreeca(tv)?\.com/(?P<username>\w+)(/\d+)?")
+_url_re = re.compile(r"https?://play\.afreecatv\.com/(?P<username>\w+)(?:/\d+)?")
 
 _channel_schema = validate.Schema(
     {
@@ -83,14 +82,10 @@ class AfreecaTV(Plugin):
             "player_type": "html5"
         }
 
-        res = http.post(CHANNEL_API_URL, data=data)
-        return http.json(res, schema=_channel_schema)
+        res = self.session.http.post(CHANNEL_API_URL, data=data)
+        return self.session.http.json(res, schema=_channel_schema)
 
     def _get_hls_key(self, broadcast, username, quality):
-        headers = {
-            "Referer": self.url
-        }
-
         data = {
             "bid": username,
             "bno": broadcast,
@@ -98,16 +93,16 @@ class AfreecaTV(Plugin):
             "quality": quality,
             "type": "pwd"
         }
-        res = http.post(CHANNEL_API_URL, data=data, headers=headers)
-        return http.json(res, schema=_channel_schema)
+        res = self.session.http.post(CHANNEL_API_URL, data=data)
+        return self.session.http.json(res, schema=_channel_schema)
 
     def _get_stream_info(self, broadcast, quality, cdn, rmd):
         params = {
             "return_type": cdn,
             "broad_key": "{broadcast}-flash-{quality}-hls".format(**locals())
         }
-        res = http.get(STREAM_INFO_URLS.format(rmd=rmd), params=params)
-        return http.json(res, schema=_stream_schema)
+        res = self.session.http.get(STREAM_INFO_URLS.format(rmd=rmd), params=params)
+        return self.session.http.json(res, schema=_stream_schema)
 
     def _get_hls_stream(self, broadcast, username, quality, cdn, rmd):
         keyjson = self._get_hls_key(broadcast, username, quality)
@@ -132,16 +127,17 @@ class AfreecaTV(Plugin):
             "isSaveJoin": "false"
         }
 
-        res = http.post(self.login_url, data=data)
-        res = http.json(res)
+        res = self.session.http.post(self.login_url, data=data)
+        res = self.session.http.json(res)
         if res["RESULT"] == 1:
             return True
         else:
             return False
 
     def _get_streams(self):
+        self.session.http.headers.update({"Referer": self.url})
         if not self.session.get_option("hls-segment-ignore-names"):
-            ignore_segment = ["_0", "_1", "_2"]
+            ignore_segment = ["preloading"]
             self.session.set_option("hls-segment-ignore-names", ignore_segment)
 
         login_username = self.get_option("username")
