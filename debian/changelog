@@ -1,3 +1,9 @@
+streamlink (1.0.0+dfsg-1~bpo9+1) stretch-backports; urgency=medium
+
+  * Rebuild for stretch-backports.
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 02 Apr 2019 22:22:49 +0200
+
 streamlink (1.0.0+dfsg-1) unstable; urgency=medium
 
   * docs: mark Multi-Arch: foreign
