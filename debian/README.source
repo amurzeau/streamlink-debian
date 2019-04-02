@@ -4,8 +4,8 @@ Here are the commands to manage the package:
 - Import upstream version and update Debian branch with new upstream release:
   - `gbp import-orig --uscan`
 
-- Refresh quilt patches:
-  - `quilt pop -a && while quilt push; do quilt refresh; done`
+- Refresh patches:
+  - `gbp pq import && gbp pq export`
 
 - Check for important changes that may need other package changes (copyright, new patch, ...):
   - `https://github.com/streamlink/streamlink/compare/<old_tag>...<new_tag>`
@@ -39,6 +39,14 @@ Check doc dependencies:
 	- fonts-inconsolata
 	- fonts-roboto-slab
 Check supported players in https://streamlink.github.io/players.html
+
+# Building package from streamlink unreleased version
+
+- Checkout master (andd update it if needed)
+- Ensure git status return no modification (no dirty working copy)
+- Generate python tarball: python3 ./setup.py sdist
+- Import with gbp and filtering: `gbp import-orig --interactive --verbose --rollback ../streamlink_0.14.2-170-g3946184.orig.tar.gz --filter-pristine-tar --filter=docs/_themes/sphinx_rtd_theme_violet/static/fonts`
+
 
 # Packages structure
 

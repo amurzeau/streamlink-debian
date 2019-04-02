@@ -9,10 +9,11 @@ from Crypto.PublicKey import RSA
 import streamlink
 from streamlink.exceptions import FatalPluginError
 from streamlink.plugin import Plugin, PluginArguments, PluginArgument
-from streamlink.plugin.api import http
 from streamlink.plugin.api import validate
+from streamlink.plugin.api.utils import itertags, parse_json
 from streamlink.plugin.api.validate import Schema
 from streamlink.stream.dash import DASHStream
+from streamlink.compat import html_unescape
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +24,8 @@ class SteamLoginFailed(Exception):
 
 class SteamBroadcastPlugin(Plugin):
     _url_re = re.compile(r"https?://steamcommunity.com/broadcast/watch/(\d+)")
+    _steamtv_url_re = re.compile(r"https?://steam.tv/(\w+)")
+    _watch_broadcast_url = "https://steamcommunity.com/broadcast/watch/"
     _get_broadcast_url = "https://steamcommunity.com/broadcast/getbroadcastmpd/"
     _user_agent = "streamlink/{}".format(streamlink.__version__)
     _broadcast_schema = Schema({
@@ -70,15 +73,15 @@ class SteamBroadcastPlugin(Plugin):
             help="""
             A Steam account password to use with --steam-email.
             """
-    ))
+        ))
 
     def __init__(self, url):
         super(SteamBroadcastPlugin, self).__init__(url)
-        http.headers["User-Agent"] = self._user_agent
+        self.session.http.headers["User-Agent"] = self._user_agent
 
     @classmethod
     def can_handle_url(cls, url):
-        return cls._url_re.match(url) is not None
+        return cls._url_re.match(url) is not None or cls._steamtv_url_re.match(url) is not None
 
     @property
     def donotcache(self):
@@ -91,8 +94,8 @@ class SteamBroadcastPlugin(Plugin):
         :param password: password for account
         :return: encrypted password
         """
-        res = http.get(self._get_rsa_key_url, params=dict(username=email, donotcache=self.donotcache))
-        rsadata = http.json(res, schema=self._rsa_key_schema)
+        res = self.session.http.get(self._get_rsa_key_url, params=dict(username=email, donotcache=self.donotcache))
+        rsadata = self.session.http.json(res, schema=self._rsa_key_schema)
 
         rsa = RSA.construct((rsadata["publickey_mod"], rsadata["publickey_exp"]))
         cipher = PKCS1_v1_5.new(rsa)
@@ -119,9 +122,9 @@ class SteamBroadcastPlugin(Plugin):
             "twofactorcode": twofactorcode
         }
 
-        res = http.post(self._dologin_url, data=login_data)
+        res = self.session.http.post(self._dologin_url, data=login_data)
 
-        resp = http.json(res, schema=self._dologin_schema)
+        resp = self.session.http.json(res, schema=self._dologin_schema)
 
         if not resp[u"success"]:
             if resp.get(u"captcha_needed"):
@@ -176,12 +179,14 @@ class SteamBroadcastPlugin(Plugin):
         log.info("Attempting to login to Steam as {}".format(email))
         return self.dologin(email, password)
 
-    def _get_broadcast_stream(self, steamid, viewertoken=0):
-        res = http.get(self._get_broadcast_url,
-                       params=dict(broadcastid=0,
-                                   steamid=steamid,
-                                   viewertoken=viewertoken))
-        return http.json(res, schema=self._broadcast_schema)
+    def _get_broadcast_stream(self, steamid, viewertoken=0, sessionid=None):
+        log.debug("Getting broadcast stream: sessionid={0}".format(sessionid))
+        res = self.session.http.get(self._get_broadcast_url,
+                                    params=dict(broadcastid=0,
+                                                steamid=steamid,
+                                                viewertoken=viewertoken,
+                                                sessionid=sessionid))
+        return self.session.http.json(res, schema=self._broadcast_schema)
 
     def _get_streams(self):
         streamdata = None
@@ -190,11 +195,24 @@ class SteamBroadcastPlugin(Plugin):
                 log.info("Logged in as {0}".format(self.get_option("email")))
                 self.save_cookies(lambda c: "steamMachineAuth" in c.name)
 
+        # Handle steam.tv URLs
+        if self._steamtv_url_re.match(self.url) is not None:
+            # extract the steam ID from the page
+            res = self.session.http.get(self.url)
+            for div in itertags(res.text, 'div'):
+                if div.attributes.get("id") == "webui_config":
+                    broadcast_data = html_unescape(div.attributes.get("data-broadcast"))
+                    steamid = parse_json(broadcast_data).get("steamid")
+                    self.url = self._watch_broadcast_url + steamid
+
         # extract the steam ID from the URL
         steamid = self._url_re.match(self.url).group(1)
+        res = self.session.http.get(self.url)  # get the page to set some cookies
+        sessionid = res.cookies.get('sessionid')
 
         while streamdata is None or streamdata[u"success"] in ("waiting", "waiting_for_start"):
-            streamdata = self._get_broadcast_stream(steamid)
+            streamdata = self._get_broadcast_stream(steamid,
+                                                    sessionid=sessionid)
 
             if streamdata[u"success"] == "ready":
                 return DASHStream.parse_manifest(self.session, streamdata["url"])

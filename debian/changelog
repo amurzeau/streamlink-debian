@@ -1,3 +1,14 @@
+streamlink (1.0.0+dfsg-1) unstable; urgency=medium
+
+  * docs: mark Multi-Arch: foreign
+  * Update d/copyright years to 2019
+  * Bump standard version to 4.3.0, no change required
+  * New upstream version 1.0.0+dfsg
+  * Update patch remove_new_version_check
+  * Update d/README.source to use gbp pq
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 31 Jan 2019 20:09:50 +0100
+
 streamlink (0.14.2+dfsg-1~bpo9+1) stretch-backports; urgency=medium
 
   * Rebuild for stretch-backports.
