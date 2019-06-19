@@ -178,7 +178,8 @@ src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nos.py
 src/streamlink/plugins/npo.py
 src/streamlink/plugins/nrk.py
-src/streamlink/plugins/ok_live.py
+src/streamlink/plugins/ntv.py
+src/streamlink/plugins/okru.py
 src/streamlink/plugins/olympicchannel.py
 src/streamlink/plugins/onetv.py
 src/streamlink/plugins/openrectv.py
@@ -424,7 +425,8 @@ tests/plugins/test_nhkworld.py
 tests/plugins/test_nos.py
 tests/plugins/test_npo.py
 tests/plugins/test_nrk.py
-tests/plugins/test_ok_live.py
+tests/plugins/test_ntv.py
+tests/plugins/test_okru.py
 tests/plugins/test_olympicchannel.py
 tests/plugins/test_onetv.py
 tests/plugins/test_openrectv.py
