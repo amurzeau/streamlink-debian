@@ -1,9 +1,9 @@
-streamlink (1.1.1+dfsg-1) UNRELEASED; urgency=medium
+streamlink (1.1.1+dfsg-1~exp1) experimental; urgency=low
 
-  * d/gbp.conf: update to experimental branch
   * New upstream version 1.1.1+dfsg
+  * Update patch remove_new_version_check
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 19 Jun 2019 21:47:48 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 19 Jun 2019 21:58:59 +0200
 
 streamlink (1.0.0+dfsg-1) unstable; urgency=medium
 
