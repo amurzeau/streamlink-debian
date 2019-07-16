@@ -7,11 +7,6 @@ Test-Command: sh debian/tests/do-test.sh streamlink && sh debian/tests/check_man
 Depends: streamlink, openssl, bsdmainutils, man-db
 Restrictions: allow-stderr
 
-# Same test using livestreamer (which has a transitional package to streamlink)
-Test-Command: sh debian/tests/do-test.sh livestreamer && sh debian/tests/check_manpage.sh livestreamer
-Depends: livestreamer, openssl, bsdmainutils, man-db
-Restrictions: allow-stderr
-
 # Test doc package
 Test-Command: bash debian/tests/check_docs.sh
 Depends: bash, python3-streamlink-doc, fonts-font-awesome, libjs-modernizr

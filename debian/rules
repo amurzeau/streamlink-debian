@@ -32,9 +32,3 @@ override_dh_installchangelogs:
 # Needed to prevent docs/changelog.html from being compressed
 override_dh_compress:
 	dh_compress -X.html
-
-# livestreamer transitional package needs to have a greater version than the
-# existing package version in stable which has version 1.12.2-1.
-override_dh_gencontrol:
-	dh_gencontrol -plivestreamer -- -v1.12.2+streamlink+$(DEB_VERSION)
-	dh_gencontrol --remaining-packages
