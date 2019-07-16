@@ -1,3 +1,13 @@
+streamlink (1.1.1+dfsg-1) unstable; urgency=medium
+
+  * Use ignore-branch instead of having different gbp.conf over branches
+  * Bump standard version to 4.4.0, no change required
+  * Bump debhelper compat to 12
+  * Remove livestreamer transitional package
+  * Merge changes in experimental to unstable
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 16 Jul 2019 22:39:58 +0200
+
 streamlink (1.1.1+dfsg-1~exp1) experimental; urgency=low
 
   * New upstream version 1.1.1+dfsg
