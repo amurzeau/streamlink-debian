@@ -1,8 +1,11 @@
-streamlink (1.2.0+dfsg-1) UNRELEASED; urgency=medium
+streamlink (1.2.0+dfsg-1) unstable; urgency=medium
 
   * New upstream version 1.2.0+dfsg
+  * Update remove_new_version_check patch
+  * Move from PyCrypto to pycryptodomex
+  * Fix typo in manpage with patch plugins.pixiv-fix-doc-typo-thats-that-s
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 23 Aug 2019 15:31:58 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 23 Aug 2019 19:31:42 +0200
 
 streamlink (1.1.1+dfsg-1) unstable; urgency=medium
 
