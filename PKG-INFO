@@ -1,15 +1,15 @@
 Metadata-Version: 2.1
 Name: streamlink
-Version: 1.1.1
+Version: 1.2.0
 Summary: Streamlink is command-line utility that extracts streams from various services and pipes them into a video player of choice.
 Home-page: https://github.com/streamlink/streamlink
 Author: Streamlink
 Author-email: charlie@charliedrage.com
 License: Simplified BSD
-Project-URL: Tracker, https://github.com/streamlink/streamlink/issues
+Project-URL: Funding, https://opencollective.com/streamlink
 Project-URL: Documentation, https://streamlink.github.io/
 Project-URL: Source, https://github.com/streamlink/streamlink
-Project-URL: Funding, https://opencollective.com/streamlink
+Project-URL: Tracker, https://github.com/streamlink/streamlink/issues
 Description: # [Streamlink][streamlink-website]
         
         [![TravisCI build status][travisci-build-status-badge]][travisci-build-status]

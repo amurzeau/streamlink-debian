@@ -115,6 +115,7 @@ src/streamlink/plugins/canalplus.py
 src/streamlink/plugins/cdnbg.py
 src/streamlink/plugins/ceskatelevize.py
 src/streamlink/plugins/cinergroup.py
+src/streamlink/plugins/clubbingtv.py
 src/streamlink/plugins/cnews.py
 src/streamlink/plugins/common_jwplayer.py
 src/streamlink/plugins/common_swf.py
@@ -126,6 +127,7 @@ src/streamlink/plugins/dash.py
 src/streamlink/plugins/delfi.py
 src/streamlink/plugins/deutschewelle.py
 src/streamlink/plugins/dingittv.py
+src/streamlink/plugins/dlive.py
 src/streamlink/plugins/dogan.py
 src/streamlink/plugins/dogus.py
 src/streamlink/plugins/dommune.py
@@ -160,6 +162,7 @@ src/streamlink/plugins/ine.py
 src/streamlink/plugins/itvplayer.py
 src/streamlink/plugins/kanal7.py
 src/streamlink/plugins/kingkong.py
+src/streamlink/plugins/linelive.py
 src/streamlink/plugins/live_russia_tv.py
 src/streamlink/plugins/liveedu.py
 src/streamlink/plugins/liveme.py
@@ -176,15 +179,14 @@ src/streamlink/plugins/nbc.py
 src/streamlink/plugins/nbcsports.py
 src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nos.py
-src/streamlink/plugins/npo.py
 src/streamlink/plugins/nrk.py
 src/streamlink/plugins/ntv.py
 src/streamlink/plugins/okru.py
 src/streamlink/plugins/olympicchannel.py
+src/streamlink/plugins/oneplusone.py
 src/streamlink/plugins/onetv.py
 src/streamlink/plugins/openrectv.py
 src/streamlink/plugins/orf_tvthek.py
-src/streamlink/plugins/ovvatv.py
 src/streamlink/plugins/pandatv.py
 src/streamlink/plugins/periscope.py
 src/streamlink/plugins/picarto.py
@@ -197,8 +199,8 @@ src/streamlink/plugins/qq.py
 src/streamlink/plugins/radionet.py
 src/streamlink/plugins/raiplay.py
 src/streamlink/plugins/reshet.py
+src/streamlink/plugins/reuters.py
 src/streamlink/plugins/rtbf.py
-src/streamlink/plugins/rte.py
 src/streamlink/plugins/rtlxl.py
 src/streamlink/plugins/rtmp.py
 src/streamlink/plugins/rtpplay.py
@@ -242,7 +244,6 @@ src/streamlink/plugins/tv3cat.py
 src/streamlink/plugins/tv4play.py
 src/streamlink/plugins/tv5monde.py
 src/streamlink/plugins/tv8.py
-src/streamlink/plugins/tvcatchup.py
 src/streamlink/plugins/tvibo.py
 src/streamlink/plugins/tvnbg.py
 src/streamlink/plugins/tvp.py
@@ -256,6 +257,7 @@ src/streamlink/plugins/ustvnow.py
 src/streamlink/plugins/vaughnlive.py
 src/streamlink/plugins/viasat.py
 src/streamlink/plugins/vidio.py
+src/streamlink/plugins/vimeo.py
 src/streamlink/plugins/vinhlongtv.py
 src/streamlink/plugins/vk.py
 src/streamlink/plugins/vrtbe.py
@@ -367,6 +369,7 @@ tests/plugins/test_canalplus.py
 tests/plugins/test_cdnbg.py
 tests/plugins/test_ceskatelevize.py
 tests/plugins/test_cinergroup.py
+tests/plugins/test_clubbingtv.py
 tests/plugins/test_cnews.py
 tests/plugins/test_crunchyroll.py
 tests/plugins/test_cubetv.py
@@ -376,6 +379,7 @@ tests/plugins/test_dash.py
 tests/plugins/test_delfi.py
 tests/plugins/test_deutschewelle.py
 tests/plugins/test_dingittv.py
+tests/plugins/test_dlive.py
 tests/plugins/test_dogan.py
 tests/plugins/test_dogus.py
 tests/plugins/test_dommune.py
@@ -407,6 +411,7 @@ tests/plugins/test_ine.py
 tests/plugins/test_itvplayer.py
 tests/plugins/test_kanal7.py
 tests/plugins/test_kingkong.py
+tests/plugins/test_linelive.py
 tests/plugins/test_live_russia_tv.py
 tests/plugins/test_liveedu.py
 tests/plugins/test_liveme.py
@@ -423,15 +428,14 @@ tests/plugins/test_nbc.py
 tests/plugins/test_nbcsports.py
 tests/plugins/test_nhkworld.py
 tests/plugins/test_nos.py
-tests/plugins/test_npo.py
 tests/plugins/test_nrk.py
 tests/plugins/test_ntv.py
 tests/plugins/test_okru.py
 tests/plugins/test_olympicchannel.py
+tests/plugins/test_oneplusone.py
 tests/plugins/test_onetv.py
 tests/plugins/test_openrectv.py
 tests/plugins/test_orf_tvthek.py
-tests/plugins/test_ovvatv.py
 tests/plugins/test_pandatv.py
 tests/plugins/test_periscope.py
 tests/plugins/test_picarto.py
@@ -444,8 +448,8 @@ tests/plugins/test_qq.py
 tests/plugins/test_radionet.py
 tests/plugins/test_raiplay.py
 tests/plugins/test_reshet.py
+tests/plugins/test_reuters.py
 tests/plugins/test_rtbf.py
-tests/plugins/test_rte.py
 tests/plugins/test_rtlxl.py
 tests/plugins/test_rtpplay.py
 tests/plugins/test_rtve.py
@@ -489,7 +493,6 @@ tests/plugins/test_tv3cat.py
 tests/plugins/test_tv4play.py
 tests/plugins/test_tv5monde.py
 tests/plugins/test_tv8.py
-tests/plugins/test_tvcatchup.py
 tests/plugins/test_tvibo.py
 tests/plugins/test_tvnbg.py
 tests/plugins/test_tvp.py
@@ -503,6 +506,7 @@ tests/plugins/test_ustvnow.py
 tests/plugins/test_vaughnlive.py
 tests/plugins/test_viasat.py
 tests/plugins/test_vidio.py
+tests/plugins/test_vimeo.py
 tests/plugins/test_vinhlongtv.py
 tests/plugins/test_vk.py
 tests/plugins/test_vrtbe.py
