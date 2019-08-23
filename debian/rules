@@ -7,12 +7,6 @@ export PYBUILD_INSTALL_ARGS_python3 = --install-scripts usr/share/streamlink/
 # pycountry.
 export STREAMLINK_USE_PYCOUNTRY=1
 
-# Debian has python3-crypto for pycrypto, use it instead of
-# python3-pycryptodome.
-# python3-pycryptodome contains pycryptodomex Python module instead of
-# pycryptodome, with which streamlink is not compatible.
-export STREAMLINK_USE_PYCRYPTO=1
-
 # Provides DEB_VERSION
 include /usr/share/dpkg/pkg-info.mk
 

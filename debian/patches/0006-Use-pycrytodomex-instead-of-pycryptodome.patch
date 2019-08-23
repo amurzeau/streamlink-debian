@@ -1,0 +1,148 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Fri, 23 Aug 2019 18:54:27 +0200
+Subject: Use pycrytodomex instead of pycryptodome
+
+Streamlink use features specific to pycryptodome which are not available
+in python3-crypto package. Only pycryptodomex python module is available
+in Debian, so replace the use of pycrytodome with pycrytodomex.
+
+Related bug python3-pycryptodome: #886291: python3-pycryptodome contains
+pycryptodomex instead of pycryptodome.
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ setup.py                          | 2 +-
+ src/streamlink/plugins/abematv.py | 2 +-
+ src/streamlink/plugins/rtve.py    | 2 +-
+ src/streamlink/plugins/steam.py   | 4 ++--
+ src/streamlink/plugins/ustvnow.py | 6 +++---
+ src/streamlink/plugins/webtv.py   | 2 +-
+ src/streamlink/stream/hls.py      | 2 +-
+ src/streamlink/utils/crypto.py    | 2 +-
+ tests/streams/test_hls.py         | 2 +-
+ 9 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/setup.py b/setup.py
+index cde8848..3183371 100644
+--- a/setup.py
++++ b/setup.py
+@@ -31,7 +31,7 @@ if environ.get("STREAMLINK_USE_PYCRYPTO"):
+     deps.append("pycrypto")
+ else:
+     # this version of pycryptodome is known to work and has a Windows wheel for py2.7, py3.3-3.6
+-    deps.append("pycryptodome>=3.4.3,<4")
++    deps.append("pycryptodomex>=3.4.3,<4")
+ 
+ # for localization
+ if environ.get("STREAMLINK_USE_PYCOUNTRY"):
+diff --git a/src/streamlink/plugins/abematv.py b/src/streamlink/plugins/abematv.py
+index 53ca222..e22dc68 100644
+--- a/src/streamlink/plugins/abematv.py
++++ b/src/streamlink/plugins/abematv.py
+@@ -9,7 +9,7 @@ import uuid
+ from base64 import urlsafe_b64encode
+ from binascii import unhexlify
+ 
+-from Crypto.Cipher import AES
++from Cryptodome.Cipher import AES
+ 
+ from requests import Response
+ from requests.adapters import BaseAdapter
+diff --git a/src/streamlink/plugins/rtve.py b/src/streamlink/plugins/rtve.py
+index 1c26ca3..3b0f7d3 100644
+--- a/src/streamlink/plugins/rtve.py
++++ b/src/streamlink/plugins/rtve.py
+@@ -3,7 +3,7 @@ import logging
+ import re
+ from functools import partial
+ 
+-from Crypto.Cipher import Blowfish
++from Cryptodome.Cipher import Blowfish
+ 
+ from streamlink.compat import bytes, is_py3
+ from streamlink.plugin import Plugin, PluginArguments, PluginArgument
+diff --git a/src/streamlink/plugins/steam.py b/src/streamlink/plugins/steam.py
+index 7c33470..6d2a32a 100644
+--- a/src/streamlink/plugins/steam.py
++++ b/src/streamlink/plugins/steam.py
+@@ -3,8 +3,8 @@ import logging
+ import re
+ import time
+ 
+-from Crypto.Cipher import PKCS1_v1_5
+-from Crypto.PublicKey import RSA
++from Cryptodome.Cipher import PKCS1_v1_5
++from Cryptodome.PublicKey import RSA
+ 
+ import streamlink
+ from streamlink.exceptions import FatalPluginError
+diff --git a/src/streamlink/plugins/ustvnow.py b/src/streamlink/plugins/ustvnow.py
+index 4d6c213..581b8cc 100644
+--- a/src/streamlink/plugins/ustvnow.py
++++ b/src/streamlink/plugins/ustvnow.py
+@@ -7,9 +7,9 @@ import logging
+ import re
+ from uuid import uuid4
+ 
+-from Crypto.Cipher import AES
+-from Crypto.Hash import SHA256
+-from Crypto.Util.Padding import pad, unpad
++from Cryptodome.Cipher import AES
++from Cryptodome.Hash import SHA256
++from Cryptodome.Util.Padding import pad, unpad
+ 
+ from streamlink import PluginError
+ from streamlink.compat import urljoin, urlparse
+diff --git a/src/streamlink/plugins/webtv.py b/src/streamlink/plugins/webtv.py
+index 6afa6e4..8dff577 100644
+--- a/src/streamlink/plugins/webtv.py
++++ b/src/streamlink/plugins/webtv.py
+@@ -4,7 +4,7 @@ import base64
+ 
+ import binascii
+ 
+-from Crypto.Cipher import AES
++from Cryptodome.Cipher import AES
+ 
+ from streamlink.plugin import Plugin
+ from streamlink.plugin.api import validate
+diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
+index b243b22..7385424 100644
+--- a/src/streamlink/stream/hls.py
++++ b/src/streamlink/stream/hls.py
+@@ -3,7 +3,7 @@ import re
+ import struct
+ 
+ from collections import defaultdict, namedtuple
+-from Crypto.Cipher import AES
++from Cryptodome.Cipher import AES
+ 
+ from streamlink.exceptions import StreamError
+ from streamlink.stream import hls_playlist
+diff --git a/src/streamlink/utils/crypto.py b/src/streamlink/utils/crypto.py
+index c49c1f1..4ddc481 100644
+--- a/src/streamlink/utils/crypto.py
++++ b/src/streamlink/utils/crypto.py
+@@ -1,7 +1,7 @@
+ from __future__ import absolute_import
+ import hashlib
+ 
+-from Crypto.Cipher import AES
++from Cryptodome.Cipher import AES
+ 
+ from streamlink.compat import is_py3
+ 
+diff --git a/tests/streams/test_hls.py b/tests/streams/test_hls.py
+index d56d3b0..3b08dfd 100644
+--- a/tests/streams/test_hls.py
++++ b/tests/streams/test_hls.py
+@@ -6,7 +6,7 @@ from functools import partial
+ 
+ import pytest
+ import requests_mock
+-from Crypto.Cipher import AES
++from Cryptodome.Cipher import AES
+ from mock import patch, Mock
+ 
+ from streamlink.session import Streamlink
