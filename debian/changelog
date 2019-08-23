@@ -1,3 +1,9 @@
+streamlink (1.2.0+dfsg-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.2.0+dfsg
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 23 Aug 2019 15:31:58 +0200
+
 streamlink (1.1.1+dfsg-1) unstable; urgency=medium
 
   * Use ignore-branch instead of having different gbp.conf over branches
