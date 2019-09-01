@@ -14,19 +14,19 @@ Here are the commands to manage the package:
   - `debuild`
 
 - Release version with `low` urgency:
-  - `gbp dch -Ra --commit -U low`
+  - `gbp dch -Ra --bpo --commit -U low`
 
 - Build source package and tag Debian branch:
   - `gbp buildpackage --git-tag --git-sign-tags -nc -S`
 
 - Build package using sbuild:
   - `sbuild -As ../streamlink_<version>.dsc -d unstable`
-  - `gbp buildpackage "--git-builder=sbuild -v -As -d unstable --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\""`
+  - `gbp buildpackage "--git-builder=sbuild -v -As -d buster-backports --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot stable-%a-sbuild\""`
 
 - Run lintian:
   - `lintian -EviIL +pedantic  ./streamlink_<version>_amd64.changes`
 
-- Don't forget to push `master` and `upstream` branches along with new tags (`debian/<version>`, `upstream/<version>`)
+- Don't forget to push `buster-backports` and `upstream` branches along with new tags (`debian/<version>`, `upstream/<version>`)
 
 # Changes checks
 
