@@ -21,8 +21,8 @@ Build-Depends: debhelper (>= 12),
  python3-recommonmark,
  python3-isodate
 Homepage: https://streamlink.github.io/
-Vcs-Git: https://github.com/amurzeau/streamlink-debian.git
-Vcs-Browser: https://github.com/amurzeau/streamlink-debian
+Vcs-Git: https://salsa.debian.org/amurzeau-guest/streamlink.git
+Vcs-Browser: https://salsa.debian.org/amurzeau-guest/streamlink
 
 Package: python3-streamlink
 Architecture: all
