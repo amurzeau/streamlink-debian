@@ -95,6 +95,7 @@ src/streamlink/plugins/abweb.py
 src/streamlink/plugins/adultswim.py
 src/streamlink/plugins/afreeca.py
 src/streamlink/plugins/akamaihd.py
+src/streamlink/plugins/albavision.py
 src/streamlink/plugins/aljazeeraen.py
 src/streamlink/plugins/animelab.py
 src/streamlink/plugins/app17.py
@@ -179,6 +180,7 @@ src/streamlink/plugins/nbc.py
 src/streamlink/plugins/nbcsports.py
 src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nos.py
+src/streamlink/plugins/nownews.py
 src/streamlink/plugins/nrk.py
 src/streamlink/plugins/ntv.py
 src/streamlink/plugins/okru.py
@@ -251,6 +253,7 @@ src/streamlink/plugins/tvplayer.py
 src/streamlink/plugins/tvrby.py
 src/streamlink/plugins/tvrplus.py
 src/streamlink/plugins/tvtoya.py
+src/streamlink/plugins/twitcasting.py
 src/streamlink/plugins/twitch.py
 src/streamlink/plugins/ustreamtv.py
 src/streamlink/plugins/ustvnow.py
@@ -259,12 +262,15 @@ src/streamlink/plugins/viasat.py
 src/streamlink/plugins/vidio.py
 src/streamlink/plugins/vimeo.py
 src/streamlink/plugins/vinhlongtv.py
+src/streamlink/plugins/viutv.py
 src/streamlink/plugins/vk.py
+src/streamlink/plugins/vlive.py
 src/streamlink/plugins/vrtbe.py
 src/streamlink/plugins/vtvgo.py
 src/streamlink/plugins/webcast_india_gov.py
 src/streamlink/plugins/webtv.py
 src/streamlink/plugins/welt.py
+src/streamlink/plugins/willax.py
 src/streamlink/plugins/wwenetwork.py
 src/streamlink/plugins/younow.py
 src/streamlink/plugins/youtube.py
@@ -349,6 +355,7 @@ tests/plugins/test_abematv.py
 tests/plugins/test_abweb.py
 tests/plugins/test_adultswim.py
 tests/plugins/test_afreeca.py
+tests/plugins/test_albavision.py
 tests/plugins/test_aljazeeraen.py
 tests/plugins/test_animelab.py
 tests/plugins/test_app17.py
@@ -428,6 +435,7 @@ tests/plugins/test_nbc.py
 tests/plugins/test_nbcsports.py
 tests/plugins/test_nhkworld.py
 tests/plugins/test_nos.py
+tests/plugins/test_nownews.py
 tests/plugins/test_nrk.py
 tests/plugins/test_ntv.py
 tests/plugins/test_okru.py
@@ -500,6 +508,7 @@ tests/plugins/test_tvplayer.py
 tests/plugins/test_tvrby.py
 tests/plugins/test_tvrplus.py
 tests/plugins/test_tvtoya.py
+tests/plugins/test_twitcasting.py
 tests/plugins/test_twitch.py
 tests/plugins/test_ustreamtv.py
 tests/plugins/test_ustvnow.py
@@ -508,12 +517,15 @@ tests/plugins/test_viasat.py
 tests/plugins/test_vidio.py
 tests/plugins/test_vimeo.py
 tests/plugins/test_vinhlongtv.py
+tests/plugins/test_viutv.py
 tests/plugins/test_vk.py
+tests/plugins/test_vlive.py
 tests/plugins/test_vrtbe.py
 tests/plugins/test_vtvgo.py
 tests/plugins/test_webcast_india_gov.py
 tests/plugins/test_webtv.py
 tests/plugins/test_welt.py
+tests/plugins/test_willax.py
 tests/plugins/test_wwenetwork.py
 tests/plugins/test_younow.py
 tests/plugins/test_youtube.py
