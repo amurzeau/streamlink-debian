@@ -108,7 +108,7 @@ index 6afa6e4..8dff577 100644
  from streamlink.plugin import Plugin
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index b243b22..7385424 100644
+index 1328d1a..999d8c7 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -3,7 +3,7 @@ import re
