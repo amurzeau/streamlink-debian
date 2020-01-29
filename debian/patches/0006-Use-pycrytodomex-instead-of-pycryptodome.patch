@@ -24,7 +24,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  9 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/setup.py b/setup.py
-index cde8848..3183371 100644
+index bbc79b5..145e673 100644
 --- a/setup.py
 +++ b/setup.py
 @@ -31,7 +31,7 @@ if environ.get("STREAMLINK_USE_PYCRYPTO"):
