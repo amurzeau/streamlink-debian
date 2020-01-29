@@ -1,3 +1,9 @@
+streamlink (1.3.1+dfsg-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.3.1+dfsg
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 29 Jan 2020 21:14:49 +0100
+
 streamlink (1.3.0+dfsg-1) unstable; urgency=medium
 
   * Vcs-Git: move from github to salsa
