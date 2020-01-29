@@ -8,7 +8,7 @@ Comment: Fonts awesome use embedding restriction 0x0004.
 
 Files: *
 Copyright: 2011-2016 Christopher Rosell <chrippa@tanuki.se>
-           2016-2019 Streamlink Team
+           2016-2020 Streamlink Team
 License: BSD-2-clause
 
 Files: src/streamlink/packages/requests_file.py
@@ -18,7 +18,7 @@ License: Apache-2
 Files: docs/_themes/sphinx_rtd_theme_violet/*
 Copyright: 2013 Dave Snider
            2014 Christopher Rosell <chrippa@tanuki.se>
-           2015-2019 Streamlink Team
+           2015-2020 Streamlink Team
 License: Expat
 
 Files: docs/_themes/sphinx_rtd_theme_violet/search.html
@@ -37,7 +37,7 @@ License: Expat
 
 Files: debian/*
 Copyright: 2014-2016, Stefan Breunig <stefan-debian@yrden.de>
-           2017-2019 Alexis Murzeau <amubtdx@gmail.com>
+           2017-2020 Alexis Murzeau <amubtdx@gmail.com>
 License: BSD-2-clause
 
 License: BSD-2-clause
