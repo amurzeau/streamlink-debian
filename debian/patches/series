@@ -4,3 +4,4 @@ use_debian_fonts
 use_debian_modernizr
 0006-Remove-external-images.patch
 0006-Use-pycrytodomex-instead-of-pycryptodome.patch
+0007-Remove-external-images.patch
