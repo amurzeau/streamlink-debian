@@ -13,8 +13,8 @@ Here are the commands to manage the package:
 - Build and test the package:
   - `debuild`
 
-- Release version with `low` urgency:
-  - `gbp dch -Ra --bpo --commit -U low`
+- Release version:
+  - `gbp dch -Ra --bpo --commit`
 
 - Build source package and tag Debian branch:
   - `gbp buildpackage --git-tag --git-sign-tags -nc -S`

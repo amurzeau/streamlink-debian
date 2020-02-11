@@ -1,0 +1,36 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Wed, 29 Jan 2020 22:18:53 +0100
+Subject: Remove external images
+
+Upstream includes images from external sites to show thirdparies
+screenshots.
+Replace them with a link instead so the user can choose to not browse
+the image for privacy reasons.
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ docs/thirdparty.rst | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/docs/thirdparty.rst b/docs/thirdparty.rst
+index 4edeb97..32bca1f 100644
+--- a/docs/thirdparty.rst
++++ b/docs/thirdparty.rst
+@@ -55,15 +55,12 @@ LiveProxy
+ Wtwitch
+ -------
+ 
+-.. image:: https://i.imgur.com/oaxH3ss.jpg
+-  :align: center
+-  :alt: Wtwitch screenshot of checking subscriptions
+-
+ :Description: Browse Twitch streams; subscribe to streamers locally without an account
+ :Type: TUI (terminal user interface)
+ :OS: |Linux|
+ :Author: `krathalan <https://git.sr.ht/~krathalan/>`_
+ :Website: https://git.sr.ht/~krathalan/wtwitch
++:Screenshot: https://i.imgur.com/oaxH3ss.jpg
+ :Info: wtwitch is a Bash program that lets you browse the top games on Twitch, the |br|
+   top streamers for a given game, and lets you check the status of streamers you |br|
+   subscribe to. Open streams easily with settings that save your preferred quality |br|
