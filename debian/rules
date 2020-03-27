@@ -17,6 +17,10 @@ override_dh_auto_install:
 	python3 setup.py build_sphinx -b man
 	python3 setup.py build_sphinx -b html
 	dh_auto_install
+	# Call dh_link here so symlinks (like modernizer) are available when dh_sphinxdoc
+	# is run. dh_sphinxdoc will do a sanity check that check that js scripts
+	# referenced by search.html exist.
+	dh_link
 
 # Explicitly uses CHANGELOG.md instead of docs/changelog.md (the default
 # file used by dh_installchangelogs)
