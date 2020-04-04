@@ -5,3 +5,6 @@ use_debian_modernizr
 0006-Remove-external-images.patch
 0006-Use-pycrytodomex-instead-of-pycryptodome.patch
 0007-Remove-external-images.patch
+0008-docs-duplicate-object-description-of-streamlink-in-a.patch
+0009-docs-replace-deprecated-source_parsers.patch
+0010-Remove-deprecated-use-of-script_files.patch

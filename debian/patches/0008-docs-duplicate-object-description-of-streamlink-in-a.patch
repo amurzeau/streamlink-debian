@@ -1,0 +1,32 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Sat, 4 Apr 2020 13:08:07 +0200
+Subject: docs: duplicate object description of streamlink in api docs
+
+A module directive for the streamlink module is duplicated in
+both api_guide.rst and api.rst.
+
+This trigger a warning from python3:
+WARNING: duplicate object description of streamlink, other instance in
+api, use :noindex: for one of them
+
+Remove the one in api_guide.
+
+Forwarded: https://github.com/streamlink/streamlink/pull/2864
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ docs/api_guide.rst | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/docs/api_guide.rst b/docs/api_guide.rst
+index 70efcdb..797b685 100644
+--- a/docs/api_guide.rst
++++ b/docs/api_guide.rst
+@@ -3,8 +3,6 @@
+ API Guide
+ =========
+ 
+-.. module:: streamlink
+-
+ This API is what powers the :ref:`cli` but is also available to developers that wish
+ to make use of the data Streamlink can retrieve in their own application.
+ 
