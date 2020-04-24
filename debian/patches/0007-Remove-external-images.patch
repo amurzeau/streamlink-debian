@@ -1,6 +1,10 @@
 From: Alexis Murzeau <amubtdx@gmail.com>
-Date: Wed, 29 Jan 2020 22:18:53 +0100
+Date: Sat, 16 Sep 2017 23:43:29 +0200
 Subject: Remove external images
+
+Due to privacy concerns these are removed from the documentation in
+Debian.
+See also lintian tag privacy-breach-generic.
 
 Upstream includes images from external sites to show thirdparies
 screenshots.
@@ -10,9 +14,71 @@ the image for privacy reasons.
 Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
- docs/thirdparty.rst | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ docs/applications.rst |  4 +---
+ docs/donate.rst       | 15 +++------------
+ docs/thirdparty.rst   |  5 +----
+ 3 files changed, 5 insertions(+), 19 deletions(-)
 
+diff --git a/docs/applications.rst b/docs/applications.rst
+index 598d719..9082606 100644
+--- a/docs/applications.rst
++++ b/docs/applications.rst
+@@ -8,14 +8,12 @@ Streamlink Applications
+ Streamlink Twitch GUI
+ ---------------------
+ 
+-.. image:: https://user-images.githubusercontent.com/467294/28097570-3415020e-66b1-11e7-928d-4b9da35daf13.jpg
+-    :alt: Streamlink Twitch GUI
+-
+ :Description: A multi platform Twitch.tv browser for Streamlink
+ :Type: Graphical User Interface
+ :OS: |Windows| |MacOS| |Linux|
+ :Author: `Sebastian Meyer <https://github.com/bastimeyer>`_
+ :Website: https://streamlink.github.io/streamlink-twitch-gui
++:Screenshot: https://user-images.githubusercontent.com/467294/28097570-3415020e-66b1-11e7-928d-4b9da35daf13.jpg
+ :Source code: https://github.com/streamlink/streamlink-twitch-gui
+ :Info: A NW.js based desktop web application, formerly known as *Livestreamer Twitch GUI*. Browse Twitch.tv and watch
+     multiple streams at once. Filter streams by language, receive desktop notifications when followed channels start
+diff --git a/docs/donate.rst b/docs/donate.rst
+index 326a4ad..389b8d1 100644
+--- a/docs/donate.rst
++++ b/docs/donate.rst
+@@ -23,10 +23,7 @@ as payment for future work.
+ Bastimeyer
+ ^^^^^^^^^^
+ 
+-.. container:: clearfix
+-
+-   .. image:: https://github.com/bastimeyer.png?size=150
+-      :class: github-avatar
++.. container::
+ 
+    .. container::
+ 
+@@ -38,10 +35,7 @@ Bastimeyer
+ Beardypig
+ ^^^^^^^^^
+ 
+-.. container:: clearfix
+-
+-   .. image:: https://github.com/beardypig.png?size=150
+-      :class: github-avatar
++.. container::
+ 
+    .. container::
+ 
+@@ -51,10 +45,7 @@ Beardypig
+ Gravyboat
+ ^^^^^^^^^
+ 
+-.. container:: clearfix
+-
+-   .. image:: https://github.com/gravyboat.png?size=150
+-      :class: github-avatar
++.. container::
+ 
+    .. container::
+ 
 diff --git a/docs/thirdparty.rst b/docs/thirdparty.rst
 index 4edeb97..32bca1f 100644
 --- a/docs/thirdparty.rst

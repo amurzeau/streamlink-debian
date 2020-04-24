@@ -5,6 +5,17 @@ Subject: docs: replace deprecated source_parsers
 With app.add_source_parser in a setup() function.
 This function is taken from the recommonmark 0.6 extension.
 
+This patch cannot be upstream-ed as-is as the solution would instead to
+use recommonmark as a normal extension.
+I use a script here because Debian has recommonmark 0.4 and that version
+doesn't have the required code to be used as an extension.
+
+Steps to fix this:
+ - Upgrade recommonmark package in Debian
+   (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=955180)
+ - Update the patch to use recommonmark as an extension instead
+ - Upstream that patch
+
 Forwarded: todo
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---

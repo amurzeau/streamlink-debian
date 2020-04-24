@@ -37,7 +37,7 @@ index bbc79b5..145e673 100644
  # for localization
  if environ.get("STREAMLINK_USE_PYCOUNTRY"):
 diff --git a/src/streamlink/plugins/abematv.py b/src/streamlink/plugins/abematv.py
-index 53ca222..e22dc68 100644
+index 3f880c1..dd8e4ab 100644
 --- a/src/streamlink/plugins/abematv.py
 +++ b/src/streamlink/plugins/abematv.py
 @@ -9,7 +9,7 @@ import uuid
@@ -50,7 +50,7 @@ index 53ca222..e22dc68 100644
  from requests import Response
  from requests.adapters import BaseAdapter
 diff --git a/src/streamlink/plugins/rtve.py b/src/streamlink/plugins/rtve.py
-index 1c26ca3..3b0f7d3 100644
+index 771867a..9bc54f8 100644
 --- a/src/streamlink/plugins/rtve.py
 +++ b/src/streamlink/plugins/rtve.py
 @@ -3,7 +3,7 @@ import logging
@@ -78,7 +78,7 @@ index 7c33470..6d2a32a 100644
  import streamlink
  from streamlink.exceptions import FatalPluginError
 diff --git a/src/streamlink/plugins/ustvnow.py b/src/streamlink/plugins/ustvnow.py
-index 4d6c213..581b8cc 100644
+index 82fec12..5cea4b8 100644
 --- a/src/streamlink/plugins/ustvnow.py
 +++ b/src/streamlink/plugins/ustvnow.py
 @@ -7,9 +7,9 @@ import logging
@@ -95,10 +95,10 @@ index 4d6c213..581b8cc 100644
  from streamlink import PluginError
  from streamlink.compat import urljoin, urlparse
 diff --git a/src/streamlink/plugins/webtv.py b/src/streamlink/plugins/webtv.py
-index 6afa6e4..8dff577 100644
+index 574040d..3d8c296 100644
 --- a/src/streamlink/plugins/webtv.py
 +++ b/src/streamlink/plugins/webtv.py
-@@ -4,7 +4,7 @@ import base64
+@@ -3,7 +3,7 @@ import base64
  
  import binascii
  
@@ -108,7 +108,7 @@ index 6afa6e4..8dff577 100644
  from streamlink.plugin import Plugin
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index 1328d1a..999d8c7 100644
+index ff2b084..25373c1 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -3,7 +3,7 @@ import re
@@ -117,9 +117,9 @@ index 1328d1a..999d8c7 100644
  from collections import defaultdict, namedtuple
 -from Crypto.Cipher import AES
 +from Cryptodome.Cipher import AES
+ from requests.exceptions import ChunkedEncodingError
  
- from streamlink.exceptions import StreamError
- from streamlink.stream import hls_playlist
+ from streamlink.compat import urlparse
 diff --git a/src/streamlink/utils/crypto.py b/src/streamlink/utils/crypto.py
 index c49c1f1..4ddc481 100644
 --- a/src/streamlink/utils/crypto.py
@@ -134,7 +134,7 @@ index c49c1f1..4ddc481 100644
  from streamlink.compat import is_py3
  
 diff --git a/tests/streams/test_hls.py b/tests/streams/test_hls.py
-index d56d3b0..3b08dfd 100644
+index 0fc1cd1..b764621 100644
 --- a/tests/streams/test_hls.py
 +++ b/tests/streams/test_hls.py
 @@ -6,7 +6,7 @@ from functools import partial
