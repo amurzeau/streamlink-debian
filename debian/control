@@ -33,11 +33,10 @@ Recommends: rtmpdump,
   ffmpeg
 Suggests: streamlink, python3-streamlink-doc
 Description: Python module for extracting video streams from various websites
- Streamlink is a CLI utility that pipes flash videos from online streaming
- services to a variety of video players such as VLC, or alternatively, a
- browser.
- The main purpose of streamlink is to convert CPU-heavy flash plugins to a
- less CPU-intensive format.
+ Streamlink is a CLI utility which pipes video streams from various services
+ into a video player, such as VLC.
+ The main purpose of streamlink is to avoid resource-heavy and unoptimized
+ websites, while still allowing the user to enjoy various streamed content.
  .
  Streamlink is a fork of the Livestreamer project.
  .
@@ -60,11 +59,10 @@ Recommends: fonts-lato,
 Built-Using: ${sphinxdoc:Built-Using}
 Suggests: python3-streamlink
 Description: CLI for extracting video streams from various websites (documentation)
- Streamlink is a CLI utility that pipes flash videos from online streaming
- services to a variety of video players such as VLC, or alternatively, a
- browser.
- The main purpose of streamlink is to convert CPU-heavy flash plugins to a
- less CPU-intensive format.
+ Streamlink is a CLI utility which pipes video streams from various services
+ into a video player, such as VLC.
+ The main purpose of streamlink is to avoid resource-heavy and unoptimized
+ websites, while still allowing the user to enjoy various streamed content.
  .
  Streamlink is a fork of the Livestreamer project.
  .
@@ -82,11 +80,10 @@ Depends: ${misc:Depends},
   python3-streamlink (= ${source:Version})
 Recommends: vlc | mpv | mplayer | omxplayer
 Description: CLI for extracting video streams from various websites to a video player
- Streamlink is a CLI utility that pipes flash videos from online streaming
- services to a variety of video players such as VLC, or alternatively, a
- browser.
- The main purpose of streamlink is to convert CPU-heavy flash plugins to a
- less CPU-intensive format.
+ Streamlink is a CLI utility which pipes video streams from various services
+ into a video player, such as VLC.
+ The main purpose of streamlink is to avoid resource-heavy and unoptimized
+ websites, while still allowing the user to enjoy various streamed content.
  .
  Streamlink is a fork of the Livestreamer project.
  .

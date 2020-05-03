@@ -1,3 +1,20 @@
+streamlink (1.4.1+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 1.4.1+dfsg
+  * Remove upstreamed patch and update others
+  * d/control: update description
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 25 Apr 2020 15:28:44 +0200
+
+streamlink (1.3.1+dfsg-2) unstable; urgency=medium
+
+  * d/rules: run dh_link at install time to satisfy dh_sphinxdoc sanity checks
+    This fixes the build with sphinx 2.4 (Closes: #955060)
+
+  * docs: fix warnings with sphinx 2.4
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 04 Apr 2020 18:10:52 +0200
+
 streamlink (1.3.1+dfsg-1~bpo10+1) buster-backports; urgency=medium
 
   * Rebuild for buster-backports.

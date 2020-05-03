@@ -2,6 +2,7 @@ remove_new_version_check
 remove_github_buttons
 use_debian_fonts
 use_debian_modernizr
-0006-Remove-external-images.patch
-0006-Use-pycrytodomex-instead-of-pycryptodome.patch
 0007-Remove-external-images.patch
+0006-Use-pycrytodomex-instead-of-pycryptodome.patch
+0009-docs-replace-deprecated-source_parsers.patch
+0010-Remove-deprecated-use-of-script_files.patch
