@@ -1,3 +1,11 @@
+streamlink (1.4.1+dfsg-2) unstable; urgency=medium
+
+  * doc: adopt link target of font-awesome files
+    - fonts-font-awesome 5.0.10+really4.7.0~dfsg-2 provides only OpenType
+      and TrueType under /usr/share/fonts/
+
+ -- Lukas Märdian <lukas.maerdian@canonical.com>  Fri, 26 Jun 2020 09:05:30 +0200
+
 streamlink (1.4.1+dfsg-1) unstable; urgency=medium
 
   * New upstream version 1.4.1+dfsg
