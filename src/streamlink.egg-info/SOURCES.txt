@@ -103,7 +103,6 @@ src/streamlink/plugins/ard_mediathek.py
 src/streamlink/plugins/artetv.py
 src/streamlink/plugins/atresplayer.py
 src/streamlink/plugins/bbciplayer.py
-src/streamlink/plugins/beattv.py
 src/streamlink/plugins/bfmtv.py
 src/streamlink/plugins/bigo.py
 src/streamlink/plugins/bilibili.py
@@ -174,9 +173,10 @@ src/streamlink/plugins/ltv_lsm_lv.py
 src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/metube.py
 src/streamlink/plugins/mitele.py
-src/streamlink/plugins/mixer.py
 src/streamlink/plugins/mjunoon.py
+src/streamlink/plugins/n13tv.py
 src/streamlink/plugins/nbc.py
+src/streamlink/plugins/nbcnews.py
 src/streamlink/plugins/nbcsports.py
 src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nicolive.py
@@ -202,7 +202,6 @@ src/streamlink/plugins/qq.py
 src/streamlink/plugins/radiko.py
 src/streamlink/plugins/radionet.py
 src/streamlink/plugins/raiplay.py
-src/streamlink/plugins/reshet.py
 src/streamlink/plugins/reuters.py
 src/streamlink/plugins/rotana.py
 src/streamlink/plugins/rtbf.py
@@ -249,7 +248,6 @@ src/streamlink/plugins/tv4play.py
 src/streamlink/plugins/tv5monde.py
 src/streamlink/plugins/tv8.py
 src/streamlink/plugins/tvibo.py
-src/streamlink/plugins/tvnbg.py
 src/streamlink/plugins/tvp.py
 src/streamlink/plugins/tvplayer.py
 src/streamlink/plugins/tvrby.py
@@ -368,7 +366,6 @@ tests/plugins/test_ard_mediathek.py
 tests/plugins/test_artetv.py
 tests/plugins/test_atresplayer.py
 tests/plugins/test_bbciplayer.py
-tests/plugins/test_beattv.py
 tests/plugins/test_bfmtv.py
 tests/plugins/test_bigo.py
 tests/plugins/test_bilibili.py
@@ -434,9 +431,10 @@ tests/plugins/test_ltv_lsm_lv.py
 tests/plugins/test_mediaklikk.py
 tests/plugins/test_metube.py
 tests/plugins/test_mitele.py
-tests/plugins/test_mixer.py
 tests/plugins/test_mjunoon.py
+tests/plugins/test_n13tv.py
 tests/plugins/test_nbc.py
+tests/plugins/test_nbcnews.py
 tests/plugins/test_nbcsports.py
 tests/plugins/test_nhkworld.py
 tests/plugins/test_nicolive.py
@@ -462,7 +460,6 @@ tests/plugins/test_qq.py
 tests/plugins/test_radiko.py
 tests/plugins/test_radionet.py
 tests/plugins/test_raiplay.py
-tests/plugins/test_reshet.py
 tests/plugins/test_reuters.py
 tests/plugins/test_rotana.py
 tests/plugins/test_rtbf.py
@@ -509,7 +506,6 @@ tests/plugins/test_tv4play.py
 tests/plugins/test_tv5monde.py
 tests/plugins/test_tv8.py
 tests/plugins/test_tvibo.py
-tests/plugins/test_tvnbg.py
 tests/plugins/test_tvp.py
 tests/plugins/test_tvplayer.py
 tests/plugins/test_tvrby.py
