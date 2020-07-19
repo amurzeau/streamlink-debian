@@ -1,8 +1,10 @@
-streamlink (1.5.0+dfsg-1) UNRELEASED; urgency=medium
+streamlink (1.5.0+dfsg-1) unstable; urgency=medium
 
   * New upstream version 1.5.0+dfsg
+  * Update patch remove_new_version_check
+  * Update debhelper compat to 13
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 12 Jul 2020 22:24:08 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 19 Jul 2020 22:28:57 +0200
 
 streamlink (1.4.1+dfsg-2) unstable; urgency=medium
 
