@@ -3,7 +3,7 @@ Maintainer: Alexis Murzeau <amubtdx@gmail.com>
 Section: python
 Priority: optional
 Standards-Version: 4.5.0
-Build-Depends: debhelper-compat (= 12),
+Build-Depends: debhelper-compat (= 13),
  dh-python,
  python3 (>= 3.4),
  python3-setuptools,
