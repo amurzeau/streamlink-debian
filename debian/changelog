@@ -1,3 +1,20 @@
+streamlink (1.5.0+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 1.5.0+dfsg
+  * Update patch remove_new_version_check
+  * Update debhelper compat to 13
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 19 Jul 2020 22:28:57 +0200
+
+streamlink (1.4.1+dfsg-2) unstable; urgency=medium
+
+  [ Lukas Märdian ]
+  * doc: adopt link target of font-awesome files (Closes: #963757)
+    - fonts-font-awesome 5.0.10+really4.7.0~dfsg-2 provides only OpenType
+      and TrueType under /usr/share/fonts/
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 30 Jun 2020 23:55:57 +0200
+
 streamlink (1.4.1+dfsg-1~bpo10+1) buster-backports; urgency=medium
 
   * Rebuild for buster-backports.

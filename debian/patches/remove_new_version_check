@@ -24,7 +24,7 @@ index 0b301a1..1eaaca7 100644
          Default is "no".
          """
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index a32a2cd..44c5105 100644
+index 1849330..7d2a65b 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
 @@ -998,7 +998,7 @@ def main():
