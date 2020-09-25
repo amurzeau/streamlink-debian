@@ -50,6 +50,7 @@ docs/_themes/sphinx_rtd_theme_violet/static/js/theme.js
 examples/gst-player.py
 examples/opencv-face.py
 src/streamlink/__init__.py
+src/streamlink/__main__.py
 src/streamlink/_version.py
 src/streamlink/api.py
 src/streamlink/buffers.py
@@ -120,7 +121,6 @@ src/streamlink/plugins/common_jwplayer.py
 src/streamlink/plugins/common_swf.py
 src/streamlink/plugins/crunchyroll.py
 src/streamlink/plugins/cubetv.py
-src/streamlink/plugins/cybergame.py
 src/streamlink/plugins/dailymotion.py
 src/streamlink/plugins/dash.py
 src/streamlink/plugins/delfi.py
@@ -130,14 +130,12 @@ src/streamlink/plugins/dlive.py
 src/streamlink/plugins/dogan.py
 src/streamlink/plugins/dogus.py
 src/streamlink/plugins/dommune.py
-src/streamlink/plugins/douyutv.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
 src/streamlink/plugins/egame.py
 src/streamlink/plugins/ellobo.py
 src/streamlink/plugins/eltrecetv.py
 src/streamlink/plugins/euronews.py
-src/streamlink/plugins/europaplus.py
 src/streamlink/plugins/facebook.py
 src/streamlink/plugins/filmon.py
 src/streamlink/plugins/foxtr.py
@@ -174,6 +172,7 @@ src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/metube.py
 src/streamlink/plugins/mitele.py
 src/streamlink/plugins/mjunoon.py
+src/streamlink/plugins/mrtmk.py
 src/streamlink/plugins/n13tv.py
 src/streamlink/plugins/nbc.py
 src/streamlink/plugins/nbcnews.py
@@ -190,7 +189,6 @@ src/streamlink/plugins/oneplusone.py
 src/streamlink/plugins/onetv.py
 src/streamlink/plugins/openrectv.py
 src/streamlink/plugins/orf_tvthek.py
-src/streamlink/plugins/pandatv.py
 src/streamlink/plugins/periscope.py
 src/streamlink/plugins/picarto.py
 src/streamlink/plugins/piczel.py
@@ -221,7 +219,6 @@ src/streamlink/plugins/sportschau.py
 src/streamlink/plugins/srgssr.py
 src/streamlink/plugins/ssh101.py
 src/streamlink/plugins/stadium.py
-src/streamlink/plugins/startv.py
 src/streamlink/plugins/steam.py
 src/streamlink/plugins/streamable.py
 src/streamlink/plugins/streamingvideoprovider.py
@@ -257,7 +254,6 @@ src/streamlink/plugins/twitcasting.py
 src/streamlink/plugins/twitch.py
 src/streamlink/plugins/ustreamtv.py
 src/streamlink/plugins/ustvnow.py
-src/streamlink/plugins/vaughnlive.py
 src/streamlink/plugins/viasat.py
 src/streamlink/plugins/vidio.py
 src/streamlink/plugins/vimeo.py
@@ -289,6 +285,7 @@ src/streamlink/stream/file.py
 src/streamlink/stream/flvconcat.py
 src/streamlink/stream/hds.py
 src/streamlink/stream/hls.py
+src/streamlink/stream/hls_filtered.py
 src/streamlink/stream/hls_playlist.py
 src/streamlink/stream/http.py
 src/streamlink/stream/playlist.py
@@ -307,6 +304,7 @@ src/streamlink/utils/named_pipe.py
 src/streamlink/utils/times.py
 src/streamlink/utils/url.py
 src/streamlink_cli/__init__.py
+src/streamlink_cli/__main__.py
 src/streamlink_cli/argparser.py
 src/streamlink_cli/compat.py
 src/streamlink_cli/console.py
@@ -381,7 +379,6 @@ tests/plugins/test_clubbingtv.py
 tests/plugins/test_cnews.py
 tests/plugins/test_crunchyroll.py
 tests/plugins/test_cubetv.py
-tests/plugins/test_cybergame.py
 tests/plugins/test_dailymotion.py
 tests/plugins/test_dash.py
 tests/plugins/test_delfi.py
@@ -391,14 +388,12 @@ tests/plugins/test_dlive.py
 tests/plugins/test_dogan.py
 tests/plugins/test_dogus.py
 tests/plugins/test_dommune.py
-tests/plugins/test_douyutv.py
 tests/plugins/test_drdk.py
 tests/plugins/test_earthcam.py
 tests/plugins/test_egame.py
 tests/plugins/test_ellobo.py
 tests/plugins/test_eltrecetv.py
 tests/plugins/test_euronews.py
-tests/plugins/test_europaplus.py
 tests/plugins/test_facebook.py
 tests/plugins/test_filmon.py
 tests/plugins/test_foxtr.py
@@ -432,6 +427,7 @@ tests/plugins/test_mediaklikk.py
 tests/plugins/test_metube.py
 tests/plugins/test_mitele.py
 tests/plugins/test_mjunoon.py
+tests/plugins/test_mrtmk.py
 tests/plugins/test_n13tv.py
 tests/plugins/test_nbc.py
 tests/plugins/test_nbcnews.py
@@ -448,7 +444,6 @@ tests/plugins/test_oneplusone.py
 tests/plugins/test_onetv.py
 tests/plugins/test_openrectv.py
 tests/plugins/test_orf_tvthek.py
-tests/plugins/test_pandatv.py
 tests/plugins/test_periscope.py
 tests/plugins/test_picarto.py
 tests/plugins/test_piczel.py
@@ -478,7 +473,6 @@ tests/plugins/test_sportschau.py
 tests/plugins/test_srgssr.py
 tests/plugins/test_ssh101.py
 tests/plugins/test_stadium.py
-tests/plugins/test_startv.py
 tests/plugins/test_steam.py
 tests/plugins/test_stream.py
 tests/plugins/test_streamable.py
@@ -515,7 +509,6 @@ tests/plugins/test_twitcasting.py
 tests/plugins/test_twitch.py
 tests/plugins/test_ustreamtv.py
 tests/plugins/test_ustvnow.py
-tests/plugins/test_vaughnlive.py
 tests/plugins/test_viasat.py
 tests/plugins/test_vidio.py
 tests/plugins/test_vimeo.py
@@ -558,6 +551,7 @@ tests/streams/__init__.py
 tests/streams/test_dash.py
 tests/streams/test_dash_parser.py
 tests/streams/test_hls.py
+tests/streams/test_hls_filtered.py
 tests/streams/test_hls_playlist.py
 tests/streams/test_stream_streamprocess.py
 tests/streams/test_stream_to_url.py
