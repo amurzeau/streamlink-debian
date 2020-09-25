@@ -18,7 +18,7 @@ Build-Depends: debhelper-compat (= 13),
  python3-docutils,
  python3-socks,
  python3-freezegun,
- python3-recommonmark (>= 0.5.0),
+ python3-recommonmark,
  python3-isodate
 Homepage: https://streamlink.github.io/
 Vcs-Git: https://salsa.debian.org/amurzeau/streamlink.git

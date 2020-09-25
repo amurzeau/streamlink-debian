@@ -1,0 +1,37 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Sat, 26 Sep 2020 01:10:55 +0200
+Subject: Revert "docs: use recommonmark as an extension"
+
+This reverts commit 4e05371fa4d2880bdd9a3ea8d497de135c5c266c.
+
+Debian Buster has recommonmark 0.4.0 so we need to revert this patch.
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ docs/conf.py | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/docs/conf.py b/docs/conf.py
+index 2c8cc44..7b05bb3 100644
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -18,11 +18,17 @@ sys.path.insert(0, os.path.abspath('.'))
+ 
+ # Add any Sphinx extension module names here, as strings. They can be extensions
+ # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+-extensions = ['sphinx.ext.autodoc', 'ext_argparse', 'ext_github', 'ext_releaseref', 'recommonmark']
++extensions = ['sphinx.ext.autodoc', 'ext_argparse', 'ext_github', 'ext_releaseref']
+ 
+ # Add any paths that contain templates here, relative to this directory.
+ templates_path = ['_templates']
+ 
++# The suffix of source filenames.
++source_suffix = ['.rst', '.md']
++source_parsers = {
++   '.md': 'recommonmark.parser.CommonMarkParser',
++}
++
+ # The encoding of source files.
+ #source_encoding = 'utf-8-sig'
+ 
