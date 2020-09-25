@@ -80,7 +80,7 @@ index 326a4ad..389b8d1 100644
     .. container::
  
 diff --git a/docs/thirdparty.rst b/docs/thirdparty.rst
-index 4edeb97..32bca1f 100644
+index b74d623..417b7d1 100644
 --- a/docs/thirdparty.rst
 +++ b/docs/thirdparty.rst
 @@ -55,15 +55,12 @@ LiveProxy

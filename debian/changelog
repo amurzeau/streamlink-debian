@@ -1,3 +1,14 @@
+streamlink (1.6.0+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 1.6.0+dfsg
+  * Update patches
+  * Update patch 0009-docs-replace-deprecated-source_parsers with
+    the use of recommonmark 0.5.0+ as a sphinx extension.
+  * d/control: require recommonmark >= 0.5.0 to be able to use it as
+    an extension (previous versions don't support it).
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 26 Sep 2020 00:55:56 +0200
+
 streamlink (1.5.0+dfsg-1~bpo10+1) buster-backports; urgency=medium
 
   * Rebuild for buster-backports.

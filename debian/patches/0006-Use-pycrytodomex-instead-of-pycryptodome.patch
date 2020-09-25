@@ -108,7 +108,7 @@ index 574040d..3d8c296 100644
  from streamlink.plugin import Plugin
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index ff2b084..25373c1 100644
+index 2a69ca9..712b04b 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -3,7 +3,7 @@ import re
@@ -119,7 +119,7 @@ index ff2b084..25373c1 100644
 +from Cryptodome.Cipher import AES
  from requests.exceptions import ChunkedEncodingError
  
- from streamlink.compat import urlparse
+ from streamlink.compat import urlparse, str
 diff --git a/src/streamlink/utils/crypto.py b/src/streamlink/utils/crypto.py
 index c49c1f1..4ddc481 100644
 --- a/src/streamlink/utils/crypto.py
@@ -134,10 +134,10 @@ index c49c1f1..4ddc481 100644
  from streamlink.compat import is_py3
  
 diff --git a/tests/streams/test_hls.py b/tests/streams/test_hls.py
-index 0fc1cd1..b764621 100644
+index b131df5..842dddc 100644
 --- a/tests/streams/test_hls.py
 +++ b/tests/streams/test_hls.py
-@@ -6,7 +6,7 @@ from functools import partial
+@@ -7,7 +7,7 @@ from functools import partial
  
  import pytest
  import requests_mock
