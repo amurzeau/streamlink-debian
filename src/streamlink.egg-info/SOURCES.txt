@@ -16,6 +16,7 @@ docs/applications.rst
 docs/changelog.md
 docs/cli.rst
 docs/conf.py
+docs/developing.rst
 docs/docutils.conf
 docs/donate.rst
 docs/ext_argparse.py
@@ -96,7 +97,6 @@ src/streamlink/plugins/adultswim.py
 src/streamlink/plugins/afreeca.py
 src/streamlink/plugins/akamaihd.py
 src/streamlink/plugins/albavision.py
-src/streamlink/plugins/aljazeeraen.py
 src/streamlink/plugins/animelab.py
 src/streamlink/plugins/app17.py
 src/streamlink/plugins/ard_live.py
@@ -112,6 +112,7 @@ src/streamlink/plugins/brightcove.py
 src/streamlink/plugins/btsports.py
 src/streamlink/plugins/btv.py
 src/streamlink/plugins/canalplus.py
+src/streamlink/plugins/cbsnews.py
 src/streamlink/plugins/cdnbg.py
 src/streamlink/plugins/ceskatelevize.py
 src/streamlink/plugins/cinergroup.py
@@ -125,7 +126,6 @@ src/streamlink/plugins/dailymotion.py
 src/streamlink/plugins/dash.py
 src/streamlink/plugins/delfi.py
 src/streamlink/plugins/deutschewelle.py
-src/streamlink/plugins/dingittv.py
 src/streamlink/plugins/dlive.py
 src/streamlink/plugins/dogan.py
 src/streamlink/plugins/dogus.py
@@ -157,7 +157,6 @@ src/streamlink/plugins/huya.py
 src/streamlink/plugins/idf1.py
 src/streamlink/plugins/ine.py
 src/streamlink/plugins/invintus.py
-src/streamlink/plugins/itvplayer.py
 src/streamlink/plugins/kingkong.py
 src/streamlink/plugins/kugou.py
 src/streamlink/plugins/latina.py
@@ -170,6 +169,7 @@ src/streamlink/plugins/lrt.py
 src/streamlink/plugins/ltv_lsm_lv.py
 src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/metube.py
+src/streamlink/plugins/mico.py
 src/streamlink/plugins/mitele.py
 src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mrtmk.py
@@ -216,7 +216,6 @@ src/streamlink/plugins/showroom.py
 src/streamlink/plugins/skai.py
 src/streamlink/plugins/sportal.py
 src/streamlink/plugins/sportschau.py
-src/streamlink/plugins/srgssr.py
 src/streamlink/plugins/ssh101.py
 src/streamlink/plugins/stadium.py
 src/streamlink/plugins/steam.py
@@ -244,6 +243,7 @@ src/streamlink/plugins/tv3cat.py
 src/streamlink/plugins/tv4play.py
 src/streamlink/plugins/tv5monde.py
 src/streamlink/plugins/tv8.py
+src/streamlink/plugins/tv999.py
 src/streamlink/plugins/tvibo.py
 src/streamlink/plugins/tvp.py
 src/streamlink/plugins/tvplayer.py
@@ -350,13 +350,14 @@ tests/test_utils_crypto.py
 tests/test_utils_encoding.py
 tests/test_utils_times.py
 tests/test_utils_url.py
+tests/mixins/__init__.py
+tests/mixins/stream_hls.py
 tests/plugins/__init__.py
 tests/plugins/test_abematv.py
 tests/plugins/test_abweb.py
 tests/plugins/test_adultswim.py
 tests/plugins/test_afreeca.py
 tests/plugins/test_albavision.py
-tests/plugins/test_aljazeeraen.py
 tests/plugins/test_animelab.py
 tests/plugins/test_app17.py
 tests/plugins/test_ard_live.py
@@ -372,6 +373,7 @@ tests/plugins/test_brightcove.py
 tests/plugins/test_btsports.py
 tests/plugins/test_btv.py
 tests/plugins/test_canalplus.py
+tests/plugins/test_cbsnews.py
 tests/plugins/test_cdnbg.py
 tests/plugins/test_ceskatelevize.py
 tests/plugins/test_cinergroup.py
@@ -383,7 +385,6 @@ tests/plugins/test_dailymotion.py
 tests/plugins/test_dash.py
 tests/plugins/test_delfi.py
 tests/plugins/test_deutschewelle.py
-tests/plugins/test_dingittv.py
 tests/plugins/test_dlive.py
 tests/plugins/test_dogan.py
 tests/plugins/test_dogus.py
@@ -412,7 +413,6 @@ tests/plugins/test_huya.py
 tests/plugins/test_idf1.py
 tests/plugins/test_ine.py
 tests/plugins/test_invintus.py
-tests/plugins/test_itvplayer.py
 tests/plugins/test_kingkong.py
 tests/plugins/test_kugou.py
 tests/plugins/test_latina.py
@@ -425,6 +425,7 @@ tests/plugins/test_lrt.py
 tests/plugins/test_ltv_lsm_lv.py
 tests/plugins/test_mediaklikk.py
 tests/plugins/test_metube.py
+tests/plugins/test_mico.py
 tests/plugins/test_mitele.py
 tests/plugins/test_mjunoon.py
 tests/plugins/test_mrtmk.py
@@ -470,7 +471,6 @@ tests/plugins/test_showroom.py
 tests/plugins/test_skai.py
 tests/plugins/test_sportal.py
 tests/plugins/test_sportschau.py
-tests/plugins/test_srgssr.py
 tests/plugins/test_ssh101.py
 tests/plugins/test_stadium.py
 tests/plugins/test_steam.py
@@ -499,6 +499,7 @@ tests/plugins/test_tv3cat.py
 tests/plugins/test_tv4play.py
 tests/plugins/test_tv5monde.py
 tests/plugins/test_tv8.py
+tests/plugins/test_tv999.py
 tests/plugins/test_tvibo.py
 tests/plugins/test_tvp.py
 tests/plugins/test_tvplayer.py
@@ -546,6 +547,7 @@ tests/resources/dash/test_8.mpd
 tests/resources/dash/test_9.mpd
 tests/resources/hls/test_1.m3u8
 tests/resources/hls/test_2.m3u8
+tests/resources/hls/test_date.m3u8
 tests/resources/hls/test_master.m3u8
 tests/streams/__init__.py
 tests/streams/test_dash.py
