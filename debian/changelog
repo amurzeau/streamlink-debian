@@ -1,3 +1,9 @@
+streamlink (1.7.0+dfsg-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.7.0+dfsg
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 20 Oct 2020 23:47:18 +0200
+
 streamlink (1.6.0+dfsg-1) unstable; urgency=medium
 
   * New upstream version 1.6.0+dfsg
