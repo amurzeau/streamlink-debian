@@ -108,13 +108,13 @@ index 574040d..3d8c296 100644
  from streamlink.plugin import Plugin
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index 2a69ca9..712b04b 100644
+index 1ade39a..b44fea6 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -3,7 +3,7 @@ import re
  import struct
  
- from collections import defaultdict, namedtuple
+ from collections import defaultdict, namedtuple, OrderedDict
 -from Crypto.Cipher import AES
 +from Cryptodome.Cipher import AES
  from requests.exceptions import ChunkedEncodingError
@@ -134,15 +134,15 @@ index c49c1f1..4ddc481 100644
  from streamlink.compat import is_py3
  
 diff --git a/tests/streams/test_hls.py b/tests/streams/test_hls.py
-index b131df5..842dddc 100644
+index 36eeb1f..8baf1d6 100644
 --- a/tests/streams/test_hls.py
 +++ b/tests/streams/test_hls.py
-@@ -7,7 +7,7 @@ from functools import partial
+@@ -1,7 +1,7 @@
+ import os
+ import unittest
  
- import pytest
- import requests_mock
 -from Crypto.Cipher import AES
 +from Cryptodome.Cipher import AES
- from mock import patch, Mock
+ import pytest
+ import requests_mock
  
- from streamlink.session import Streamlink

@@ -24,10 +24,10 @@ index 96eddc5..af3deae 100644
          Default is "no".
          """
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index 8d44838..79f6c58 100644
+index 1b3a35b..cd76db8 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -1001,7 +1001,7 @@ def main():
+@@ -1003,7 +1003,7 @@ def main():
      check_root()
      log_current_versions()
  
