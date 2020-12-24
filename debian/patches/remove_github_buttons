@@ -1,5 +1,5 @@
 From: Alexis Murzeau <amubtdx@gmail.com>
-Date: Sun, 23 Apr 2017 15:54:58 +0200
+Date: Thu, 24 Dec 2020 15:36:27 +0100
 Subject: Remove GitHub Buttons without replacement
 
 Upstream includes buttons to GitHub that display how
@@ -9,21 +9,16 @@ these are removed from the documentation in Debian.
 Forwarded: not-needed
 Author: Stefan Breunig <stefan-debian@yrden.de>
 ---
- docs/_themes/sphinx_rtd_theme_violet/layout.html | 4 ----
- 1 file changed, 4 deletions(-)
+ docs/_templates/sidebar/github-buttons.html | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/docs/_themes/sphinx_rtd_theme_violet/layout.html b/docs/_themes/sphinx_rtd_theme_violet/layout.html
-index affe907..f6e5f1d 100644
---- a/docs/_themes/sphinx_rtd_theme_violet/layout.html
-+++ b/docs/_themes/sphinx_rtd_theme_violet/layout.html
-@@ -181,10 +181,6 @@
-   {% endif %}
- 
- 
--  {% if theme_github_user and theme_github_repo %}
+diff --git a/docs/_templates/sidebar/github-buttons.html b/docs/_templates/sidebar/github-buttons.html
+index d0da80c..7915218 100644
+--- a/docs/_templates/sidebar/github-buttons.html
++++ b/docs/_templates/sidebar/github-buttons.html
+@@ -7,5 +7,4 @@
+   <a href="https://github.com/streamlink/streamlink/issues"
+     class="github-button"
+     data-icon="octicon-issue-opened">Issues</a>
 -  <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
--  {% endif %}
--
-   {%- block footer %} {% endblock %}
- 
- </body>
+ </div>

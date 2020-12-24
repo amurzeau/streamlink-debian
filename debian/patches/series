@@ -1,7 +1,5 @@
 remove_new_version_check
-remove_github_buttons
-use_debian_fonts
-use_debian_modernizr
 0007-Remove-external-images.patch
 0006-Use-pycrytodomex-instead-of-pycryptodome.patch
-0010-Remove-deprecated-use-of-script_files.patch
+remove_github_buttons
+0005-Use-sphinx_rtd_theme-theme-as-a-replacement-of-furo-.patch

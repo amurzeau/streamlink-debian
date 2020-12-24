@@ -51,11 +51,5 @@ esac
 HTML_BASE_DIR=$(dirname "$INDEX_HTML_LOCATION")
 
 check-file "$INDEX_HTML_LOCATION" || exit 3
-check-file "$HTML_BASE_DIR/_static/fonts/FontAwesome.otf" || RESULT=4
-check-file "$HTML_BASE_DIR/_static/fonts/fontawesome-webfont.eot" || RESULT=4
-check-file "$HTML_BASE_DIR/_static/fonts/fontawesome-webfont.svg" || RESULT=4
-check-file "$HTML_BASE_DIR/_static/fonts/fontawesome-webfont.ttf" || RESULT=4
-check-file "$HTML_BASE_DIR/_static/fonts/fontawesome-webfont.woff" || RESULT=4
-check-file "$HTML_BASE_DIR/_static/js/modernizr.min.js" || RESULT=5
 
 exit "$RESULT"
