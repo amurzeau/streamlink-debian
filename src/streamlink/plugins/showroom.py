@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
+import logging
 import re
 
 from streamlink.plugin import Plugin
-from streamlink.plugin.api import validate, useragents
+from streamlink.plugin.api import validate
 from streamlink.stream import HLSStream, RTMPStream
 from streamlink.stream.hls import HLSStreamReader, HLSStreamWorker
+
+log = logging.getLogger(__name__)
 
 _url_re = re.compile(r'''^https?://
     (?:\w*.)?
@@ -59,7 +61,7 @@ _quality_weights = {
     "low": 160
 }
 # pages that definitely aren't rooms
-_info_pages = set((
+_info_pages = {
     "onlive",
     "campaign",
     "timetable",
@@ -76,7 +78,7 @@ _info_pages = set((
     "s",
     "organizer_registration",
     "lottery"
-))
+}
 
 
 class ShowroomHLSStreamWorker(HLSStreamWorker):
@@ -113,10 +115,7 @@ class Showroom(Plugin):
 
     def __init__(self, url):
         Plugin.__init__(self, url)
-        self._headers = {
-            'Referer': self.url,
-            'User-Agent': useragents.FIREFOX
-        }
+        self._headers = {'Referer': self.url}
         self._room_id = None
         self._stream_urls = None
 
@@ -141,10 +140,10 @@ class Showroom(Plugin):
             match = _room_id_re.search(res.text)
             if not match:
                 title = self.url.rsplit('/', 1)[-1]
-                self.logger.debug(_room_id_lookup_failure_log.format(title, 'primary'))
+                log.debug(_room_id_lookup_failure_log.format(title, 'primary'))
                 match = _room_id_alt_re.search(res.text)
                 if not match:
-                    self.logger.debug(_room_id_lookup_failure_log.format(title, 'secondary'))
+                    log.debug(_room_id_lookup_failure_log.format(title, 'secondary'))
                     return  # Raise exception?
             return match.group('room_id')
 
@@ -173,8 +172,7 @@ class Showroom(Plugin):
                     quality = _rtmp_quality_lookup.get(stream_info["label"], "other")
                     yield quality, ShowroomHLSStream(self.session, stream_info["url"])
                 else:
-                    for s in streams.items():
-                        yield s
+                    yield from streams.items()
 
 
 __plugin__ = Showroom

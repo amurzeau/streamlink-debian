@@ -9,7 +9,7 @@ def _normalise_argument_name(name):
     return name.replace('_', '-').strip("-")
 
 
-class Options(object):
+class Options:
     """
     For storing options to be used by plugins, with default values.
 
@@ -43,7 +43,7 @@ class Options(object):
             self.set(key, value)
 
 
-class Argument(object):
+class Argument:
     """
         :class:`Argument` accepts most of the same parameters as :func:`ArgumentParser.add_argument`,
         except requires is a special case as in this case it is only enforced if the plugin is in use.
@@ -52,7 +52,7 @@ class Argument(object):
 
     """
     def __init__(self, name, required=False, requires=None, prompt=None, sensitive=False, argument_name=None,
-                 dest=None, **options):
+                 dest=None, is_global=False, **options):
         """
         :param name: name of the argument, without -- or plugin name prefixes, eg. ``"password"``, ``"mux-subtitles"``, etc.
         :param required (bool): if the argument is required for the plugin
@@ -73,12 +73,13 @@ class Argument(object):
         self.prompt = prompt
         self.sensitive = sensitive
         self._default = options.get("default")
+        self.is_global = is_global
 
     def _name(self, plugin):
         return self._argument_name or _normalise_argument_name("{0}-{1}".format(plugin, self.name))
 
     def argument_name(self, plugin):
-        return "--" + self._name(plugin)
+        return f"--{self.name if self.is_global else self._name(plugin)}"
 
     def namespace_dest(self, plugin):
         return _normalise_option_name(self._name(plugin))
@@ -92,7 +93,7 @@ class Argument(object):
         return self._default
 
 
-class Arguments(object):
+class Arguments:
     """
     Provides a wrapper around a list of :class:`Argument`. For example
 
@@ -131,7 +132,7 @@ class Arguments(object):
 
         :return: list of dependant arguments
         """
-        results = set([name])
+        results = {name}
         argument = self.get(name)
         for reqname in argument.requires:
             required = self.get(reqname)

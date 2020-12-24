@@ -1,17 +1,15 @@
+import logging
 import os
 import random
-import threading
-
 import subprocess
-
 import sys
+import threading
+from shutil import which
 
 from streamlink import StreamError
-from streamlink.stream import Stream
-from streamlink.stream.stream import StreamIO
+from streamlink.compat import devnull
+from streamlink.stream.stream import Stream, StreamIO
 from streamlink.utils import NamedPipe
-from streamlink.compat import devnull, which
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +18,7 @@ class MuxedStream(Stream):
     __shortname__ = "muxed-stream"
 
     def __init__(self, session, *substreams, **options):
-        super(MuxedStream, self).__init__(session)
+        super().__init__(session)
         self.substreams = substreams
         self.subtitles = options.pop("subtitles", {})
         self.options = options
@@ -57,6 +55,9 @@ class MuxedStream(Stream):
 
 class FFMPEGMuxer(StreamIO):
     __commands__ = ['ffmpeg', 'ffmpeg.exe', 'avconv', 'avconv.exe']
+    DEFAULT_OUTPUT_FORMAT = "matroska"
+    DEFAULT_VIDEO_CODEC = "copy"
+    DEFAULT_AUDIO_CODEC = "copy"
 
     @staticmethod
     def copy_to_pipe(self, stream, pipe):
@@ -69,12 +70,12 @@ class FFMPEGMuxer(StreamIO):
                     pipe.write(data)
                 else:
                     break
-            except IOError:
+            except OSError:
                 log.error("Pipe copy aborted: {0}".format(pipe.path))
                 return
         try:
             pipe.close()
-        except IOError:  # might fail closing, but that should be ok for the pipe
+        except OSError:  # might fail closing, but that should be ok for the pipe
             pass
         log.debug("Pipe copy complete: {0}".format(pipe.path))
 
@@ -91,13 +92,14 @@ class FFMPEGMuxer(StreamIO):
                              for stream, np in
                              zip(self.streams, self.pipes)]
 
-        ofmt = options.pop("format", "matroska")
+        ofmt = session.options.get("ffmpeg-fout") or options.pop("format", self.DEFAULT_OUTPUT_FORMAT)
         outpath = options.pop("outpath", "pipe:1")
-        videocodec = session.options.get("ffmpeg-video-transcode") or options.pop("vcodec", "copy")
-        audiocodec = session.options.get("ffmpeg-audio-transcode") or options.pop("acodec", "copy")
+        videocodec = session.options.get("ffmpeg-video-transcode") or options.pop("vcodec", self.DEFAULT_VIDEO_CODEC)
+        audiocodec = session.options.get("ffmpeg-audio-transcode") or options.pop("acodec", self.DEFAULT_AUDIO_CODEC)
         metadata = options.pop("metadata", {})
         maps = options.pop("maps", [])
-        copyts = options.pop("copyts", False)
+        copyts = session.options.get("ffmpeg-copyts") or options.pop("copyts", False)
+        start_at_zero = session.options.get("ffmpeg-start-at-zero") or options.pop("start_at_zero", False)
 
         self._cmd = [self.command(session), '-nostats', '-y']
         for np in self.pipes:
@@ -111,11 +113,13 @@ class FFMPEGMuxer(StreamIO):
 
         if copyts:
             self._cmd.extend(["-copyts"])
-            self._cmd.extend(["-start_at_zero"])
+            if start_at_zero:
+                self._cmd.extend(["-start_at_zero"])
 
         for stream, data in metadata.items():
             for datum in data:
-                self._cmd.extend(["-metadata:{0}".format(stream), datum])
+                stream_id = ":{0}".format(stream) if stream else ""
+                self._cmd.extend(["-metadata{0}".format(stream_id), datum])
 
         self._cmd.extend(['-f', ofmt, outpath])
         log.debug("ffmpeg command: {0}".format(' '.join(self._cmd)))
@@ -155,6 +159,9 @@ class FFMPEGMuxer(StreamIO):
         return data
 
     def close(self):
+        if self.closed:
+            return
+
         log.debug("Closing ffmpeg thread")
         if self.process:
             # kill ffmpeg
@@ -163,10 +170,13 @@ class FFMPEGMuxer(StreamIO):
 
             # close the streams
             for stream in self.streams:
-                if hasattr(stream, "close"):
+                if hasattr(stream, "close") and callable(stream.close):
                     stream.close()
 
             log.debug("Closed all the substreams")
+
         if self.close_errorlog:
             self.errorlog.close()
             self.errorlog = None
+
+        super().close()

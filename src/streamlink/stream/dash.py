@@ -1,17 +1,19 @@
 import copy
+import datetime
 import itertools
 import logging
-import datetime
 import os.path
+from collections import defaultdict
+from urllib.parse import urlparse, urlunparse
 
 import requests
-from streamlink import StreamError, PluginError
-from streamlink.compat import urlparse, urlunparse
-from streamlink.stream.http import valid_args, normalize_key
-from streamlink.stream.stream import Stream
-from streamlink.stream.dash_manifest import MPD, sleeper, sleep_until, utc, freeze_timeline
+
+from streamlink import PluginError, StreamError
+from streamlink.stream.dash_manifest import MPD, freeze_timeline, sleep_until, sleeper, utc
 from streamlink.stream.ffmpegmux import FFMPEGMuxer
+from streamlink.stream.http import normalize_key, valid_args
 from streamlink.stream.segmented import SegmentedStreamReader, SegmentedStreamWorker, SegmentedStreamWriter
+from streamlink.stream.stream import Stream
 from streamlink.utils import parse_xml
 from streamlink.utils.l10n import Language
 
@@ -54,7 +56,7 @@ class DASHStreamWriter(SegmentedStreamWriter):
                                          headers=headers,
                                          **request_args)
         except StreamError as err:
-            log.error("Failed to open segment {0}: {1}", segment.url, err)
+            log.error(f"Failed to open segment {segment.url}: {err}")
             return self.fetch(segment, retries - 1)
 
     def write(self, segment, res, chunk_size=8192):
@@ -95,7 +97,7 @@ class DASHStreamWorker(SegmentedStreamWorker):
                         if self.closed:
                             break
                         yield segment
-                        # log.debug("Adding segment {0} to queue", segment.url)
+                        # log.debug(f"Adding segment {segment.url} to queue")
 
                     if self.mpd.type == "dynamic":
                         if not self.reload():
@@ -150,7 +152,7 @@ class DASHStream(Stream):
                  audio_representation=None,
                  period=0,
                  **args):
-        super(DASHStream, self).__init__(session)
+        super().__init__(session)
         self.mpd = mpd
         self.video_representation = video_representation
         self.audio_representation = audio_representation
@@ -173,7 +175,6 @@ class DASHStream(Stream):
         :param url_or_manifest: URL of the manifest file or an XML manifest string
         :return: a dict of name -> DASHStream instances
         """
-        ret = {}
 
         if url_or_manifest.startswith('<?xml'):
             mpd = MPD(parse_xml(url_or_manifest, ignore_ns=True))
@@ -232,6 +233,7 @@ class DASHStream(Stream):
         if len(available_languages) > 1:
             audio = list(filter(lambda a: a.lang is None or a.lang == lang, audio))
 
+        ret = []
         for vid, aud in itertools.product(video, audio):
             stream = DASHStream(session, mpd, vid, aud, **args)
             stream_name = []
@@ -240,8 +242,24 @@ class DASHStream(Stream):
                 stream_name.append("{:0.0f}{}".format(vid.height or vid.bandwidth_rounded, "p" if vid.height else "k"))
             if audio and len(audio) > 1:
                 stream_name.append("a{:0.0f}k".format(aud.bandwidth))
-            ret['+'.join(stream_name)] = stream
-        return ret
+            ret.append(('+'.join(stream_name), stream))
+
+        # rename duplicate streams
+        dict_value_list = defaultdict(list)
+        for k, v in ret:
+            dict_value_list[k].append(v)
+
+        ret_new = {}
+        for q in dict_value_list:
+            items = dict_value_list[q]
+            for n in range(len(items)):
+                if n == 0:
+                    ret_new[q] = items[n]
+                elif n == 1:
+                    ret_new[f'{q}_alt'] = items[n]
+                else:
+                    ret_new[f'{q}_alt{n}'] = items[n]
+        return ret_new
 
     def open(self):
         if self.video_representation:
@@ -260,4 +278,7 @@ class DASHStream(Stream):
             return audio
 
     def to_url(self):
+        return self.mpd.url
+
+    def to_manifest_url(self):
         return self.mpd.url

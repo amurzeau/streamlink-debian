@@ -1,12 +1,11 @@
 import logging
 import re
+from urllib.parse import urlparse, urlunparse
 
-from streamlink.compat import urlparse, urlunparse
 from streamlink.plugin import Plugin
 from streamlink.plugin.api import validate
 from streamlink.stream import HLSStream
 from streamlink.utils import parse_json
-
 
 log = logging.getLogger(__name__)
 
@@ -47,8 +46,7 @@ class RaiPlay(Plugin):
             log.error("Geo-restricted content")
             return
 
-        for stream in HLSStream.parse_variant_playlist(self.session, stream_url).items():
-            yield stream
+        yield from HLSStream.parse_variant_playlist(self.session, stream_url).items()
 
 
 __plugin__ = RaiPlay

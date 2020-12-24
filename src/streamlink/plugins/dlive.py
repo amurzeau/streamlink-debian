@@ -1,12 +1,11 @@
 import json
 import logging
 import re
+from urllib.parse import unquote_plus
 
-from streamlink.compat import is_py3, unquote_plus
 from streamlink.plugin import Plugin, PluginError
 from streamlink.plugin.api import validate
 from streamlink.stream import HLSStream
-
 
 log = logging.getLogger(__name__)
 
@@ -44,9 +43,7 @@ class DLive(Plugin):
         validate.any(None, validate.all(
             validate.get(1),
             validate.transform(unquote_plus),
-            validate.transform(lambda url: (
-                bytes(url, "utf-8").decode("unicode_escape") if is_py3 else url.decode("unicode_escape")
-            )),
+            validate.transform(lambda url: bytes(url, "utf-8").decode("unicode_escape")),
             validate.url()
         ))
     )
@@ -64,7 +61,7 @@ class DLive(Plugin):
         return Plugin.stream_weight(key)
 
     def __init__(self, *args, **kwargs):
-        super(DLive, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.author = None
         self.title = None
 

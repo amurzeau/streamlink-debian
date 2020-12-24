@@ -36,9 +36,8 @@ class MRTmk(Plugin):
 
         for stream_url in stream_urls:
             try:
-                for s in HLSStream.parse_variant_playlist(self.session, stream_url).items():
-                    yield s
-            except IOError as err:
+                yield from HLSStream.parse_variant_playlist(self.session, stream_url).items()
+            except OSError as err:
                 if "403 Client Error" in str(err):
                     log.error("Failed to access stream, may be due to geo-restriction")
                 else:

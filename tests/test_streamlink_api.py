@@ -1,12 +1,11 @@
 import os.path
-
 import unittest
-from tests.mock import patch
+from unittest.mock import patch
 
 from streamlink import Streamlink
 from streamlink.api import streams
 
-PluginPath = os.path.join(os.path.dirname(__file__), "plugins")
+PluginPath = os.path.join(os.path.dirname(__file__), "plugin")
 
 
 def get_session():

@@ -1,11 +1,7 @@
 import unittest
+from unittest.mock import ANY, MagicMock, call
 
 from streamlink import Streamlink
-
-try:
-    from unittest.mock import ANY, MagicMock, call
-except ImportError:
-    from mock import ANY, MagicMock, call
 from streamlink.plugins.funimationnow import FunimationNow
 
 
@@ -30,18 +26,18 @@ class TestPluginFunimationNow(unittest.TestCase):
         from streamlink_cli.main import setup_plugin_args
         session = Streamlink()
         parser = MagicMock()
-        plugin_parser = MagicMock()
-        parser.add_argument_group = MagicMock(return_value=plugin_parser)
+        group = parser.add_argument_group("Plugin Options").add_argument_group("FunimationNow")
 
         session.plugins = {
             'funimationnow': FunimationNow
         }
 
         setup_plugin_args(session, parser)
-        self.assertSequenceEqual(plugin_parser.add_argument.mock_calls,
-                                 [call('--funimation-email', help=ANY),
-                                  call('--funimation-password', help=ANY),
-                                  call('--funimation-language',
-                                       choices=["en", "ja", "english", "japanese"],
-                                       default="english", help=ANY),
-                                  call('--funimation-mux-subtitles', action="store_true", help=ANY)])
+        self.assertSequenceEqual(
+            group.add_argument.mock_calls,
+            [
+                call('--funimation-email', help=ANY),
+                call('--funimation-password', help=ANY),
+                call('--funimation-language', choices=["en", "ja", "english", "japanese"], default="english", help=ANY)
+            ]
+        )

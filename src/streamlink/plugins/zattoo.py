@@ -6,10 +6,8 @@ from requests.cookies import cookiejar_from_dict
 
 from streamlink import PluginError
 from streamlink.cache import Cache
-from streamlink.plugin import Plugin
-from streamlink.plugin import PluginArguments, PluginArgument
-from streamlink.plugin.api import useragents
-from streamlink.plugin.api import validate
+from streamlink.plugin import Plugin, PluginArgument, PluginArguments
+from streamlink.plugin.api import useragents, validate
 from streamlink.stream import DASHStream, HLSStream
 from streamlink.utils.args import comma_list_filter
 
@@ -128,7 +126,7 @@ class Zattoo(Plugin):
     )
 
     def __init__(self, url):
-        super(Zattoo, self).__init__(url)
+        super().__init__(url)
         self.domain = self._url_re.match(url).group('base_url')
         self._session_attributes = Cache(
             filename='plugin-cache.json',
@@ -289,14 +287,10 @@ class Zattoo(Plugin):
             log.debug('Found data for {0}'.format(stream_type))
             if data['success'] and stream_type in ['hls', 'hls5']:
                 for url in data['stream']['watch_urls']:
-                    for s in HLSStream.parse_variant_playlist(
-                            self.session, url['url']).items():
-                        yield s
+                    yield from HLSStream.parse_variant_playlist(self.session, url['url']).items()
             elif data['success'] and stream_type == 'dash':
                 for url in data['stream']['watch_urls']:
-                    for s in DASHStream.parse_manifest(
-                            self.session, url['url']).items():
-                        yield s
+                    yield from DASHStream.parse_manifest(self.session, url['url']).items()
 
     def _get_params_cid(self, channel):
         log.debug('get channel ID for {0}'.format(channel))

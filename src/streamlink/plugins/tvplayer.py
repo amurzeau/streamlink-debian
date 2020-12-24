@@ -1,11 +1,9 @@
 import logging
 import re
 
-from streamlink.plugin import Plugin, PluginArguments, PluginArgument
-from streamlink.plugin.api import validate
-from streamlink.plugin.api import useragents
+from streamlink.plugin import Plugin, PluginArgument, PluginArguments
+from streamlink.plugin.api import useragents, validate
 from streamlink.stream import HLSStream
-
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +45,7 @@ class TVPlayer(Plugin):
         return match is not None
 
     def __init__(self, url):
-        super(TVPlayer, self).__init__(url)
+        super().__init__(url)
         self.session.http.headers.update({"User-Agent": useragents.CHROME})
 
     def authenticate(self, username, password):
@@ -90,13 +88,13 @@ class TVPlayer(Plugin):
         return res_schema
 
     def _get_stream_attrs(self, page):
-        stream_attrs = dict((k.replace("-", "_"), v.strip('"')) for k, v in self.stream_attrs_re.findall(page.text))
+        stream_attrs = {k.replace("-", "_"): v.strip('"') for k, v in self.stream_attrs_re.findall(page.text)}
 
-        log.debug("Got stream attributes: {0}", str(stream_attrs))
+        log.debug(f"Got stream attributes: {str(stream_attrs)}")
         valid = True
         for a in ("expiry", "key", "token", "uvid"):
             if a not in stream_attrs:
-                log.debug("Missing '{0}' from stream attributes", a)
+                log.debug(f"Missing '{a}' from stream attributes")
                 valid = False
 
         return stream_attrs if valid else {}
@@ -113,9 +111,8 @@ class TVPlayer(Plugin):
 
         if "enter your postcode" in res.text:
             log.info(
-                "Setting your postcode to: {0}. "
-                "This can be changed in the settings on tvplayer.com",
-                self.dummy_postcode
+                f"Setting your postcode to: {self.dummy_postcode}. "
+                f"This can be changed in the settings on tvplayer.com"
             )
             res = self.session.http.post(
                 self.update_url,

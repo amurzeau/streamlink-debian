@@ -1,10 +1,10 @@
 import unittest
+from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 from streamlink import Streamlink
 from streamlink.plugin.api import HTTPSession
 from streamlink.plugins.tvplayer import TVPlayer
 from streamlink.stream import HLSStream
-from tests.mock import patch, Mock, ANY, MagicMock, call
 
 
 class TestPluginTVPlayer(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestPluginTVPlayer(unittest.TestCase):
         }
 
         page_resp = Mock()
-        page_resp.text = u"""
+        page_resp.text = """
             <div class="col-xs-12">
                 <div id="live-player-root"
                     data-player-library="videojs"
@@ -99,7 +99,7 @@ class TestPluginTVPlayer(unittest.TestCase):
 
     def test_get_invalid_page(self):
         page_resp = Mock()
-        page_resp.text = u"""
+        page_resp.text = """
             var validate = "foo";
             var resourceId = "1234";
         """
@@ -122,8 +122,7 @@ class TestPluginTVPlayer(unittest.TestCase):
         from streamlink_cli.main import setup_plugin_args
         session = Streamlink()
         parser = MagicMock()
-        plugin_parser = MagicMock()
-        parser.add_argument_group = MagicMock(return_value=plugin_parser)
+        group = parser.add_argument_group("Plugin Options").add_argument_group("TVPlayer")
 
         session.plugins = {
             'tvplayer': TVPlayer
@@ -132,7 +131,7 @@ class TestPluginTVPlayer(unittest.TestCase):
         setup_plugin_args(session, parser)
 
         self.assertSequenceEqual(
-            plugin_parser.add_argument.mock_calls,
+            group.add_argument.mock_calls,
             [
                 call('--tvplayer-email', metavar="EMAIL", help=ANY),
                 call('--tvplayer-password', metavar="PASSWORD", help=ANY)

@@ -1,14 +1,14 @@
 import logging
 import os
+import re
 import shlex
 import subprocess
 import sys
 from time import sleep
 
-from streamlink.utils.encoding import get_filesystem_encoding, maybe_encode, maybe_decode
-from .compat import is_win32, stdout
-from .constants import DEFAULT_PLAYER_ARGUMENTS, SUPPORTED_PLAYERS
-from .utils import ignored
+from streamlink_cli.compat import is_win32, stdout
+from streamlink_cli.constants import PLAYER_ARGS_INPUT_DEFAULT, PLAYER_ARGS_INPUT_FALLBACK, SUPPORTED_PLAYERS
+from streamlink_cli.utils import ignored
 
 if is_win32:
     import msvcrt
@@ -16,7 +16,7 @@ if is_win32:
 log = logging.getLogger("streamlink.cli.output")
 
 
-class Output(object):
+class Output:
     def __init__(self):
         self.opened = False
 
@@ -32,7 +32,7 @@ class Output(object):
 
     def write(self, data):
         if not self.opened:
-            raise IOError("Output is not opened")
+            raise OSError("Output is not opened")
 
         return self._write(data)
 
@@ -48,7 +48,7 @@ class Output(object):
 
 class FileOutput(Output):
     def __init__(self, filename=None, fd=None, record=None):
-        super(FileOutput, self).__init__()
+        super().__init__()
         self.filename = filename
         self.fd = fd
         self.record = record
@@ -78,9 +78,14 @@ class FileOutput(Output):
 class PlayerOutput(Output):
     PLAYER_TERMINATE_TIMEOUT = 10.0
 
-    def __init__(self, cmd, args=DEFAULT_PLAYER_ARGUMENTS, filename=None, quiet=True, kill=True,
+    _re_player_args_input = re.compile("|".join(map(
+        lambda const: re.escape(f"{{{const}}}"),
+        [PLAYER_ARGS_INPUT_DEFAULT, PLAYER_ARGS_INPUT_FALLBACK]
+    )))
+
+    def __init__(self, cmd, args="", filename=None, quiet=True, kill=True,
                  call=False, http=None, namedpipe=None, record=None, title=None):
-        super(PlayerOutput, self).__init__()
+        super().__init__()
         self.cmd = cmd
         self.args = args
         self.kill = kill
@@ -106,6 +111,9 @@ class PlayerOutput(Output):
         else:
             self.stdout = sys.stdout
             self.stderr = sys.stderr
+
+        if not self._re_player_args_input.search(self.args):
+            self.args += f"{' ' if self.args else ''}{{{PLAYER_ARGS_INPUT_DEFAULT}}}"
 
     @property
     def running(self):
@@ -185,13 +193,13 @@ class PlayerOutput(Output):
             if self.player_name == "vlc":
                 # see https://wiki.videolan.org/Documentation:Format_String/, allow escaping with \$
                 self.title = self.title.replace("$", "$$").replace(r'\$$', "$")
-                extra_args.extend([u"--input-title-format", self.title])
+                extra_args.extend(["--input-title-format", self.title])
 
             # mpv
             if self.player_name == "mpv":
                 # see https://mpv.io/manual/stable/#property-expansion, allow escaping with \$, respect mpv's $>
                 self.title = self._mpv_title_escape(self.title)
-                extra_args.append(u"--title={}".format(self.title))
+                extra_args.append(f"--force-media-title={self.title}")
 
             # potplayer
             if self.player_name == "potplayer":
@@ -202,14 +210,14 @@ class PlayerOutput(Output):
                     self.title = self.title.replace('"', '')
                     filename = filename[:-1] + '\\' + self.title + filename[-1]
 
-        args = self.args.format(filename=filename)
+        args = self.args.format(**{PLAYER_ARGS_INPUT_DEFAULT: filename, PLAYER_ARGS_INPUT_FALLBACK: filename})
         cmd = self.cmd
 
         # player command
         if is_win32:
-            eargs = maybe_decode(subprocess.list2cmdline(extra_args))
+            eargs = subprocess.list2cmdline(extra_args)
             # do not insert and extra " " when there are no extra_args
-            return u' '.join([cmd] + ([eargs] if eargs else []) + [args])
+            return " ".join([cmd] + ([eargs] if eargs else []) + [args])
         return shlex.split(cmd) + extra_args + shlex.split(args)
 
     def _open(self):
@@ -232,9 +240,9 @@ class PlayerOutput(Output):
             fargs = args
         else:
             fargs = subprocess.list2cmdline(args)
-        log.debug(u"Calling: {0}".format(fargs))
+        log.debug(f"Calling: {fargs}")
 
-        subprocess.call(maybe_encode(args, get_filesystem_encoding()),
+        subprocess.call(args,
                         stdout=self.stdout,
                         stderr=self.stderr)
 
@@ -246,9 +254,9 @@ class PlayerOutput(Output):
             fargs = args
         else:
             fargs = subprocess.list2cmdline(args)
-        log.debug(u"Opening subprocess: {0}".format(fargs))
+        log.debug(f"Opening subprocess: {fargs}")
 
-        self.player = subprocess.Popen(maybe_encode(args, get_filesystem_encoding()),
+        self.player = subprocess.Popen(args,
                                        stdin=self.stdin, bufsize=0,
                                        stdout=self.stdout,
                                        stderr=self.stderr)
