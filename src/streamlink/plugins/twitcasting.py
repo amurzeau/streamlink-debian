@@ -1,16 +1,16 @@
 import logging
 import re
+from threading import Event, Thread
+from urllib.parse import unquote_plus, urlparse
+
 import websocket
 
 from streamlink import logger
 from streamlink.buffers import RingBuffer
-from streamlink.compat import urlparse, unquote_plus
 from streamlink.plugin import Plugin, PluginError
-from streamlink.plugin.api import useragents
-from streamlink.plugin.api import validate
-from streamlink.stream import Stream
+from streamlink.plugin.api import useragents, validate
+from streamlink.stream.stream import Stream
 from streamlink.stream.stream import StreamIO
-from threading import Thread, Event
 
 log = logging.getLogger(__name__)
 
@@ -190,7 +190,7 @@ class TwitCastingReader(StreamIO):
 
 class TwitCastingStream(Stream):
     def __init__(self, session, url):
-        super(TwitCastingStream, self).__init__(session)
+        super().__init__(session)
         self.url = url
 
     def __repr__(self):

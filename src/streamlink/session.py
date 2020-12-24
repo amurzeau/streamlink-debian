@@ -1,63 +1,32 @@
-import imp
 import logging
 import pkgutil
-import sys
-import traceback
-import warnings
+from collections import OrderedDict
 
 import requests
 
-from collections import OrderedDict
-
-from streamlink.logger import StreamlinkLogger, Logger
-from streamlink.utils import update_scheme, memoize
+from streamlink import __version__, plugins
+from streamlink.compat import is_win32
+from streamlink.exceptions import NoPluginError, PluginError
+from streamlink.logger import StreamlinkLogger
+from streamlink.options import Options
+from streamlink.plugin import Plugin, api
+from streamlink.utils import load_module, memoize, update_scheme
 from streamlink.utils.l10n import Localization
-from . import plugins, __version__
-from .compat import is_win32
-from .exceptions import NoPluginError, PluginError
-from .options import Options
-from .plugin import api
 
 # Ensure that the Logger class returned is Streamslink's for using the API (for backwards compatibility)
 logging.setLoggerClass(StreamlinkLogger)
 log = logging.getLogger(__name__)
 
 
-def print_small_exception(start_after):
-    type, value, traceback_ = sys.exc_info()
-
-    tb = traceback.extract_tb(traceback_)
-    index = 0
-
-    for i, trace in enumerate(tb):
-        if trace[2] == start_after:
-            index = i + 1
-            break
-
-    lines = traceback.format_list(tb[index:])
-    lines += traceback.format_exception_only(type, value)
-
-    for line in lines:
-        sys.stderr.write(line)
-
-    sys.stderr.write("\n")
-
-
 class PythonDeprecatedWarning(UserWarning):
     pass
 
 
-class Streamlink(object):
+class Streamlink:
     """A Streamlink session is used to keep track of plugins,
        options and log settings."""
 
     def __init__(self, options=None):
-        if sys.version_info[0] == 2:
-            warnings.warn("Python 2.7 has reached the end of its life.  A future version of streamlink will drop "
-                          "support for Python 2.7. Please upgrade your Python to at least 3.5.",
-                          category=PythonDeprecatedWarning,
-                          stacklevel=2)
-
         self.http = api.HTTPSession()
         self.options = Options({
             "hds-live-edge": 10.0,
@@ -67,6 +36,7 @@ class Streamlink(object):
             "hds-timeout": 60.0,
             "hls-live-edge": 3,
             "hls-segment-attempts": 3,
+            "hls-segment-ignore-names": [],
             "hls-segment-threads": 1,
             "hls-segment-timeout": 10.0,
             "hls-segment-stream-data": False,
@@ -87,8 +57,12 @@ class Streamlink(object):
             "subprocess-errorlog": False,
             "subprocess-errorlog-path": None,
             "ffmpeg-ffmpeg": None,
-            "ffmpeg-video-transcode": "copy",
-            "ffmpeg-audio-transcode": "copy",
+            "ffmpeg-fout": None,
+            "ffmpeg-video-transcode": None,
+            "ffmpeg-audio-transcode": None,
+            "ffmpeg-copyts": False,
+            "ffmpeg-start-at-zero": False,
+            "mux-subtitles": False,
             "locale": None,
             "user-input-requester": None
         })
@@ -96,17 +70,6 @@ class Streamlink(object):
             self.options.update(options)
         self.plugins = OrderedDict({})
         self.load_builtin_plugins()
-        self._logger = None
-
-    @property
-    def logger(self):
-        """
-        Backwards compatible logger property
-        :return: Logger instance
-        """
-        if not self._logger:
-            self._logger = Logger()
-        return self._logger
 
     def set_option(self, key, value):
         """Sets general options used by plugins and streams originating
@@ -140,6 +103,10 @@ class Streamlink(object):
 
         hls-segment-attempts     (int) How many attempts should be done
                                  to download each HLS segment, default: ``3``
+
+        hls-segment-ignore-names (str[]) List of segment names without
+                                 file endings which should get filtered out,
+                                 default: ``[]``
 
         hls-segment-threads      (int) The size of the thread pool used
                                  to download segments, default: ``1``
@@ -221,6 +188,10 @@ class Streamlink(object):
         ffmpeg-verbose-path      (str) Specify the location of the
                                  ffmpeg stderr log file
 
+        ffmpeg-fout              (str) The output file format
+                                 when muxing with ffmpeg
+                                 e.g. ``matroska``
+
         ffmpeg-video-transcode   (str) The codec to use if transcoding
                                  video when muxing with ffmpeg
                                  e.g. ``h264``
@@ -228,6 +199,15 @@ class Streamlink(object):
         ffmpeg-audio-transcode   (str) The codec to use if transcoding
                                  audio when muxing with ffmpeg
                                  e.g. ``aac``
+
+        ffmpeg-copyts            (bool) When used with ffmpeg, do not shift input timestamps.
+
+        ffmpeg-start-at-zero     (bool) When used with ffmpeg and copyts,
+                                 shift input timestamps so they start at zero
+                                 default: ``False``
+
+        mux-subtitles            (bool) Mux available subtitles into the
+                                 output stream.
 
         stream-segment-attempts  (int) How many attempts should be done
                                  to download each segment, default: ``3``.
@@ -260,16 +240,6 @@ class Streamlink(object):
         ======================== =========================================
 
         """
-
-        # Backwards compatibility
-        if key == "rtmpdump":
-            key = "rtmp-rtmpdump"
-        elif key == "rtmpdump-proxy":
-            key = "rtmp-proxy"
-        elif key == "errorlog":
-            key = "subprocess-errorlog"
-        elif key == "errorlog-path":
-            key = "subprocess-errorlog-path"
 
         if key == "http-proxy":
             self.http.proxies["http"] = update_scheme("http://", value)
@@ -319,13 +289,6 @@ class Streamlink(object):
         :param key: key of the option
 
         """
-        # Backwards compatibility
-        if key == "rtmpdump":
-            key = "rtmp-rtmpdump"
-        elif key == "rtmpdump-proxy":
-            key = "rtmp-proxy"
-        elif key == "errorlog":
-            key = "subprocess-errorlog"
 
         if key == "http-proxy":
             return self.http.proxies.get("http")
@@ -373,25 +336,6 @@ class Streamlink(object):
         if plugin in self.plugins:
             plugin = self.plugins[plugin]
             return plugin.get_option(key)
-
-    def set_loglevel(self, level):
-        """Sets the log level used by this session.
-
-        Valid levels are: "none", "error", "warning", "info"
-        and "debug".
-
-        :param level: level of logging to output
-
-        """
-        self.logger.set_level(level)
-
-    def set_logoutput(self, output):
-        """Sets the log output used by this session.
-
-        :param output: a file-like object with a write method
-
-        """
-        self.logger.set_output(output)
 
     @memoize
     def resolve_url(self, url, follow_redirect=True):
@@ -471,40 +415,23 @@ class Streamlink(object):
         :param path: full path to a directory where to look for plugins
 
         """
+        user_input_requester = self.get_option("user-input-requester")
         for loader, name, ispkg in pkgutil.iter_modules([path]):
-            file, pathname, desc = imp.find_module(name, [path])
             # set the full plugin module name
-            module_name = "streamlink.plugin.{0}".format(name)
-
+            module_name = f"streamlink.plugins.{name}"
             try:
-                self.load_plugin(module_name, file, pathname, desc)
-            except Exception:
-                sys.stderr.write("Failed to load plugin {0}:\n".format(name))
-                print_small_exception("load_plugin")
-
+                mod = load_module(module_name, path)
+            except ImportError:
+                log.exception(f"Failed to load plugin {name} from {path}\n")
                 continue
 
-    def load_plugin(self, name, file, pathname, desc):
-        # Set the global http session for this plugin
-        user_input_requester = self.get_option("user-input-requester")
-        api.http = self.http
-
-        module = imp.load_module(name, file, pathname, desc)
-
-        if hasattr(module, "__plugin__"):
-            module_name = getattr(module, "__name__")
-            plugin_name = module_name.split(".")[-1]  # get the plugin part of the module name
-
-            plugin = getattr(module, "__plugin__")
-            plugin.bind(self, plugin_name, user_input_requester)
-
+            if not hasattr(mod, "__plugin__") or not issubclass(mod.__plugin__, Plugin):
+                continue
+            plugin = mod.__plugin__
+            plugin.bind(self, name, user_input_requester)
             if plugin.module in self.plugins:
-                log.debug("Plugin {0} is being overridden by {1}".format(plugin.module, pathname))
-
+                log.debug(f"Plugin {plugin.module} is being overridden by {mod.__file__}")
             self.plugins[plugin.module] = plugin
-
-        if file:
-            file.close()
 
     @property
     def version(self):

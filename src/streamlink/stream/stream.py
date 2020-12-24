@@ -5,7 +5,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class Stream(object):
+class Stream:
     __shortname__ = "stream"
 
     """
@@ -41,6 +41,9 @@ class Stream(object):
         return cls.__shortname__
 
     def to_url(self):
+        raise TypeError("{0} cannot be converted to a URL".format(self.shortname()))
+
+    def to_manifest_url(self):
         raise TypeError("{0} cannot be converted to a URL".format(self.shortname()))
 
 

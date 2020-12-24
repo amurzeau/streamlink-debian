@@ -1,13 +1,13 @@
-import re
 import logging
+import re
 import time
+from urllib.parse import urlparse, urlunparse
 
 from streamlink.exceptions import PluginError, StreamError
-from streamlink.compat import urlparse, urlunparse
 from streamlink.plugin import Plugin
 from streamlink.plugin.api import validate
 from streamlink.stream import HLSStream, hls_playlist
-from streamlink.stream.hls import HLSStreamWorker, HLSStreamReader, Sequence
+from streamlink.stream.hls import HLSStreamReader, HLSStreamWorker, Sequence
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class FilmOnHLSStreamWorker(HLSStreamWorker):
                                                     "502 Server Error"))):
                 self.stream.watch_timeout = 0
                 self.playlist_reload_time = 0
-                log.debug("Force reloading the channel playlist on error: {0}", err)
+                log.debug(f"Force reloading the channel playlist on error: {err}")
                 return
             raise err
 
@@ -74,7 +74,7 @@ class FilmOnHLS(HLSStream):
     __shortname__ = "hls-filmon"
 
     def __init__(self, session_, channel=None, vod_id=None, quality="high", **args):
-        super(FilmOnHLS, self).__init__(session_, None, **args)
+        super().__init__(session_, None, **args)
         self.channel = channel
         self.vod_id = vod_id
         if self.channel is None and self.vod_id is None:
@@ -87,12 +87,11 @@ class FilmOnHLS(HLSStream):
 
     def _get_stream_data(self):
         if self.channel:
-            log.debug("Reloading FilmOn channel playlist: {0}", self.channel)
+            log.debug(f"Reloading FilmOn channel playlist: {self.channel}")
             data = self.api.channel(self.channel)
-            for stream in data["streams"]:
-                yield stream
+            yield from data["streams"]
         elif self.vod_id:
-            log.debug("Reloading FilmOn VOD playlist: {0}", self.vod_id)
+            log.debug(f"Reloading FilmOn VOD playlist: {self.vod_id}")
             data = self.api.vod(self.vod_id)
             for _, stream in data["streams"].items():
                 yield stream
@@ -124,7 +123,7 @@ class FilmOnHLS(HLSStream):
         return reader
 
 
-class FilmOnAPI(object):
+class FilmOnAPI:
     def __init__(self, session):
         self.session = session
 
@@ -150,17 +149,24 @@ class FilmOnAPI(object):
 
     def channel(self, channel):
         for _ in range(5):
+            if _ > 0:
+                log.debug("channel sleep {0}".format(_))
+                time.sleep(0.75)
+
             # retry for 50X errors
             try:
                 res = self.session.http.get(self.channel_url.format(channel))
                 if res:
-                    break
+                    # retry for invalid response data
+                    try:
+                        return self.session.http.json(res, schema=self.api_schema)
+                    except PluginError:
+                        log.debug("invalid or non-JSON data received")
+                        continue
             except Exception:
-                log.debug("channel sleep {0}".format(_))
-                time.sleep(0.75)
-        else:
-            raise PluginError("Unable to find 'self.api.channel' for {0}".format(channel))
-        return self.session.http.json(res, schema=self.api_schema)
+                log.debug("invalid server response")
+
+        raise PluginError("Unable to find 'self.api.channel' for {0}".format(channel))
 
     def vod(self, vod_id):
         res = self.session.http.get(self.vod_url.format(vod_id))
@@ -198,7 +204,7 @@ class Filmon(Plugin):
     TIME_CHANNEL = 60 * 60 * 24 * 365
 
     def __init__(self, url):
-        super(Filmon, self).__init__(url)
+        super().__init__(url)
         parsed = urlparse(self.url)
         if parsed.path.startswith("/channel/"):
             self.url = urlunparse(parsed._replace(path=parsed.path.replace("/channel/", "/tv/")))
@@ -230,19 +236,18 @@ class Filmon(Plugin):
                 if not streams:
                     yield stream["quality"], HLSStream(self.session, stream["url"])
                 else:
-                    for s in streams.items():
-                        yield s
+                    yield from streams.items()
         else:
             if channel and not channel.isdigit():
                 _id = self.cache.get(channel)
                 if _id is None:
                     _id = self.session.http.get(self.url, schema=self._channel_id_schema)
-                    log.debug("Found channel ID: {0}", _id)
+                    log.debug(f"Found channel ID: {_id}")
                     # do not cache a group url
                     if _id and not is_group:
                         self.cache.set(channel, _id, expires=self.TIME_CHANNEL)
                 else:
-                    log.debug("Found cached channel ID: {0}", _id)
+                    log.debug(f"Found cached channel ID: {_id}")
             else:
                 _id = channel
 
@@ -256,7 +261,7 @@ class Filmon(Plugin):
             except Exception:
                 if channel and not channel.isdigit():
                     self.cache.set(channel, None, expires=0)
-                    log.debug("Reset cached channel: {0}", channel)
+                    log.debug(f"Reset cached channel: {channel}")
 
                 raise
 

@@ -4,8 +4,7 @@ import sys
 from getpass import getpass
 
 from streamlink.plugin.plugin import UserInputRequester
-from .compat import input
-from .utils import JSONEncoder
+from streamlink_cli.utils import JSONEncoder
 
 log = logging.getLogger("streamlink.cli")
 
@@ -21,24 +20,19 @@ class ConsoleUserInputRequester(UserInputRequester):
         if sys.stdin.isatty():
             return self.console.ask(prompt.strip() + ": ")
         else:
-            raise IOError("no TTY available")
+            raise OSError("no TTY available")
 
     def ask_password(self, prompt):
         if sys.stdin.isatty():
             return self.console.askpass(prompt.strip() + ": ")
         else:
-            raise IOError("no TTY available")
+            raise OSError("no TTY available")
 
 
-class ConsoleOutput(object):
-    def __init__(self, output, streamlink, json=False):
-        self.streamlink = streamlink
-
+class ConsoleOutput:
+    def __init__(self, output, json=False):
         self.json = json
         self.output = output
-
-    def set_level(self, level):
-        self.streamlink.set_loglevel(level)
 
     def set_output(self, output):
         self.output = output
@@ -66,9 +60,7 @@ class ConsoleOutput(object):
             return ""
 
     def msg(self, msg, *args, **kwargs):
-        formatted = msg.format(*args, **kwargs)
-        formatted = u"{0}\n".format(formatted)
-
+        formatted = f"{msg.format(*args, **kwargs)}\n"
         self.output.write(formatted)
 
     def msg_json(self, obj):
@@ -80,7 +72,7 @@ class ConsoleOutput(object):
 
         msg = json.dumps(obj, cls=JSONEncoder,
                          indent=2)
-        self.msg(u"{0}", msg)
+        self.msg("{0}", msg)
 
         if isinstance(obj, dict) and obj.get("error"):
             sys.exit(1)
@@ -92,8 +84,7 @@ class ConsoleOutput(object):
             obj = dict(error=formatted)
             self.msg_json(obj)
         else:
-            msg = u"error: {0}".format(formatted)
-            self.msg(u"{0}", msg)
+            self.msg("{0}", f"error: {formatted}")
 
         sys.exit(1)
 

@@ -1,15 +1,17 @@
 import json
 import logging
 import re
-import websocket
 import threading
 import time
+from urllib.parse import unquote_plus, urlparse
 
-from streamlink.plugin import Plugin, PluginArguments, PluginArgument
+import websocket
+
+from streamlink.plugin import Plugin, PluginArgument, PluginArguments
 from streamlink.plugin.api import useragents
 from streamlink.stream import HLSStream
-from streamlink.compat import urlparse, unquote_plus
-
+from streamlink.utils.times import hours_minutes_seconds
+from streamlink.utils.url import update_qsd
 
 _log = logging.getLogger(__name__)
 
@@ -45,7 +47,15 @@ class NicoLive(Plugin):
             sensitive=True,
             metavar="VALUE",
             help="Value of the user-session token \n(can be used in "
-                 "case you do not want to put your password here)"))
+                 "case you do not want to put your password here)"),
+        PluginArgument(
+            "timeshift-offset",
+            type=hours_minutes_seconds,
+            argument_name="niconico-timeshift-offset",
+            metavar="[HH:]MM:SS",
+            default=None,
+            help="Amount of time to skip from the beginning of a stream. "
+                 "Default is 00:00:00."))
 
     is_stream_ready = False
     is_stream_ended = False
@@ -125,7 +135,7 @@ class NicoLive(Plugin):
         self.wss_api_url = "{0}&frontend_id={1}".format(self.wss_api_url, self.frontend_id)
 
         _log.debug("Video page response code: {0}".format(resp.status_code))
-        _log.trace(u"Video page response body: {0}".format(resp.text))
+        _log.trace("Video page response body: {0}".format(resp.text))
         _log.debug("Got wss_api_url: {0}".format(self.wss_api_url))
         _log.debug("Got frontend_id: {0}".format(self.frontend_id))
 
@@ -172,7 +182,7 @@ class NicoLive(Plugin):
     def send_message(self, type_, body):
         msg = {"type": type_, "body": body}
         msg_json = json.dumps(msg)
-        _log.debug(u"Sending: {0}".format(msg_json))
+        _log.debug(f"Sending: {msg_json}")
         if self._ws and self._ws.sock.connected:
             self._ws.send(msg_json)
         else:
@@ -181,7 +191,7 @@ class NicoLive(Plugin):
     def send_no_body_message(self, type_):
         msg = {"type": type_}
         msg_json = json.dumps(msg)
-        _log.debug(u"Sending: {0}".format(msg_json))
+        _log.debug(f"Sending: {msg_json}")
         if self._ws and self._ws.sock.connected:
             self._ws.send(msg_json)
         else:
@@ -189,7 +199,7 @@ class NicoLive(Plugin):
 
     def send_custom_message(self, msg):
         msg_json = json.dumps(msg)
-        _log.debug(u"Sending: {0}".format(msg_json))
+        _log.debug(f"Sending: {msg_json}")
         if self._ws and self._ws.sock.connected:
             self._ws.send(msg_json)
         else:
@@ -235,12 +245,16 @@ class NicoLive(Plugin):
         self.send_no_body_message("keepSeat")
 
     def handle_api_message(self, message):
-        _log.debug(u"Received: {0}".format(message))
+        _log.debug(f"Received: {message}")
         message_parsed = json.loads(message)
 
         if message_parsed["type"] == "stream":
             data = message_parsed["data"]
             self.hls_stream_url = data["uri"]
+            # load in the offset for timeshift live videos
+            offset = self.get_option("timeshift-offset")
+            if offset and 'timeshift' in self.wss_api_url:
+                self.hls_stream_url = update_qsd(self.hls_stream_url, {"start": offset})
             self.is_stream_ready = True
 
         if message_parsed["type"] == "watch":
@@ -311,7 +325,7 @@ class NicoLive(Plugin):
                                           params=_login_url_params)
 
             _log.debug("Login response code: {0}".format(resp.status_code))
-            _log.trace(u"Login response body: {0}".format(resp.text))
+            _log.trace("Login response body: {0}".format(resp.text))
             _log.debug("Cookies: {0}".format(
                 self.session.http.cookies.get_dict()))
 
@@ -322,14 +336,14 @@ class NicoLive(Plugin):
                 except Exception as e:
                     _log.debug(e)
                     msg = "unknown reason"
-                _log.warn("Login failed. {0}".format(msg))
+                _log.warning("Login failed. {0}".format(msg))
                 return False
             else:
                 _log.info("Logged in.")
                 self.save_cookies()
                 return True
         else:
-            _log.warn(
+            _log.warning(
                 "Neither a email and password combination nor a user session "
                 "token is provided. Cannot attempt login.")
             return False
@@ -338,7 +352,7 @@ class NicoLive(Plugin):
 class NicoHLSStream(HLSStream):
 
     def __init__(self, hls_stream, nicolive_plugin):
-        super(NicoHLSStream, self).__init__(
+        super().__init__(
             hls_stream.session,
             force_restart=hls_stream.force_restart,
             start_offset=hls_stream.start_offset,
@@ -349,7 +363,7 @@ class NicoHLSStream(HLSStream):
         self.nicolive_plugin = nicolive_plugin
 
     def open(self):
-        reader = super(NicoHLSStream, self).open()
+        reader = super().open()
         self.nicolive_plugin.stream_reader = reader
         return reader
 

@@ -1,11 +1,10 @@
 import logging
-
 import re
+from urllib.parse import urlparse
+
 from streamlink.plugin import Plugin
-from streamlink.plugin.plugin import stream_weight
-from streamlink.plugin.plugin import LOW_PRIORITY, NORMAL_PRIORITY, NO_PRIORITY
+from streamlink.plugin.plugin import LOW_PRIORITY, NORMAL_PRIORITY, NO_PRIORITY, stream_weight
 from streamlink.stream.dash import DASHStream
-from streamlink.compat import urlparse
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +52,7 @@ class MPEGDASH(Plugin):
     def _get_streams(self):
         mpdurl = self._url_re.match(self.url).group(2)
 
-        self.logger.debug("Parsing MPD URL: {0}".format(mpdurl))
+        log.debug("Parsing MPD URL: {0}".format(mpdurl))
 
         return DASHStream.parse_manifest(self.session, mpdurl)
 

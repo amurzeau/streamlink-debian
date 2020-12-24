@@ -1,16 +1,11 @@
-import sys
-import tempfile
-import os.path
-
 import datetime
+import os.path
+import tempfile
+import unittest
+from shutil import rmtree
+from unittest.mock import patch
 
 import streamlink.cache
-
-from shutil import rmtree
-import unittest
-from tests.mock import patch
-
-is_py2 = (sys.version_info[0] == 2)
 
 
 class TestCache(unittest.TestCase):
@@ -44,10 +39,7 @@ class TestCache(unittest.TestCase):
 
     @patch('os.path.exists', return_value=True)
     def test_load_fail(self, exists_mock):
-        if is_py2:
-            patch('__builtin__.open', side_effect=IOError)
-        else:
-            patch('streamlink.cache.open', side_effect=IOError)
+        patch('streamlink.cache.open', side_effect=IOError)
         self.cache._load()
         self.assertEqual({}, self.cache._cache)
 
@@ -62,6 +54,11 @@ class TestCache(unittest.TestCase):
     def test_expired_at_after(self):
         self.cache.set("value", 10, expires_at=datetime.datetime.now() + datetime.timedelta(seconds=20))
         self.assertEqual(10, self.cache.get("value"))
+
+    @patch("streamlink.cache.mktime", side_effect=OverflowError)
+    def test_expired_at_raise_overflowerror(self, mock):
+        self.cache.set("value", 10, expires_at=datetime.datetime.now())
+        self.assertEqual(None, self.cache.get("value"))
 
     def test_not_expired(self):
         self.cache.set("value", 10, expires=20)

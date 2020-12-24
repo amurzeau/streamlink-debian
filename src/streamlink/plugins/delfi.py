@@ -3,14 +3,13 @@ Plugin to support the videos from Delfi.lt
 
 https://en.wikipedia.org/wiki/Delfi_(web_portal)
 """
-import re
-import logging
-
 import itertools
+import logging
+import re
 
 from streamlink.plugin import Plugin
 from streamlink.plugin.api.utils import itertags
-from streamlink.stream import HTTPStream, HLSStream, DASHStream
+from streamlink.stream import DASHStream, HLSStream, HTTPStream
 from streamlink.utils import update_scheme
 
 log = logging.getLogger(__name__)
@@ -42,11 +41,9 @@ class Delfi(Plugin):
             for x in itertools.chain(*data['data']['versions'].values()):
                 src = update_scheme(self.url, x['src'])
                 if x['type'] == "application/x-mpegurl":
-                    for s in HLSStream.parse_variant_playlist(self.session, src).items():
-                        yield s
+                    yield from HLSStream.parse_variant_playlist(self.session, src).items()
                 elif x['type'] == "application/dash+xml":
-                    for s in DASHStream.parse_manifest(self.session, src).items():
-                        yield s
+                    yield from DASHStream.parse_manifest(self.session, src).items()
                 elif x['type'] == "video/mp4":
                     yield "{0}p".format(x['res']), HTTPStream(self.session, src)
         else:
@@ -60,8 +57,7 @@ class Delfi(Plugin):
             if div.attributes.get("data-provider") == "dvideo":
                 video_id = div.attributes.get("data-id")
                 log.debug("Found video ID: {0}".format(video_id))
-                for s in self._get_streams_api(video_id):
-                    yield s
+                yield from self._get_streams_api(video_id)
 
 
 __plugin__ = Delfi

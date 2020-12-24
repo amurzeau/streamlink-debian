@@ -1,5 +1,4 @@
 import socket
-
 from io import BytesIO
 
 try:
@@ -20,7 +19,7 @@ class HTTPRequest(BaseHTTPRequestHandler):
         self.error_message = message
 
 
-class HTTPServer(object):
+class HTTPServer:
     def __init__(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -55,7 +54,7 @@ class HTTPServer(object):
     def bind(self, host="127.0.0.1", port=0):
         try:
             self.socket.bind((host or "", port))
-        except socket.error as err:
+        except OSError as err:
             raise OSError(err)
 
         self.socket.listen(1)
@@ -75,7 +74,7 @@ class HTTPServer(object):
 
         try:
             req_data = conn.recv(1024)
-        except socket.error:
+        except OSError:
             raise OSError("Failed to read data from socket")
 
         req = HTTPRequest(req_data)
@@ -89,7 +88,7 @@ class HTTPServer(object):
             conn.send(b"Server: Streamlink\r\n")
             conn.send(b"Content-Type: video/unknown\r\n")
             conn.send(b"\r\n")
-        except socket.error:
+        except OSError:
             raise OSError("Failed to write data to socket")
 
         # We don't want to send any data on HEAD requests.
@@ -103,7 +102,7 @@ class HTTPServer(object):
 
     def write(self, data):
         if not self.conn:
-            raise IOError("No connection")
+            raise OSError("No connection")
 
         self.conn.sendall(data)
 
@@ -114,6 +113,6 @@ class HTTPServer(object):
         if not client_only:
             try:
                 self.socket.shutdown(2)
-            except (OSError, socket.error):
+            except OSError:
                 pass
             self.socket.close()

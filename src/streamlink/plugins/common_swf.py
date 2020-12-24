@@ -1,8 +1,8 @@
 from collections import namedtuple
 from io import BytesIO
 
-from streamlink.utils import swfdecompress
 from streamlink.packages.flashmedia.types import U16LE, U32LE
+from streamlink.utils import swfdecompress
 
 __all__ = ["parse_swf"]
 
@@ -36,7 +36,7 @@ def read_tags(fd):
     while True:
         try:
             yield read_tag(fd)
-        except IOError:
+        except OSError:
             break
 
 

@@ -1,10 +1,8 @@
-from __future__ import unicode_literals
-
-import argparse
 import base64
 import json
 import logging
 import re
+from urllib.parse import urljoin, urlparse
 from uuid import uuid4
 
 from Crypto.Cipher import AES
@@ -12,8 +10,7 @@ from Crypto.Hash import SHA256
 from Crypto.Util.Padding import pad, unpad
 
 from streamlink import PluginError
-from streamlink.compat import urljoin, urlparse
-from streamlink.plugin import Plugin, PluginArguments, PluginArgument
+from streamlink.plugin import Plugin, PluginArgument, PluginArguments
 from streamlink.stream import HLSStream
 
 log = logging.getLogger(__name__)
@@ -43,16 +40,11 @@ class USTVNow(Plugin):
             required=True,
             help="Your USTV Now account password",
             prompt="Enter USTV Now account password"
-        ),
-        PluginArgument(
-            "station-code",
-            metavar="CODE",
-            help=argparse.SUPPRESS
-        ),
+        )
     )
 
     def __init__(self, url):
-        super(USTVNow, self).__init__(url)
+        super().__init__(url)
         self._encryption_config = {}
         self._token = None
 
@@ -143,7 +135,7 @@ class USTVNow(Plugin):
                    "tenant-code": self.TENANT_CODE,
                    "content-type": "application/json"}
         res = self.session.http.post(self._api_url + path, data=json.dumps(post_data), headers=headers).json()
-        data = dict((k, v and json.loads(self.decrypt_data(v, key, iv)))for k, v in res.items())
+        data = {k: v and json.loads(self.decrypt_data(v, key, iv)) for k, v in res.items()}
         return data
 
     def login(self, username, password):
@@ -172,8 +164,7 @@ class USTVNow(Plugin):
                 for stream in resp['data']['response']['streams']:
                     if stream['keys']['licenseKey']:
                         log.warning("Stream possibly protected by DRM")
-                    for q, s in HLSStream.parse_variant_playlist(self.session, stream['url']).items():
-                        yield (q, s)
+                    yield from HLSStream.parse_variant_playlist(self.session, stream['url']).items()
             else:
                 log.error("Could not find any streams: {code}: {message}".format(**resp['data']['error']))
         else:

@@ -15,7 +15,7 @@ class Chunk(BytesIO):
         return self.tell() == self.length
 
 
-class Buffer(object):
+class Buffer:
     """Simple buffer for use in single-threaded consumer/filler.
 
     Stores chunks in a deque to avoid inefficient reallocating
@@ -107,7 +107,7 @@ class RingBuffer(Buffer):
 
             # If the event is still not set it's a timeout
             if not self.event_used.is_set() and self.length == 0:
-                raise IOError("Read timeout")
+                raise OSError("Read timeout")
 
         return self._read(size)
 

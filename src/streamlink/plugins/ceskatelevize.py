@@ -11,15 +11,16 @@ Following channels are working:
 
 Additionally, videos from iVysilani archive should work as well.
 """
+import json
 import logging
 import re
-import json
+from html import unescape as html_unescape
+from urllib.parse import quote
 
+from streamlink.exceptions import PluginError
 from streamlink.plugin import Plugin
 from streamlink.plugin.api import useragents, validate
-from streamlink.stream import HLSStream, DASHStream
-from streamlink.exceptions import PluginError
-from streamlink.compat import html_unescape, quote
+from streamlink.stream import DASHStream, HLSStream
 
 log = logging.getLogger(__name__)
 
@@ -159,7 +160,7 @@ class Ceskatelevize(Plugin):
         return 'http://ceskatelevize.cz/' + url
 
 
-class CeskatelevizeAPI2(object):
+class CeskatelevizeAPI2:
     _player_api = 'https://playlist.ceskatelevize.cz/'
     _url_re = re.compile(r'http(s)?://([^.]*.)?ceskatelevize.cz')
     _playlist_info_re = re.compile(r'{\s*"type":\s*"([a-z]+)",\s*"id":\s*"(\w+)"')
@@ -261,8 +262,7 @@ class CeskatelevizeAPI2(object):
         json_data = self.session.http.json(response, schema=self._playlist_schema)
         log.trace('{0!r}'.format(json_data))
         playlist = json_data['RESULT']['playlist'][0]['streamUrls']['main']
-        for s in DASHStream.parse_manifest(self.session, playlist).items():
-            yield s
+        yield from DASHStream.parse_manifest(self.session, playlist).items()
 
 
 __plugin__ = Ceskatelevize

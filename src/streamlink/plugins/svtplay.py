@@ -1,8 +1,8 @@
 import logging
 import re
+from urllib.parse import urljoin
 
-from streamlink.compat import urljoin
-from streamlink.plugin import Plugin, PluginArguments, PluginArgument
+from streamlink.plugin import Plugin, PluginArgument, PluginArguments
 from streamlink.plugin.api import validate
 from streamlink.stream import DASHStream, HTTPStream
 from streamlink.stream.ffmpegmux import MuxedStream
@@ -47,11 +47,7 @@ class SVTPlay(Plugin):
     })
 
     arguments = PluginArguments(
-        PluginArgument(
-            'mux-subtitles',
-            action='store_true',
-            help="Automatically mux available subtitles in to the output stream.",
-        ),
+        PluginArgument("mux-subtitles", is_global=True)
     )
 
     @classmethod
@@ -94,8 +90,7 @@ class SVTPlay(Plugin):
 
         for playlist in api_data['videoReferences']:
             if playlist['format'] == 'dashhbbtv':
-                for s in DASHStream.parse_manifest(self.session, playlist['url']).items():
-                    yield s
+                yield from DASHStream.parse_manifest(self.session, playlist['url']).items()
 
     def _get_vod(self):
         res = self.session.http.get(self.url)

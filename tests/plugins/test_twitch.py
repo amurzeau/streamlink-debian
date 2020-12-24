@@ -1,14 +1,13 @@
-from datetime import datetime, timedelta
 import unittest
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, call, patch
 
 import requests_mock
-
-from tests.mixins.stream_hls import Playlist, Tag, Segment as _Segment, TestMixinStreamHLS
-from tests.mock import MagicMock, call, patch
 
 from streamlink import Streamlink
 from streamlink.plugin import PluginError
 from streamlink.plugins.twitch import Twitch, TwitchHLSStream
+from tests.mixins.stream_hls import Playlist, Segment as _Segment, Tag, TestMixinStreamHLS
 
 
 DATETIME_BASE = datetime(2000, 1, 1, 0, 0, 0, 0)
@@ -25,18 +24,18 @@ class TagDateRangeAd(Tag):
         }
         if custom is not None:
             attrs.update(**{key: self.val_quoted_string(value) for (key, value) in custom.items()})
-        super(TagDateRangeAd, self).__init__("EXT-X-DATERANGE", attrs)
+        super().__init__("EXT-X-DATERANGE", attrs)
 
 
 class Segment(_Segment):
     def __init__(self, num, title="live", *args, **kwargs):
-        super(Segment, self).__init__(num, title, *args, **kwargs)
+        super().__init__(num, title, *args, **kwargs)
         self.date = DATETIME_BASE + timedelta(seconds=num)
 
     def build(self, namespace):
         return "#EXT-X-PROGRAM-DATE-TIME:{0}\n{1}".format(
             self.date.strftime(DATETIME_FORMAT),
-            super(Segment, self).build(namespace)
+            super().build(namespace)
         )
 
 
@@ -70,7 +69,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
     __stream__ = TwitchHLSStream
 
     def get_session(self, options=None, disable_ads=False, low_latency=False):
-        session = super(TestTwitchHLSStream, self).get_session(options)
+        session = super().get_session(options)
         session.set_option("hls-live-edge", 4)
         session.set_plugin_option("twitch", "disable-ads", disable_ads)
         session.set_plugin_option("twitch", "low-latency", low_latency)
@@ -471,22 +470,8 @@ class TestTwitchReruns(unittest.TestCase):
     log_call = call("Reruns were disabled by command line option")
 
     def subject(self, **params):
-        with requests_mock.Mocker() as mock:
-            mock.get(
-                "https://api.twitch.tv/kraken/users?login=foo",
-                json={"users": [{"_id": 1234}]}
-            )
-            mock.get(
-                "https://api.twitch.tv/kraken/streams/1234",
-                json={"stream": None} if params.pop("offline", False) else {"stream": {
-                    "stream_type": params.pop("stream_type", "live"),
-                    "broadcast_platform": params.pop("broadcast_platform", "live"),
-                    "channel": {
-                        "broadcaster_software": params.pop("broadcaster_software", "")
-                    }
-                }}
-            )
-
+        with patch("streamlink.plugins.twitch.TwitchAPI.stream_metadata") as mock:
+            mock.return_value = None if params.pop("offline", False) else {"type": params.pop("stream_type", "live")}
             session = Streamlink()
             Twitch.bind(session, "tests.plugins.test_twitch")
             plugin = Twitch("https://www.twitch.tv/foo")
@@ -500,18 +485,6 @@ class TestTwitchReruns(unittest.TestCase):
 
     def test_disable_reruns_not_live(self, mock_log):
         self.assertTrue(self.subject(stream_type="rerun"))
-        self.assertIn(self.log_call, mock_log.info.call_args_list)
-
-    def test_disable_reruns_mixed(self, mock_log):
-        self.assertTrue(self.subject(stream_type="rerun", broadcast_platform="live"))
-        self.assertIn(self.log_call, mock_log.info.call_args_list)
-
-    def test_disable_reruns_mixed2(self, mock_log):
-        self.assertTrue(self.subject(stream_type="live", broadcast_platform="rerun"))
-        self.assertIn(self.log_call, mock_log.info.call_args_list)
-
-    def test_disable_reruns_broadcaster_software(self, mock_log):
-        self.assertTrue(self.subject(broadcaster_software="watch_party_rerun"))
         self.assertIn(self.log_call, mock_log.info.call_args_list)
 
     def test_disable_reruns_offline(self, mock_log):
