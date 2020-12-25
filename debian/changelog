@@ -1,8 +1,13 @@
-streamlink (2.0.0-1) UNRELEASED; urgency=medium
+streamlink (2.0.0-1) unstable; urgency=medium
 
   * New upstream version 2.0.0
+  * debian/*: update patches, control, tests to replace new furo theme
+  * debian/patches: update patches
+  * examples: use python3 interpreter instead of python
+  * Bump Standards-Version to 4.5.1 (no changes)
+  * debian/watch: removing repacking as not needed anymore
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 24 Dec 2020 15:26:06 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 25 Dec 2020 22:30:24 +0100
 
 streamlink (1.7.0+dfsg-1) unstable; urgency=medium
 
