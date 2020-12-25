@@ -6,8 +6,9 @@ streamlink (2.0.0-1) unstable; urgency=medium
   * examples: use python3 interpreter instead of python
   * Bump Standards-Version to 4.5.1 (no changes)
   * debian/watch: removing repacking as not needed anymore
+  * Add patch to use icons from font awesome 4 instead of font awesome 5
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 25 Dec 2020 22:30:24 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 25 Dec 2020 23:28:50 +0100
 
 streamlink (1.7.0+dfsg-1) unstable; urgency=medium
 
