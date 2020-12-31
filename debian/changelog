@@ -1,3 +1,10 @@
+streamlink (2.0.0-1~bpo10+1) buster-backports; urgency=medium
+
+  * Rebuild for buster-backports.
+  * d/patches: remove sphinx 3.0 requirement as it is not available in stable
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 31 Dec 2020 17:57:09 +0100
+
 streamlink (2.0.0-1) unstable; urgency=medium
 
   * New upstream version 2.0.0
