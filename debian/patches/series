@@ -6,3 +6,4 @@ remove_github_buttons
 0007-Examples-use-python3-interpreter-instead-of-python.patch
 0007-Use-font-awesome-4-icons-a-Debian-doesn-t-have-font-.patch
 0008-Revert-docs-use-recommonmark-as-an-extension.patch
+0009-Remove-sphinx-3.0-requirement.patch
