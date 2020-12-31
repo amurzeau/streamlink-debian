@@ -16,16 +16,12 @@
 """
 
 
-from xml.etree import ElementTree as ET
 from copy import copy as copy_obj
+from functools import singledispatch
+from urllib.parse import urlparse
+from xml.etree import ElementTree as ET
 
-try:
-    from functools import singledispatch
-except ImportError:
-    from singledispatch import singledispatch
-
-from ...compat import is_py2, urlparse
-from ...exceptions import PluginError
+from streamlink.exceptions import PluginError
 
 __all__ = [
     "any", "all", "filter", "get", "getattr", "hasattr", "length", "optional",
@@ -34,8 +30,7 @@ __all__ = [
     "validate", "Schema", "SchemaContainer"
 ]
 
-#: Alias for text type on each Python version
-text = is_py2 and basestring or str
+text = str
 
 # References to original functions that we override in this module
 _all = all
@@ -55,34 +50,28 @@ def _is_re_match(value):
 class any(tuple):
     """At least one of the schemas must be valid."""
     def __new__(cls, *args):
-        return super(any, cls).__new__(cls, args)
+        return super().__new__(cls, args)
 
 
 class all(tuple):
     """All schemas must be valid."""
     def __new__(cls, *args):
-        return super(all, cls).__new__(cls, args)
+        return super().__new__(cls, args)
 
 
-class SchemaContainer(object):
+class SchemaContainer:
     def __init__(self, schema):
         self.schema = schema
 
 
-class transform(object):
+class transform:
     """Applies function to value to transform it."""
 
     def __init__(self, func):
-        # text is an alias for basestring on Python 2, which cannot be
-        # instantiated and therefore can't be used to transform the value,
-        # so we force to unicode instead.
-        if is_py2 and func == text:
-            func = unicode
-
         self.func = func
 
 
-class optional(object):
+class optional:
     """An optional key used in a dict or union-dict."""
 
     def __init__(self, key):
@@ -97,7 +86,7 @@ class attr(SchemaContainer):
     """Validates an object's attributes."""
 
 
-class xml_element(object):
+class xml_element:
     """A XML element."""
 
     def __init__(self, tag=None, text=None, attrib=None):
@@ -222,12 +211,6 @@ def map(func):
     Supports both dicts and sequences, key/value pairs are
     expanded when applied to a dict.
     """
-    # text is an alias for basestring on Python 2, which cannot be
-    # instantiated and therefore can't be used to transform the value,
-    # so we force to unicode instead.
-    if is_py2 and text == func:
-        func = unicode
-
     def expand_kv(kv):
         return func(*kv)
 
@@ -471,7 +454,7 @@ def validate_unions(schema, value):
     return validate_union(schema.schema, value)
 
 
-class Schema(object):
+class Schema:
     """Wraps a validator schema into a object."""
 
     def __init__(self, *schemas):

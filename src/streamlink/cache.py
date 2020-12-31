@@ -2,9 +2,9 @@ import json
 import os
 import shutil
 import tempfile
-from time import time, mktime
+from time import mktime, time
 
-from .compat import is_win32
+from streamlink.compat import is_win32
 
 if is_win32:
     xdg_cache = os.environ.get("APPDATA", os.path.expanduser("~"))
@@ -14,7 +14,7 @@ else:
 cache_dir = os.path.join(xdg_cache, "streamlink")
 
 
-class Cache(object):
+class Cache:
     """Caches Python values as JSON and prunes expired entries."""
 
     def __init__(self, filename, key_prefix=""):
@@ -38,7 +38,7 @@ class Cache(object):
         pruned = []
 
         for key, value in self._cache.items():
-            expires = value.get("expires", time())
+            expires = value.get("expires", now)
             if expires <= now:
                 pruned.append(key)
 
@@ -59,7 +59,7 @@ class Cache(object):
                 os.makedirs(os.path.dirname(self.filename))
 
             shutil.move(tempname, self.filename)
-        except (IOError, OSError):
+        except OSError:
             os.remove(tempname)
 
     def set(self, key, value, expires=60 * 60 * 24 * 7, expires_at=None):
@@ -69,10 +69,13 @@ class Cache(object):
         if self.key_prefix:
             key = "{0}:{1}".format(self.key_prefix, key)
 
-        expires += time()
-
-        if expires_at:
-            expires = mktime(expires_at.timetuple())
+        if expires_at is None:
+            expires += time()
+        else:
+            try:
+                expires = mktime(expires_at.timetuple())
+            except OverflowError:
+                expires = 0
 
         self._cache[key] = dict(value=value, expires=expires)
         self._save()

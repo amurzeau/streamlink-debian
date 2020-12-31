@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Streamlink extracts streams from various services.
 
 The main compontent of Streamlink is a command-line utility that
@@ -9,7 +8,8 @@ An API is also provided that allows direct access to stream data.
 Full documentation is available at https://streamlink.github.io.
 
 """
-from ._version import get_versions
+from streamlink._version import get_versions
+
 __version__ = get_versions()['version']
 del get_versions
 __title__ = "streamlink"
@@ -18,7 +18,7 @@ __author__ = "Streamlink"
 __copyright__ = "Copyright 2020 Streamlink"
 __credits__ = ["https://github.com/streamlink/streamlink/blob/master/AUTHORS"]
 
-from .api import streams
-from .exceptions import (StreamlinkError, PluginError, NoStreamsError,
-                         NoPluginError, StreamError)
-from .session import Streamlink
+from streamlink.api import streams
+from streamlink.exceptions import (StreamlinkError, PluginError, NoStreamsError,
+                                   NoPluginError, StreamError)
+from streamlink.session import Streamlink

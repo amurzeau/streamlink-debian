@@ -3,14 +3,14 @@ import logging
 import operator
 import re
 import time
+from collections import OrderedDict
+from functools import partial
+
 import requests.cookies
 
-from functools import partial
-from collections import OrderedDict
-
 from streamlink.cache import Cache
-from streamlink.exceptions import PluginError, NoStreamsError, FatalPluginError
-from streamlink.options import Options, Arguments
+from streamlink.exceptions import FatalPluginError, NoStreamsError, PluginError
+from streamlink.options import Arguments, Options
 
 log = logging.getLogger(__name__)
 
@@ -157,7 +157,7 @@ def parse_params(params):
     return rval
 
 
-class UserInputRequester(object):
+class UserInputRequester:
     """
     Base Class / Interface for requesting user input
 
@@ -184,7 +184,7 @@ class UserInputRequester(object):
         raise NotImplementedError
 
 
-class Plugin(object):
+class Plugin:
     """A plugin can retrieve stream information from the URL specified.
 
     :param url: URL that the plugin will operate on
@@ -202,7 +202,7 @@ class Plugin(object):
     def bind(cls, session, module, user_input_requester=None):
         cls.cache = Cache(filename="plugin-cache.json",
                           key_prefix=module)
-        cls.logger = logging.getLogger("streamlink.plugin." + module)
+        cls.logger = logging.getLogger("streamlink.plugins." + module)
         cls.module = module
         cls.session = session
         if user_input_requester is not None:
@@ -323,7 +323,7 @@ class Plugin(object):
                 ostreams = list(ostreams)
         except NoStreamsError:
             return {}
-        except (IOError, OSError, ValueError) as err:
+        except (OSError, ValueError) as err:
             raise PluginError(err)
 
         if not ostreams:
@@ -370,8 +370,7 @@ class Plugin(object):
             if match:
                 name = match.group(1)
             else:
-                self.logger.debug("The stream '{0}' has been ignored "
-                                  "since it is badly named.", name)
+                self.logger.debug(f"The stream '{name}' has been ignored since it is badly named.")
                 continue
 
             # Force lowercase name and replace space with underscore.
@@ -511,7 +510,7 @@ class Plugin(object):
         if self._user_input_requester:
             try:
                 return self._user_input_requester.ask(prompt)
-            except IOError as e:
+            except OSError as e:
                 raise FatalPluginError("User input error: {0}".format(e))
             except NotImplementedError:  # ignore this and raise a FatalPluginError
                 pass
@@ -521,7 +520,7 @@ class Plugin(object):
         if self._user_input_requester:
             try:
                 return self._user_input_requester.ask_password(prompt)
-            except IOError as e:
+            except OSError as e:
                 raise FatalPluginError("User input error: {0}".format(e))
             except NotImplementedError:  # ignore this and raise a FatalPluginError
                 pass

@@ -1,11 +1,14 @@
 import datetime
+import logging
 import re
+from html import unescape as html_unescape
 
 from streamlink.plugin import Plugin
 from streamlink.plugin.api import validate
 from streamlink.stream import DASHStream, HLSStream, HTTPStream
 from streamlink.utils import parse_json
-from streamlink.compat import html_unescape
+
+log = logging.getLogger(__name__)
 
 
 class RTBF(Plugin):
@@ -130,12 +133,12 @@ class RTBF(Plugin):
 
         # Check geolocation to prevent further errors when stream is parsed
         if not self.check_geolocation(stream_data['geoLocRestriction']):
-            self.logger.error('Stream is geo-restricted')
+            log.error('Stream is geo-restricted')
             return
 
         # Check whether streams are DRM-protected
         if stream_data.get('drm', False):
-            self.logger.error('Stream is DRM-protected')
+            log.error('Stream is DRM-protected')
             return
 
         now = datetime.datetime.now()
@@ -158,26 +161,24 @@ class RTBF(Plugin):
                 if stream_data.get('isLive', False):
                     # Live streams require a token
                     hls_url = self.tokenize_stream(hls_url)
-                for stream in HLSStream.parse_variant_playlist(self.session, hls_url).items():
-                    yield stream
+                yield from HLSStream.parse_variant_playlist(self.session, hls_url).items()
 
             dash_url = stream_data.get('urlDash') or stream_data.get('streamUrlDash')
             if dash_url:
                 if stream_data.get('isLive', False):
                     # Live streams require a token
                     dash_url = self.tokenize_stream(dash_url)
-                for stream in DASHStream.parse_manifest(self.session, dash_url).items():
-                    yield stream
+                yield from DASHStream.parse_manifest(self.session, dash_url).items()
 
-        except IOError as err:
+        except OSError as err:
             if '403 Client Error' in str(err):
                 # Check whether video is expired
                 if 'startDate' in stream_data:
                     if now < self.iso8601_to_epoch(stream_data['startDate']):
-                        self.logger.error('Stream is not yet available')
+                        log.error('Stream is not yet available')
                 elif 'endDate' in stream_data:
                     if now > self.iso8601_to_epoch(stream_data['endDate']):
-                        self.logger.error('Stream has expired')
+                        log.error('Stream has expired')
 
     def _get_streams(self):
         match = self.can_handle_url(self.url)

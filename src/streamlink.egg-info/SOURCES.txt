@@ -28,26 +28,17 @@ docs/issues.rst
 docs/players.rst
 docs/plugin_matrix.rst
 docs/thirdparty.rst
-docs/_themes/.gitignore
-docs/_themes/sphinx_rtd_theme_violet/LICENSE
-docs/_themes/sphinx_rtd_theme_violet/__init__.py
-docs/_themes/sphinx_rtd_theme_violet/breadcrumbs.html
-docs/_themes/sphinx_rtd_theme_violet/footer.html
-docs/_themes/sphinx_rtd_theme_violet/layout.html
-docs/_themes/sphinx_rtd_theme_violet/layout_old.html
-docs/_themes/sphinx_rtd_theme_violet/search.html
-docs/_themes/sphinx_rtd_theme_violet/searchbox.html
-docs/_themes/sphinx_rtd_theme_violet/theme.conf
-docs/_themes/sphinx_rtd_theme_violet/versions.html
-docs/_themes/sphinx_rtd_theme_violet/static/css/badge_only.css
-docs/_themes/sphinx_rtd_theme_violet/static/css/theme.css
-docs/_themes/sphinx_rtd_theme_violet/static/fonts/FontAwesome.otf
-docs/_themes/sphinx_rtd_theme_violet/static/fonts/fontawesome-webfont.eot
-docs/_themes/sphinx_rtd_theme_violet/static/fonts/fontawesome-webfont.svg
-docs/_themes/sphinx_rtd_theme_violet/static/fonts/fontawesome-webfont.ttf
-docs/_themes/sphinx_rtd_theme_violet/static/fonts/fontawesome-webfont.woff
-docs/_themes/sphinx_rtd_theme_violet/static/js/scrollspy.js
-docs/_themes/sphinx_rtd_theme_violet/static/js/theme.js
+docs/_static/apple-touch-icon.png
+docs/_static/favicon-16x16.png
+docs/_static/favicon-32x32.png
+docs/_static/favicon.ico
+docs/_static/icon.svg
+docs/_static/site.webmanifest
+docs/_static/styles/custom.css
+docs/_templates/base.html
+docs/_templates/page.html
+docs/_templates/sidebar/brand.html
+docs/_templates/sidebar/github-buttons.html
 examples/gst-player.py
 examples/opencv-face.py
 src/streamlink/__init__.py
@@ -86,7 +77,6 @@ src/streamlink/plugin/plugin.py
 src/streamlink/plugin/api/__init__.py
 src/streamlink/plugin/api/http_session.py
 src/streamlink/plugin/api/mapper.py
-src/streamlink/plugin/api/support_plugin.py
 src/streamlink/plugin/api/useragents.py
 src/streamlink/plugin/api/utils.py
 src/streamlink/plugin/api/validate.py
@@ -121,7 +111,6 @@ src/streamlink/plugins/cnews.py
 src/streamlink/plugins/common_jwplayer.py
 src/streamlink/plugins/common_swf.py
 src/streamlink/plugins/crunchyroll.py
-src/streamlink/plugins/cubetv.py
 src/streamlink/plugins/dailymotion.py
 src/streamlink/plugins/dash.py
 src/streamlink/plugins/delfi.py
@@ -133,7 +122,6 @@ src/streamlink/plugins/dommune.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
 src/streamlink/plugins/egame.py
-src/streamlink/plugins/ellobo.py
 src/streamlink/plugins/eltrecetv.py
 src/streamlink/plugins/euronews.py
 src/streamlink/plugins/facebook.py
@@ -157,7 +145,6 @@ src/streamlink/plugins/huya.py
 src/streamlink/plugins/idf1.py
 src/streamlink/plugins/ine.py
 src/streamlink/plugins/invintus.py
-src/streamlink/plugins/kingkong.py
 src/streamlink/plugins/kugou.py
 src/streamlink/plugins/latina.py
 src/streamlink/plugins/linelive.py
@@ -168,7 +155,6 @@ src/streamlink/plugins/livestream.py
 src/streamlink/plugins/lrt.py
 src/streamlink/plugins/ltv_lsm_lv.py
 src/streamlink/plugins/mediaklikk.py
-src/streamlink/plugins/metube.py
 src/streamlink/plugins/mico.py
 src/streamlink/plugins/mitele.py
 src/streamlink/plugins/mjunoon.py
@@ -194,6 +180,7 @@ src/streamlink/plugins/picarto.py
 src/streamlink/plugins/piczel.py
 src/streamlink/plugins/pixiv.py
 src/streamlink/plugins/playtv.py
+src/streamlink/plugins/pluto.py
 src/streamlink/plugins/pluzz.py
 src/streamlink/plugins/powerapp.py
 src/streamlink/plugins/qq.py
@@ -213,7 +200,6 @@ src/streamlink/plugins/sbscokr.py
 src/streamlink/plugins/schoolism.py
 src/streamlink/plugins/senategov.py
 src/streamlink/plugins/showroom.py
-src/streamlink/plugins/skai.py
 src/streamlink/plugins/sportal.py
 src/streamlink/plugins/sportschau.py
 src/streamlink/plugins/ssh101.py
@@ -221,12 +207,10 @@ src/streamlink/plugins/stadium.py
 src/streamlink/plugins/steam.py
 src/streamlink/plugins/streamable.py
 src/streamlink/plugins/streamingvideoprovider.py
-src/streamlink/plugins/streamme.py
 src/streamlink/plugins/streann.py
 src/streamlink/plugins/stv.py
 src/streamlink/plugins/svtplay.py
 src/streamlink/plugins/swisstxt.py
-src/streamlink/plugins/tamago.py
 src/streamlink/plugins/teamliquid.py
 src/streamlink/plugins/teleclubzoom.py
 src/streamlink/plugins/telefe.py
@@ -235,8 +219,6 @@ src/streamlink/plugins/tga.py
 src/streamlink/plugins/theplatform.py
 src/streamlink/plugins/tigerdile.py
 src/streamlink/plugins/tlctr.py
-src/streamlink/plugins/trt.py
-src/streamlink/plugins/trtspor.py
 src/streamlink/plugins/turkuvaz.py
 src/streamlink/plugins/tv360.py
 src/streamlink/plugins/tv3cat.py
@@ -267,7 +249,6 @@ src/streamlink/plugins/wasd.py
 src/streamlink/plugins/webcast_india_gov.py
 src/streamlink/plugins/webtv.py
 src/streamlink/plugins/welt.py
-src/streamlink/plugins/willax.py
 src/streamlink/plugins/wwenetwork.py
 src/streamlink/plugins/youtube.py
 src/streamlink/plugins/yupptv.py
@@ -285,7 +266,6 @@ src/streamlink/stream/file.py
 src/streamlink/stream/flvconcat.py
 src/streamlink/stream/hds.py
 src/streamlink/stream/hls.py
-src/streamlink/stream/hls_filtered.py
 src/streamlink/stream/hls_playlist.py
 src/streamlink/stream/http.py
 src/streamlink/stream/playlist.py
@@ -297,7 +277,6 @@ src/streamlink/stream/wrappers.py
 src/streamlink/utils/__init__.py
 src/streamlink/utils/args.py
 src/streamlink/utils/crypto.py
-src/streamlink/utils/encoding.py
 src/streamlink/utils/l10n.py
 src/streamlink/utils/lazy_formatter.py
 src/streamlink/utils/named_pipe.py
@@ -313,12 +292,10 @@ src/streamlink_cli/main.py
 src/streamlink_cli/output.py
 src/streamlink_cli/utils/__init__.py
 src/streamlink_cli/utils/http_server.py
-src/streamlink_cli/utils/named_pipe.py
 src/streamlink_cli/utils/player.py
 src/streamlink_cli/utils/progress.py
 src/streamlink_cli/utils/stream.py
 tests/__init__.py
-tests/mock.py
 tests/test_api_http_session.py
 tests/test_api_validate.py
 tests/test_buffer.py
@@ -347,11 +324,14 @@ tests/test_streamlink_api.py
 tests/test_utils.py
 tests/test_utils_args.py
 tests/test_utils_crypto.py
-tests/test_utils_encoding.py
 tests/test_utils_times.py
 tests/test_utils_url.py
 tests/mixins/__init__.py
 tests/mixins/stream_hls.py
+tests/plugin/testplugin.py
+tests/plugin/testplugin_invalid.py
+tests/plugin/testplugin_missing.py
+tests/plugin/testplugin_override.py
 tests/plugins/__init__.py
 tests/plugins/test_abematv.py
 tests/plugins/test_abweb.py
@@ -380,7 +360,6 @@ tests/plugins/test_cinergroup.py
 tests/plugins/test_clubbingtv.py
 tests/plugins/test_cnews.py
 tests/plugins/test_crunchyroll.py
-tests/plugins/test_cubetv.py
 tests/plugins/test_dailymotion.py
 tests/plugins/test_dash.py
 tests/plugins/test_delfi.py
@@ -392,7 +371,6 @@ tests/plugins/test_dommune.py
 tests/plugins/test_drdk.py
 tests/plugins/test_earthcam.py
 tests/plugins/test_egame.py
-tests/plugins/test_ellobo.py
 tests/plugins/test_eltrecetv.py
 tests/plugins/test_euronews.py
 tests/plugins/test_facebook.py
@@ -413,7 +391,6 @@ tests/plugins/test_huya.py
 tests/plugins/test_idf1.py
 tests/plugins/test_ine.py
 tests/plugins/test_invintus.py
-tests/plugins/test_kingkong.py
 tests/plugins/test_kugou.py
 tests/plugins/test_latina.py
 tests/plugins/test_linelive.py
@@ -424,7 +401,6 @@ tests/plugins/test_livestream.py
 tests/plugins/test_lrt.py
 tests/plugins/test_ltv_lsm_lv.py
 tests/plugins/test_mediaklikk.py
-tests/plugins/test_metube.py
 tests/plugins/test_mico.py
 tests/plugins/test_mitele.py
 tests/plugins/test_mjunoon.py
@@ -450,6 +426,7 @@ tests/plugins/test_picarto.py
 tests/plugins/test_piczel.py
 tests/plugins/test_pixiv.py
 tests/plugins/test_playtv.py
+tests/plugins/test_pluto.py
 tests/plugins/test_pluzz.py
 tests/plugins/test_powerapp.py
 tests/plugins/test_qq.py
@@ -468,7 +445,6 @@ tests/plugins/test_sbscokr.py
 tests/plugins/test_schoolism.py
 tests/plugins/test_senategov.py
 tests/plugins/test_showroom.py
-tests/plugins/test_skai.py
 tests/plugins/test_sportal.py
 tests/plugins/test_sportschau.py
 tests/plugins/test_ssh101.py
@@ -477,12 +453,10 @@ tests/plugins/test_steam.py
 tests/plugins/test_stream.py
 tests/plugins/test_streamable.py
 tests/plugins/test_streamingvideoprovider.py
-tests/plugins/test_streamme.py
 tests/plugins/test_streann.py
 tests/plugins/test_stv.py
 tests/plugins/test_svtplay.py
 tests/plugins/test_swisstxt.py
-tests/plugins/test_tamago.py
 tests/plugins/test_teamliquid.py
 tests/plugins/test_teleclubzoom.py
 tests/plugins/test_telefe.py
@@ -491,8 +465,6 @@ tests/plugins/test_tga.py
 tests/plugins/test_theplatform.py
 tests/plugins/test_tigerdile.py
 tests/plugins/test_tlctr.py
-tests/plugins/test_trt.py
-tests/plugins/test_trtspor.py
 tests/plugins/test_turkuvaz.py
 tests/plugins/test_tv360.py
 tests/plugins/test_tv3cat.py
@@ -523,7 +495,6 @@ tests/plugins/test_wasd.py
 tests/plugins/test_webcast_india_gov.py
 tests/plugins/test_webtv.py
 tests/plugins/test_welt.py
-tests/plugins/test_willax.py
 tests/plugins/test_wwenetwork.py
 tests/plugins/test_youtube.py
 tests/plugins/test_yupptv.py
@@ -532,10 +503,9 @@ tests/plugins/test_zdf_mediathek.py
 tests/plugins/test_zeenews.py
 tests/plugins/test_zengatv.py
 tests/plugins/test_zhanqi.py
-tests/plugins/testplugin.py
-tests/plugins/testplugin_support.py
 tests/resources/__init__.py
 tests/resources/dash/test_1.mpd
+tests/resources/dash/test_10.mpd
 tests/resources/dash/test_2.mpd
 tests/resources/dash/test_3.mpd
 tests/resources/dash/test_4.mpd
@@ -552,6 +522,7 @@ tests/resources/hls/test_master.m3u8
 tests/streams/__init__.py
 tests/streams/test_dash.py
 tests/streams/test_dash_parser.py
+tests/streams/test_ffmpegmux.py
 tests/streams/test_hls.py
 tests/streams/test_hls_filtered.py
 tests/streams/test_hls_playlist.py

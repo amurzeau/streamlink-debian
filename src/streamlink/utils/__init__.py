@@ -3,13 +3,27 @@ import json
 import re
 import xml.etree.ElementTree as ET
 import zlib
+from importlib.machinery import FileFinder, SOURCE_SUFFIXES, SourceFileLoader
+from importlib.util import module_from_spec
+from urllib.parse import parse_qsl, urljoin, urlparse
 
-from streamlink.compat import urljoin, urlparse, parse_qsl, is_py2, is_py3
 from streamlink.exceptions import PluginError
-from streamlink.utils.named_pipe import NamedPipe
 from streamlink.utils.lazy_formatter import LazyFormatter
-from streamlink.utils.encoding import get_filesystem_encoding, maybe_decode, maybe_encode
+from streamlink.utils.named_pipe import NamedPipe
 from streamlink.utils.url import update_scheme, url_equal
+
+
+_loader_details = [(SourceFileLoader, SOURCE_SUFFIXES)]
+
+
+def load_module(name, path=None):
+    finder = FileFinder(path, *_loader_details)
+    spec = finder.find_spec(name)
+    if not spec or not spec.loader:
+        raise ImportError(f"no module named {name}")
+    mod = module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def swfdecompress(data):
@@ -75,9 +89,7 @@ def parse_xml(data, name="XML", ignore_ns=False, exception=PluginError, schema=N
      - Allows stripping namespace information
      - Wraps errors in custom exception with a snippet of the data in the message
     """
-    if is_py2 and isinstance(data, unicode):
-        data = data.encode("utf8")
-    elif is_py3 and isinstance(data, str):
+    if isinstance(data, str):
         data = bytearray(data, "utf8")
 
     if ignore_ns:
@@ -163,40 +175,10 @@ def search_dict(data, key):
         for dkey, value in data.items():
             if dkey == key:
                 yield value
-            for result in search_dict(value, key):
-                yield result
+            yield from search_dict(value, key)
     elif isinstance(data, list):
         for value in data:
-            for result in search_dict(value, key):
-                yield result
-
-
-def load_module(name, path=None):
-    if is_py3:
-        import importlib.machinery
-        import importlib.util
-        import sys
-
-        loader_details = [(importlib.machinery.SourceFileLoader, importlib.machinery.SOURCE_SUFFIXES)]
-        finder = importlib.machinery.FileFinder(path, *loader_details)
-        spec = finder.find_spec(name)
-        if not spec or not spec.loader:
-            raise ImportError("no module named {0}".format(name))
-        if sys.version_info[1] > 4:
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            return mod
-        else:
-            return spec.loader.load_module(name)
-
-    else:
-        import imp
-        fd, filename, desc = imp.find_module(name, path and [path])
-        try:
-            return imp.load_module(name, fd, filename, desc)
-        finally:
-            if fd:
-                fd.close()
+            yield from search_dict(value, key)
 
 
 def escape_librtmp(value):  # pragma: no cover
@@ -212,8 +194,7 @@ def escape_librtmp(value):  # pragma: no cover
     return value
 
 
-__all__ = ["swfdecompress", "update_scheme", "url_equal",
+__all__ = ["load_module", "swfdecompress", "update_scheme", "url_equal",
            "verifyjson", "absolute_url", "parse_qsd", "parse_json",
            "parse_xml", "rtmpparse", "prepend_www", "NamedPipe",
-           "escape_librtmp", "LazyFormatter", "get_filesystem_encoding",
-           "maybe_decode", "maybe_encode"]
+           "escape_librtmp", "LazyFormatter"]

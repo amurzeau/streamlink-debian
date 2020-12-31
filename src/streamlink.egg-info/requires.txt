@@ -5,17 +5,3 @@ PySocks!=1.5.7,>=1.5.6
 pycryptodome<4,>=3.4.3
 iso-639
 iso3166
-
-[:python_version < "3.0"]
-futures
-urllib3[secure]>=1.23
-
-[:python_version < "3.0" and platform_system == "Windows"]
-win-inet-pton
-
-[:python_version < "3.3"]
-backports.shutil_which
-backports.shutil_get_terminal_size
-
-[:python_version < "3.4"]
-singledispatch

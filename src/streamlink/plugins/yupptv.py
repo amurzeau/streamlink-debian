@@ -1,12 +1,10 @@
-import argparse
 import logging
 import re
 import time
 
-from streamlink.plugin import Plugin, PluginArguments, PluginArgument
+from streamlink.plugin import Plugin, PluginArgument, PluginArguments
 from streamlink.plugin.api import useragents
 from streamlink.stream import HLSStream
-
 
 log = logging.getLogger(__name__)
 
@@ -17,8 +15,6 @@ class YuppTV(Plugin):
     _cookie_expiry = 3600 * 24 * 365
 
     arguments = PluginArguments(
-        PluginArgument("email", help=argparse.SUPPRESS),
-        PluginArgument("password", help=argparse.SUPPRESS),
         PluginArgument(
             "boxid",
             requires=["yuppflixtoken"],
@@ -46,7 +42,7 @@ class YuppTV(Plugin):
     )
 
     def __init__(self, url):
-        super(YuppTV, self).__init__(url)
+        super().__init__(url)
         self._authed = (self.session.http.cookies.get("BoxId")
                         and self.session.http.cookies.get("YuppflixToken"))
 

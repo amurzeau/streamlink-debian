@@ -80,23 +80,23 @@ index 326a4ad..389b8d1 100644
     .. container::
  
 diff --git a/docs/thirdparty.rst b/docs/thirdparty.rst
-index b74d623..417b7d1 100644
+index de2f5f5..a432bff 100644
 --- a/docs/thirdparty.rst
 +++ b/docs/thirdparty.rst
 @@ -55,15 +55,12 @@ LiveProxy
  Wtwitch
  -------
  
--.. image:: https://i.imgur.com/oaxH3ss.jpg
+-.. image:: https://user-images.githubusercontent.com/25400030/97115072-6951e600-16ec-11eb-88f7-51939c0d0bc1.jpg
 -  :align: center
 -  :alt: Wtwitch screenshot of checking subscriptions
 -
  :Description: Browse Twitch streams; subscribe to streamers locally without an account
  :Type: TUI (terminal user interface)
- :OS: |Linux|
- :Author: `krathalan <https://git.sr.ht/~krathalan/>`_
+ :OS: |Linux| |MacOS|
+ :Author: `Hunter Peavey <https://krathalan.net>`_
  :Website: https://git.sr.ht/~krathalan/wtwitch
-+:Screenshot: https://i.imgur.com/oaxH3ss.jpg
++:Screenshot: https://user-images.githubusercontent.com/25400030/97115072-6951e600-16ec-11eb-88f7-51939c0d0bc1.jpg
  :Info: wtwitch is a Bash program that lets you browse the top games on Twitch, the |br|
    top streamers for a given game, and lets you check the status of streamers you |br|
    subscribe to. Open streams easily with settings that save your preferred quality |br|

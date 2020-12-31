@@ -24,10 +24,10 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  9 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/setup.py b/setup.py
-index bbc79b5..145e673 100644
+index aadd69a..6510a01 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -31,7 +31,7 @@ if environ.get("STREAMLINK_USE_PYCRYPTO"):
+@@ -21,7 +21,7 @@ if environ.get("STREAMLINK_USE_PYCRYPTO"):
      deps.append("pycrypto")
  else:
      # this version of pycryptodome is known to work and has a Windows wheel for py2.7, py3.3-3.6
@@ -37,20 +37,20 @@ index bbc79b5..145e673 100644
  # for localization
  if environ.get("STREAMLINK_USE_PYCOUNTRY"):
 diff --git a/src/streamlink/plugins/abematv.py b/src/streamlink/plugins/abematv.py
-index 3f880c1..dd8e4ab 100644
+index f8464d5..2853aa2 100644
 --- a/src/streamlink/plugins/abematv.py
 +++ b/src/streamlink/plugins/abematv.py
-@@ -9,7 +9,7 @@ import uuid
+@@ -8,7 +8,7 @@ import uuid
  from base64 import urlsafe_b64encode
  from binascii import unhexlify
  
 -from Crypto.Cipher import AES
 +from Cryptodome.Cipher import AES
- 
  from requests import Response
  from requests.adapters import BaseAdapter
+ 
 diff --git a/src/streamlink/plugins/rtve.py b/src/streamlink/plugins/rtve.py
-index 771867a..9bc54f8 100644
+index 7054f9a..493b406 100644
 --- a/src/streamlink/plugins/rtve.py
 +++ b/src/streamlink/plugins/rtve.py
 @@ -3,7 +3,7 @@ import logging
@@ -60,15 +60,15 @@ index 771867a..9bc54f8 100644
 -from Crypto.Cipher import Blowfish
 +from Cryptodome.Cipher import Blowfish
  
- from streamlink.compat import bytes, is_py3
- from streamlink.plugin import Plugin, PluginArguments, PluginArgument
+ from streamlink.plugin import Plugin, PluginArgument, PluginArguments
+ from streamlink.plugin.api import useragents, validate
 diff --git a/src/streamlink/plugins/steam.py b/src/streamlink/plugins/steam.py
-index 7c33470..6d2a32a 100644
+index 0139a34..348e4d4 100644
 --- a/src/streamlink/plugins/steam.py
 +++ b/src/streamlink/plugins/steam.py
-@@ -3,8 +3,8 @@ import logging
- import re
+@@ -4,8 +4,8 @@ import re
  import time
+ from html import unescape as html_unescape
  
 -from Crypto.Cipher import PKCS1_v1_5
 -from Crypto.PublicKey import RSA
@@ -78,11 +78,11 @@ index 7c33470..6d2a32a 100644
  import streamlink
  from streamlink.exceptions import FatalPluginError
 diff --git a/src/streamlink/plugins/ustvnow.py b/src/streamlink/plugins/ustvnow.py
-index 82fec12..5cea4b8 100644
+index 4e62641..99de582 100644
 --- a/src/streamlink/plugins/ustvnow.py
 +++ b/src/streamlink/plugins/ustvnow.py
-@@ -7,9 +7,9 @@ import logging
- import re
+@@ -5,9 +5,9 @@ import re
+ from urllib.parse import urljoin, urlparse
  from uuid import uuid4
  
 -from Crypto.Cipher import AES
@@ -93,14 +93,14 @@ index 82fec12..5cea4b8 100644
 +from Cryptodome.Util.Padding import pad, unpad
  
  from streamlink import PluginError
- from streamlink.compat import urljoin, urlparse
+ from streamlink.plugin import Plugin, PluginArgument, PluginArguments
 diff --git a/src/streamlink/plugins/webtv.py b/src/streamlink/plugins/webtv.py
-index 574040d..3d8c296 100644
+index 1a77a70..1238499 100644
 --- a/src/streamlink/plugins/webtv.py
 +++ b/src/streamlink/plugins/webtv.py
-@@ -3,7 +3,7 @@ import base64
- 
- import binascii
+@@ -3,7 +3,7 @@ import binascii
+ import logging
+ import re
  
 -from Crypto.Cipher import AES
 +from Cryptodome.Cipher import AES
@@ -108,41 +108,40 @@ index 574040d..3d8c296 100644
  from streamlink.plugin import Plugin
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index 1ade39a..b44fea6 100644
+index b6aac66..199342a 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
-@@ -3,7 +3,7 @@ import re
- import struct
+@@ -5,7 +5,7 @@ from collections import OrderedDict, defaultdict, namedtuple
+ from threading import Event
+ from urllib.parse import urlparse
  
- from collections import defaultdict, namedtuple, OrderedDict
 -from Crypto.Cipher import AES
 +from Cryptodome.Cipher import AES
  from requests.exceptions import ChunkedEncodingError
  
- from streamlink.compat import urlparse, str
+ from streamlink.exceptions import StreamError
 diff --git a/src/streamlink/utils/crypto.py b/src/streamlink/utils/crypto.py
-index c49c1f1..4ddc481 100644
+index abc3901..a71203f 100644
 --- a/src/streamlink/utils/crypto.py
 +++ b/src/streamlink/utils/crypto.py
-@@ -1,7 +1,7 @@
- from __future__ import absolute_import
+@@ -1,6 +1,6 @@
  import hashlib
  
 -from Crypto.Cipher import AES
 +from Cryptodome.Cipher import AES
  
- from streamlink.compat import is_py3
  
+ def evp_bytestokey(password, salt, key_len, iv_len):
 diff --git a/tests/streams/test_hls.py b/tests/streams/test_hls.py
-index 36eeb1f..8baf1d6 100644
+index d8c0ce1..73b4b7a 100644
 --- a/tests/streams/test_hls.py
 +++ b/tests/streams/test_hls.py
-@@ -1,7 +1,7 @@
- import os
- import unittest
+@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
  
--from Crypto.Cipher import AES
-+from Cryptodome.Cipher import AES
  import pytest
  import requests_mock
+-from Crypto.Cipher import AES
++from Cryptodome.Cipher import AES
  
+ from streamlink.session import Streamlink
+ from streamlink.stream import hls

@@ -1,8 +1,11 @@
+import logging
 import re
 
 from streamlink.plugin import Plugin
 from streamlink.plugin.api import useragents, validate
 from streamlink.stream import HDSStream, HLSStream, HTTPStream
+
+log = logging.getLogger(__name__)
 
 
 class CanalPlus(Plugin):
@@ -57,8 +60,7 @@ class CanalPlus(Plugin):
 
         # Some videos may be also available on Dailymotion (especially on CNews)
         if videos['ID_DM'] != '':
-            for stream in self.session.streams('https://www.dailymotion.com/video/' + videos['ID_DM']).items():
-                yield stream
+            yield from self.session.streams('https://www.dailymotion.com/video/' + videos['ID_DM']).items()
 
         for quality, video_url in list(videos['MEDIA']['VIDEOS'].items()):
             # Ignore empty URLs
@@ -73,16 +75,18 @@ class CanalPlus(Plugin):
             try:
                 # HDS streams don't seem to work for live videos
                 if '.f4m' in video_url and 'LIVE' not in videos['TYPE']:
-                    for stream in HDSStream.parse_manifest(self.session,
-                                                           video_url,
-                                                           params={'hdcore': self.HDCORE_VERSION},
-                                                           headers=headers).items():
-                        yield stream
+                    yield from HDSStream.parse_manifest(
+                        self.session,
+                        video_url,
+                        params={'hdcore': self.HDCORE_VERSION},
+                        headers=headers
+                    ).items()
                 elif '.m3u8' in video_url:
-                    for stream in HLSStream.parse_variant_playlist(self.session,
-                                                                   video_url,
-                                                                   headers=headers).items():
-                        yield stream
+                    yield from HLSStream.parse_variant_playlist(
+                        self.session,
+                        video_url,
+                        headers=headers
+                    ).items()
                 elif '.mp4' in video_url:
                     # Get bitrate from video filename
                     match = self._mp4_bitrate_re.match(video_url)
@@ -94,9 +98,9 @@ class CanalPlus(Plugin):
                                               video_url,
                                               params={'secret': self.SECRET},
                                               headers=headers)
-            except IOError as err:
+            except OSError as err:
                 if '403 Client Error' in str(err):
-                    self.logger.error('Failed to access stream, may be due to geo-restriction')
+                    log.error('Failed to access stream, may be due to geo-restriction')
 
 
 __plugin__ = CanalPlus

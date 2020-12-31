@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
 import re
 import unittest
-
 from xml.etree.ElementTree import Element
 
 from streamlink.plugin.api.validate import (
-    validate, all, any, optional, transform, text, filter, map, hasattr,
-    get, getattr, length, xml_element, xml_find, xml_findtext, xml_findall,
-    union, attr, url, startswith, endswith
+    all, any, attr, endswith, filter, get, getattr, hasattr,
+    length, map, optional, startswith, text, transform, union, url,
+    validate, xml_element, xml_find, xml_findall, xml_findtext
 )
 
 
@@ -20,7 +18,7 @@ class TestPluginAPIValidate(unittest.TestCase):
         assert validate(transform(int), "1") == 1
 
         assert validate(text, "abc") == "abc"
-        assert validate(text, u"日本語") == u"日本語"
+        assert validate(text, "日本語") == "日本語"
         assert validate(transform(text), 1) == "1"
 
         assert validate(list, ["a", 1]) == ["a", 1]
@@ -50,7 +48,7 @@ class TestPluginAPIValidate(unittest.TestCase):
 
     def test_list_tuple_set_frozenset(self):
         assert validate([int], [1, 2])
-        assert validate(set([int]), set([1, 2])) == set([1, 2])
+        assert validate({int}, {1, 2}) == {1, 2}
         assert validate(tuple([int]), tuple([1, 2])) == tuple([1, 2])
 
     def test_dict(self):
@@ -157,4 +155,4 @@ class TestPluginAPIValidate(unittest.TestCase):
         assert validate(startswith("abc"), "abcedf")
 
     def test_endswith(self):
-        assert validate(endswith(u"åäö"), u"xyzåäö")
+        assert validate(endswith("åäö"), "xyzåäö")

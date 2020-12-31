@@ -1,24 +1,20 @@
-# -*- coding: utf-8 -*-
-import argparse
 import json
 import logging
 import re
 from collections import namedtuple
 from random import random
+from urllib.parse import urlparse
 
 import requests
 
-from streamlink.compat import urlparse
 from streamlink.exceptions import NoStreamsError, PluginError
-from streamlink.plugin import Plugin, PluginArguments, PluginArgument
+from streamlink.plugin import Plugin, PluginArgument, PluginArguments
 from streamlink.plugin.api import validate
 from streamlink.plugin.api.utils import parse_json, parse_query
-from streamlink.stream import HTTPStream, HLSStream
-from streamlink.stream.hls import HLSStreamWorker
-from streamlink.stream.hls_filtered import FilteredHLSStreamWriter, FilteredHLSStreamReader
+from streamlink.stream import HLSStream, HTTPStream
+from streamlink.stream.hls import HLSStreamReader, HLSStreamWorker, HLSStreamWriter
 from streamlink.stream.hls_playlist import M3U8, M3U8Parser, load as load_hls_playlist
 from streamlink.utils.times import hours_minutes_seconds
-
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +25,7 @@ LOW_LATENCY_MAX_LIVE_EDGE = 2
 
 class TwitchM3U8(M3U8):
     def __init__(self):
-        super(TwitchM3U8, self).__init__()
+        super().__init__()
         self.dateranges_ads = []
 
 
@@ -40,7 +36,7 @@ class TwitchM3U8Parser(M3U8Parser):
             segments.append(segments[-1]._replace(uri=self.uri(value), prefetch=True))
 
     def parse_tag_ext_x_daterange(self, value):
-        super(TwitchM3U8Parser, self).parse_tag_ext_x_daterange(value)
+        super().parse_tag_ext_x_daterange(value)
         daterange = self.m3u8.dateranges[-1]
         is_ad = (
             daterange.classname == "twitch-stitched-ad"
@@ -76,7 +72,7 @@ class TwitchM3U8Parser(M3U8Parser):
 class TwitchHLSStreamWorker(HLSStreamWorker):
     def __init__(self, reader, *args, **kwargs):
         self.had_content = False
-        super(TwitchHLSStreamWorker, self).__init__(reader, *args, **kwargs)
+        super().__init__(reader, *args, **kwargs)
 
     def _reload_playlist(self, *args):
         return load_hls_playlist(*args, parser=TwitchM3U8Parser, m3u8=TwitchM3U8)
@@ -85,7 +81,7 @@ class TwitchHLSStreamWorker(HLSStreamWorker):
         if self.stream.low_latency and sequences:
             return sequences[-1].segment.duration
 
-        return super(TwitchHLSStreamWorker, self)._playlist_reload_time(playlist, sequences)
+        return super()._playlist_reload_time(playlist, sequences)
 
     def process_sequences(self, playlist, sequences):
         # ignore prefetch segments if not LL streaming
@@ -109,22 +105,22 @@ class TwitchHLSStreamWorker(HLSStreamWorker):
         if self.stream.disable_ads and self.playlist_sequence == -1 and not self.had_content:
             log.info("Waiting for pre-roll ads to finish, be patient")
 
-        return super(TwitchHLSStreamWorker, self).process_sequences(playlist, sequences)
+        return super().process_sequences(playlist, sequences)
 
 
-class TwitchHLSStreamWriter(FilteredHLSStreamWriter):
+class TwitchHLSStreamWriter(HLSStreamWriter):
     def should_filter_sequence(self, sequence):
         return self.stream.disable_ads and sequence.segment.ad
 
 
-class TwitchHLSStreamReader(FilteredHLSStreamReader):
+class TwitchHLSStreamReader(HLSStreamReader):
     __worker__ = TwitchHLSStreamWorker
     __writer__ = TwitchHLSStreamWriter
 
 
 class TwitchHLSStream(HLSStream):
     def __init__(self, *args, **kwargs):
-        super(TwitchHLSStream, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.disable_ads = self.session.get_plugin_option("twitch", "disable-ads")
         self.low_latency = self.session.get_plugin_option("twitch", "low-latency")
 
@@ -147,7 +143,7 @@ class TwitchHLSStream(HLSStream):
         return load_hls_playlist(res.text, base_uri=res.url)
 
 
-class UsherService(object):
+class UsherService:
     def __init__(self, session):
         self.session = session
 
@@ -176,7 +172,7 @@ class UsherService(object):
         return self._create_url("/vod/{0}".format(video_id), **extra_params)
 
 
-class TwitchAPI(object):
+class TwitchAPI:
     # Streamlink's client-id used for public API calls (don't steal this and register your own application on Twitch)
     TWITCH_CLIENT_ID = "pwkzresl8kj2rdj6g7bvxl9ys1wly3j"
     # Twitch's client-id used for private API calls (see issue #2680 for why we are doing this)
@@ -235,24 +231,6 @@ class TwitchAPI(object):
             validate.transform(int)
         ))
 
-    def stream_rerun(self, channel_id):
-        return self.call("/kraken/streams/{0}".format(channel_id), schema=validate.Schema(
-            {
-                "stream": validate.any(None, validate.all({
-                    "stream_type": validate.text,
-                    "broadcast_platform": validate.text,
-                    "channel": validate.all({
-                        "broadcaster_software": validate.text
-                    }, validate.get("broadcaster_software"))
-                }, validate.union((
-                    validate.get("stream_type"),
-                    validate.get("broadcast_platform"),
-                    validate.get("channel")
-                ))))
-            },
-            validate.get("stream")
-        ))
-
     def metadata_video(self, video_id):
         return self.call("/kraken/videos/{0}".format(video_id), schema=validate.Schema(validate.any(
             validate.all(
@@ -288,36 +266,6 @@ class TwitchAPI(object):
             validate.get("stream")
         ))
 
-    # Private API calls
-
-    def access_token(self, endpoint, asset):
-        return self.call("/api/{0}/{1}/access_token".format(endpoint, asset), private=True, schema=validate.Schema(
-            {
-                "token": validate.text,
-                "sig": validate.text
-            },
-            validate.union((
-                validate.get("sig"),
-                validate.get("token")
-            ))
-        ))
-
-    def token(self, tokenstr):
-        return parse_json(tokenstr, schema=validate.Schema(
-            {
-                "chansub": {
-                    "restricted_bitrates": validate.all(
-                        [validate.text],
-                        validate.filter(
-                            lambda n: not re.match(r"(.+_)?archives|live|chunked", n)
-                        )
-                    )
-                }
-            },
-            validate.get("chansub"),
-            validate.get("restricted_bitrates")
-        ))
-
     def hosted_channel(self, channel_id):
         return self.call("/hosts", subdomain="tmi", include_logins=1, host=channel_id, schema=validate.Schema(
             {
@@ -339,6 +287,62 @@ class TwitchAPI(object):
         ))
 
     # GraphQL API calls
+
+    def access_token(self, is_live, channel_or_vod):
+        request = {
+            "operationName": "PlaybackAccessToken",
+            "extensions": {
+                "persistedQuery": {
+                    "version": 1,
+                    "sha256Hash": "0828119ded1c13477966434e15800ff57ddacf13ba1911c129dc2200705b0712"
+                }
+            },
+            "variables": {
+                "isLive": is_live,
+                "login": channel_or_vod if is_live else "",
+                "isVod": not is_live,
+                "vodID": channel_or_vod if not is_live else "",
+                "playerType": "embed"
+            }
+        }
+        subschema = {
+            "value": str,
+            "signature": str,
+            "__typename": "PlaybackAccessToken"
+        }
+        return self.call_gql(request, schema=validate.Schema(
+            {"data": validate.any(
+                validate.all(
+                    {"streamPlaybackAccessToken": subschema},
+                    validate.get("streamPlaybackAccessToken")
+                ),
+                validate.all(
+                    {"videoPlaybackAccessToken": subschema},
+                    validate.get("videoPlaybackAccessToken")
+                )
+            )},
+            validate.get("data"),
+            validate.union((
+                validate.get("signature"),
+                validate.get("value")
+            ))
+        ))
+
+    def parse_token(self, tokenstr):
+        return parse_json(tokenstr, schema=validate.Schema(
+            {
+                "chansub": {
+                    "restricted_bitrates": validate.all(
+                        [str],
+                        validate.filter(
+                            lambda n: not re.match(r"(.+_)?archives|live|chunked", n)
+                        )
+                    )
+                }
+            },
+            validate.get("chansub"),
+            validate.get("restricted_bitrates")
+        ))
 
     def clips(self, clipname):
         query = """{{
@@ -384,19 +388,38 @@ class TwitchAPI(object):
             validate.get("clip")
         ))
 
+    def stream_metadata(self, channel):
+        request = {
+            "operationName": "StreamMetadata",
+            "extensions": {
+                "persistedQuery": {
+                    "version": 1,
+                    "sha256Hash": "1c719a40e481453e5c48d9bb585d971b8b372f8ebb105b17076722264dfa5b3e"
+                }
+            },
+            "variables": {
+                "channelLogin": channel
+            }
+        }
+
+        return self.call_gql(request, schema=validate.Schema(
+            {
+                "data": {
+                    "user": {
+                        "stream": {
+                            "type": str,
+                        }
+                    }
+                }
+            },
+            validate.get("data"),
+            validate.get("user"),
+            validate.get("stream")
+        ))
+
 
 class Twitch(Plugin):
     arguments = PluginArguments(
-        PluginArgument(
-            "oauth-token",
-            sensitive=True,
-            help=argparse.SUPPRESS
-        ),
-        PluginArgument(
-            "cookie",
-            sensitive=True,
-            help=argparse.SUPPRESS
-        ),
         PluginArgument(
             "disable-hosting",
             action="store_true",
@@ -456,7 +479,7 @@ class Twitch(Plugin):
         return cls._re_url.match(url)
 
     def __init__(self, url):
-        super(Twitch, self).__init__(url)
+        super().__init__(url)
         match = self._re_url.match(url).groupdict()
         parsed = urlparse(url)
         self.params = parse_query(parsed.query)
@@ -536,9 +559,9 @@ class Twitch(Plugin):
         except PluginError:
             raise PluginError("Unable to find channel: {0}".format(channel))
 
-    def _access_token(self, endpoint, asset):
+    def _access_token(self, is_live, channel_or_vod):
         try:
-            sig, token = self.api.access_token(endpoint, asset)
+            sig, token = self.api.access_token(is_live, channel_or_vod)
         except PluginError as err:
             if "404 Client Error" in str(err):
                 raise NoStreamsError(self.url)
@@ -546,7 +569,7 @@ class Twitch(Plugin):
                 raise
 
         try:
-            restricted_bitrates = self.api.token(token)
+            restricted_bitrates = self.api.parse_token(token)
         except PluginError:
             restricted_bitrates = []
 
@@ -582,8 +605,8 @@ class Twitch(Plugin):
             return False
 
         try:
-            stream_type, broadcast_platform, broadcaster_software = self.api.stream_rerun(self.channel_id)
-            if stream_type != "live" or broadcast_platform == "rerun" or broadcaster_software == "watch_party_rerun":
+            stream = self.api.stream_metadata(self.channel)
+            if stream["type"] != "live":
                 log.info("Reruns were disabled by command line option")
                 return True
         except (PluginError, TypeError):
@@ -599,14 +622,18 @@ class Twitch(Plugin):
 
         # only get the token once the channel has been resolved
         log.debug("Getting live HLS streams for {0}".format(self.channel))
-        sig, token, restricted_bitrates = self._access_token("channels", self.channel)
+        self.session.http.headers.update({
+            "referer": "https://player.twitch.tv",
+            "origin": "https://player.twitch.tv",
+        })
+        sig, token, restricted_bitrates = self._access_token(True, self.channel)
         url = self.usher.channel(self.channel, sig=sig, token=token, fast_bread=True)
 
         return self._get_hls_streams(url, restricted_bitrates)
 
     def _get_hls_streams_video(self):
         log.debug("Getting video HLS streams for {0}".format(self.channel))
-        sig, token, restricted_bitrates = self._access_token("vods", self.video_id)
+        sig, token, restricted_bitrates = self._access_token(False, self.video_id)
         url = self.usher.video(self.video_id, nauthsig=sig, nauth=token)
 
         # If the stream is a VOD that is still being recorded, the stream should start at the beginning of the recording
@@ -622,7 +649,7 @@ class Twitch(Plugin):
 
         try:
             streams = TwitchHLSStream.parse_variant_playlist(self.session, url, start_offset=time_offset, **extra_params)
-        except IOError as err:
+        except OSError as err:
             err = str(err)
             if "404 Client Error" in err or "Failed to parse playlist" in err:
                 return
