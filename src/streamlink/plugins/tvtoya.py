@@ -2,16 +2,14 @@ import logging
 import re
 
 from streamlink.plugin import Plugin
-from streamlink.plugin.api import useragents
 from streamlink.stream import HLSStream
-from streamlink.utils import update_scheme
 
 log = logging.getLogger(__name__)
 
 
 class TVToya(Plugin):
-    _url_re = re.compile(r"https?://tvtoya.pl/live")
-    _playlist_re = re.compile(r'data-stream="([^"]+)"')
+    _url_re = re.compile(r"https?://(?:www\.)?tvtoya\.pl/live")
+    _playlist_re = re.compile(r'<source src="([^"]+)" type="application/x-mpegURL">')
 
     @classmethod
     def can_handle_url(cls, url):
@@ -23,11 +21,7 @@ class TVToya(Plugin):
         playlist_m = self._playlist_re.search(res.text)
 
         if playlist_m:
-            return HLSStream.parse_variant_playlist(
-                self.session,
-                update_scheme(self.url, playlist_m.group(1)),
-                headers={'Referer': self.url, 'User-Agent': useragents.ANDROID}
-            )
+            return HLSStream.parse_variant_playlist(self.session, playlist_m.group(1))
         else:
             log.debug("Could not find stream data")
 

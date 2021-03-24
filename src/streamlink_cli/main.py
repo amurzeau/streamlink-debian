@@ -122,7 +122,7 @@ def create_output(plugin):
     return out
 
 
-def create_http_server(host=None, port=0):
+def create_http_server(*_args, **_kwargs):
     """Creates a HTTP server listening on a given host and port.
 
     If host is empty, listen on all available interfaces, and if port is 0,
@@ -131,7 +131,7 @@ def create_http_server(host=None, port=0):
 
     try:
         http = HTTPServer()
-        http.bind(host=host, port=port)
+        http.bind(*_args, **_kwargs)
     except OSError as err:
         console.exit("Failed to create HTTP server: {0}", err)
 
@@ -551,21 +551,7 @@ def handle_url():
     try:
         plugin = streamlink.resolve_url(args.url)
         setup_plugin_options(streamlink, plugin)
-        log.info("Found matching plugin {0} for URL {1}".format(
-                 plugin.module, args.url))
-
-        plugin_args = []
-        for parg in plugin.arguments:
-            value = plugin.get_option(parg.dest)
-            if value:
-                plugin_args.append((parg, value))
-
-        if plugin_args:
-            log.debug("Plugin specific arguments:")
-            for parg, value in plugin_args:
-                log.debug(" {0}={1} ({2})".format(parg.argument_name(plugin.module),
-                                                  value if not parg.sensitive else ("*" * 8),
-                                                  parg.dest))
+        log.info(f"Found matching plugin {plugin.module} for URL {args.url}")
 
         if args.retry_max or args.retry_streams:
             retry_streams = 1
@@ -751,6 +737,15 @@ def setup_streamlink():
 
 def setup_options():
     """Sets Streamlink options."""
+    if args.interface:
+        streamlink.set_option("interface", args.interface)
+
+    if args.ipv4:
+        streamlink.set_option("ipv4", args.ipv4)
+
+    if args.ipv6:
+        streamlink.set_option("ipv6", args.ipv6)
+
     if args.hls_live_edge:
         streamlink.set_option("hls-live-edge", args.hls_live_edge)
 
@@ -932,22 +927,49 @@ def check_root():
 
 def log_current_versions():
     """Show current installed versions"""
-    if logger.root.isEnabledFor(logging.DEBUG):
-        # MAC OS X
-        if sys.platform == "darwin":
-            os_version = "macOS {0}".format(platform.mac_ver()[0])
-        # Windows
-        elif sys.platform.startswith("win"):
-            os_version = "{0} {1}".format(platform.system(), platform.release())
-        # linux / other
-        else:
-            os_version = platform.platform()
+    if not logger.root.isEnabledFor(logging.DEBUG):
+        return
 
-        log.debug("OS:         {0}".format(os_version))
-        log.debug("Python:     {0}".format(platform.python_version()))
-        log.debug("Streamlink: {0}".format(streamlink_version))
-        log.debug("Requests({0}), Socks({1}), Websocket({2})".format(
-            requests.__version__, socks_version, websocket_version))
+    # macOS
+    if sys.platform == "darwin":
+        os_version = f"macOS {platform.mac_ver()[0]}"
+    # Windows
+    elif sys.platform == "win32":
+        os_version = f"{platform.system()} {platform.release()}"
+    # Linux / other
+    else:
+        os_version = platform.platform()
+
+    log.debug(f"OS:         {os_version}")
+    log.debug(f"Python:     {platform.python_version()}")
+    log.debug(f"Streamlink: {streamlink_version}")
+    log.debug(f"Requests({requests.__version__}), "
+              f"Socks({socks_version}), "
+              f"Websocket({websocket_version})")
+
+
+def log_current_arguments(session, parser):
+    global args
+    if not logger.root.isEnabledFor(logging.DEBUG):
+        return
+
+    sensitive = set()
+    for pname, plugin in session.plugins.items():
+        for parg in plugin.arguments:
+            if parg.sensitive:
+                sensitive.add(parg.argument_name(pname))
+
+    log.debug("Arguments:")
+    for action in parser._actions:
+        if not hasattr(args, action.dest):
+            continue
+        value = getattr(args, action.dest)
+        if action.default != value:
+            name = next(  # pragma: no branch
+                (option for option in action.option_strings if option.startswith("--")),
+                action.option_strings[0]
+            ) if action.option_strings else action.dest
+            log.debug(f" {name}={value if name not in sensitive else '*' * 8}")
 
 
 def check_version(force=False):
@@ -1025,6 +1047,7 @@ def main():
     setup_http_session()
     check_root()
     log_current_versions()
+    log_current_arguments(streamlink, parser)
 
     if args.version_check or args.auto_version_check:
         with ignored(Exception):
