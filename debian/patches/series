@@ -3,5 +3,4 @@ remove_new_version_check
 0006-Use-pycrytodomex-instead-of-pycryptodome.patch
 remove_github_buttons
 0005-Use-sphinx_rtd_theme-theme-as-a-replacement-of-furo-.patch
-0007-Examples-use-python3-interpreter-instead-of-python.patch
 0007-Use-font-awesome-4-icons-a-Debian-doesn-t-have-font-.patch

@@ -14,6 +14,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  setup.py                          | 2 +-
  src/streamlink/plugins/abematv.py | 2 +-
+ src/streamlink/plugins/mjunoon.py | 4 ++--
  src/streamlink/plugins/rtve.py    | 2 +-
  src/streamlink/plugins/steam.py   | 4 ++--
  src/streamlink/plugins/ustvnow.py | 6 +++---
@@ -21,13 +22,13 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  src/streamlink/stream/hls.py      | 2 +-
  src/streamlink/utils/crypto.py    | 2 +-
  tests/streams/test_hls.py         | 2 +-
- 9 files changed, 12 insertions(+), 12 deletions(-)
+ 10 files changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/setup.py b/setup.py
-index aadd69a..6510a01 100644
+index ac1bc92..141c463 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -21,7 +21,7 @@ if environ.get("STREAMLINK_USE_PYCRYPTO"):
+@@ -22,7 +22,7 @@ if environ.get("STREAMLINK_USE_PYCRYPTO"):
      deps.append("pycrypto")
  else:
      # this version of pycryptodome is known to work and has a Windows wheel for py2.7, py3.3-3.6
@@ -37,7 +38,7 @@ index aadd69a..6510a01 100644
  # for localization
  if environ.get("STREAMLINK_USE_PYCOUNTRY"):
 diff --git a/src/streamlink/plugins/abematv.py b/src/streamlink/plugins/abematv.py
-index f8464d5..2853aa2 100644
+index 38d631a..fc46a29 100644
 --- a/src/streamlink/plugins/abematv.py
 +++ b/src/streamlink/plugins/abematv.py
 @@ -8,7 +8,7 @@ import uuid
@@ -49,6 +50,21 @@ index f8464d5..2853aa2 100644
  from requests import Response
  from requests.adapters import BaseAdapter
  
+diff --git a/src/streamlink/plugins/mjunoon.py b/src/streamlink/plugins/mjunoon.py
+index 3ef9054..1bcfa59 100644
+--- a/src/streamlink/plugins/mjunoon.py
++++ b/src/streamlink/plugins/mjunoon.py
+@@ -3,8 +3,8 @@ import logging
+ import re
+ from urllib.parse import urljoin
+ 
+-from Crypto.Cipher import AES
+-from Crypto.Util.Padding import unpad
++from Cryptodome.Cipher import AES
++from Cryptodome.Util.Padding import unpad
+ 
+ from streamlink.plugin import Plugin
+ from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/rtve.py b/src/streamlink/plugins/rtve.py
 index 7054f9a..493b406 100644
 --- a/src/streamlink/plugins/rtve.py
@@ -108,7 +124,7 @@ index 1a77a70..1238499 100644
  from streamlink.plugin import Plugin
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index b6aac66..199342a 100644
+index bfea529..e3f9d10 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -5,7 +5,7 @@ from collections import OrderedDict, defaultdict, namedtuple
