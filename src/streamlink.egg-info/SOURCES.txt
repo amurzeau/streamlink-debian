@@ -10,6 +10,7 @@ setup.py
 versioneer.py
 docs/Makefile
 docs/_applications.rst
+docs/_man.rst
 docs/api.rst
 docs/api_guide.rst
 docs/applications.rst
@@ -28,6 +29,7 @@ docs/issues.rst
 docs/players.rst
 docs/plugin_matrix.rst
 docs/thirdparty.rst
+docs/_build/man/streamlink.1
 docs/_static/apple-touch-icon.png
 docs/_static/favicon-16x16.png
 docs/_static/favicon-32x32.png
@@ -39,7 +41,6 @@ docs/_templates/base.html
 docs/_templates/page.html
 docs/_templates/sidebar/brand.html
 docs/_templates/sidebar/github-buttons.html
-examples/gst-player.py
 examples/opencv-face.py
 src/streamlink/__init__.py
 src/streamlink/__main__.py
@@ -99,7 +100,6 @@ src/streamlink/plugins/bigo.py
 src/streamlink/plugins/bilibili.py
 src/streamlink/plugins/bloomberg.py
 src/streamlink/plugins/brightcove.py
-src/streamlink/plugins/btsports.py
 src/streamlink/plugins/btv.py
 src/streamlink/plugins/canalplus.py
 src/streamlink/plugins/cbsnews.py
@@ -155,7 +155,6 @@ src/streamlink/plugins/livestream.py
 src/streamlink/plugins/lrt.py
 src/streamlink/plugins/ltv_lsm_lv.py
 src/streamlink/plugins/mediaklikk.py
-src/streamlink/plugins/mico.py
 src/streamlink/plugins/mitele.py
 src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mrtmk.py
@@ -165,6 +164,7 @@ src/streamlink/plugins/nbcnews.py
 src/streamlink/plugins/nbcsports.py
 src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nicolive.py
+src/streamlink/plugins/nimotv.py
 src/streamlink/plugins/nos.py
 src/streamlink/plugins/nownews.py
 src/streamlink/plugins/nrk.py
@@ -304,6 +304,7 @@ tests/test_cli_main.py
 tests/test_cli_playerout.py
 tests/test_cli_util_progress.py
 tests/test_cmdline.py
+tests/test_cmdline_player_fifo.py
 tests/test_cmdline_title.py
 tests/test_console.py
 tests/test_lazy_formatter.py
@@ -333,6 +334,7 @@ tests/plugin/testplugin_invalid.py
 tests/plugin/testplugin_missing.py
 tests/plugin/testplugin_override.py
 tests/plugins/__init__.py
+tests/plugins/conftest.py
 tests/plugins/test_abematv.py
 tests/plugins/test_abweb.py
 tests/plugins/test_adultswim.py
@@ -350,7 +352,6 @@ tests/plugins/test_bigo.py
 tests/plugins/test_bilibili.py
 tests/plugins/test_bloomberg.py
 tests/plugins/test_brightcove.py
-tests/plugins/test_btsports.py
 tests/plugins/test_btv.py
 tests/plugins/test_canalplus.py
 tests/plugins/test_cbsnews.py
@@ -401,7 +402,6 @@ tests/plugins/test_livestream.py
 tests/plugins/test_lrt.py
 tests/plugins/test_ltv_lsm_lv.py
 tests/plugins/test_mediaklikk.py
-tests/plugins/test_mico.py
 tests/plugins/test_mitele.py
 tests/plugins/test_mjunoon.py
 tests/plugins/test_mrtmk.py
@@ -411,6 +411,7 @@ tests/plugins/test_nbcnews.py
 tests/plugins/test_nbcsports.py
 tests/plugins/test_nhkworld.py
 tests/plugins/test_nicolive.py
+tests/plugins/test_nimotv.py
 tests/plugins/test_nos.py
 tests/plugins/test_nownews.py
 tests/plugins/test_nrk.py
@@ -506,6 +507,7 @@ tests/plugins/test_zhanqi.py
 tests/resources/__init__.py
 tests/resources/dash/test_1.mpd
 tests/resources/dash/test_10.mpd
+tests/resources/dash/test_11_static.mpd
 tests/resources/dash/test_2.mpd
 tests/resources/dash/test_3.mpd
 tests/resources/dash/test_4.mpd

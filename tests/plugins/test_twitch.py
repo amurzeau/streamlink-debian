@@ -6,8 +6,26 @@ import requests_mock
 
 from streamlink import Streamlink
 from streamlink.plugin import PluginError
-from streamlink.plugins.twitch import Twitch, TwitchHLSStream
-from tests.mixins.stream_hls import Playlist, Segment as _Segment, Tag, TestMixinStreamHLS
+from streamlink.plugins.twitch import Twitch, TwitchHLSStream, TwitchHLSStreamReader, TwitchHLSStreamWriter
+from tests.mixins.stream_hls import EventedHLSStreamWriter, Playlist, Segment as _Segment, Tag, TestMixinStreamHLS
+from tests.plugins import PluginCanHandleUrl
+
+
+class TestPluginCanHandleUrlTwitch(PluginCanHandleUrl):
+    __plugin__ = Twitch
+
+    should_match = [
+        'https://www.twitch.tv/twitch',
+        'https://www.twitch.tv/videos/150942279',
+        'https://clips.twitch.tv/ObservantBenevolentCarabeefPhilosoraptor',
+        'https://www.twitch.tv/twitch/video/292713971',
+        'https://www.twitch.tv/twitch/v/292713971',
+    ]
+
+    should_not_match = [
+        'https://www.twitch.tv',
+        'https://www.twitch.tv/',
+    ]
 
 
 DATETIME_BASE = datetime(2000, 1, 1, 0, 0, 0, 0)
@@ -44,29 +62,21 @@ class SegmentPrefetch(Segment):
         return "#EXT-X-TWITCH-PREFETCH:{0}".format(self.url(namespace))
 
 
-class TestPluginTwitch(unittest.TestCase):
-    def test_can_handle_url(self):
-        should_match = [
-            'https://www.twitch.tv/twitch',
-            'https://www.twitch.tv/videos/150942279',
-            'https://clips.twitch.tv/ObservantBenevolentCarabeefPhilosoraptor',
-            'https://www.twitch.tv/twitch/video/292713971',
-            'https://www.twitch.tv/twitch/v/292713971',
-        ]
-        for url in should_match:
-            self.assertTrue(Twitch.can_handle_url(url))
+class _TwitchHLSStreamWriter(EventedHLSStreamWriter, TwitchHLSStreamWriter):
+    pass
 
-    def test_can_handle_url_negative(self):
-        should_not_match = [
-            'https://www.twitch.tv',
-        ]
-        for url in should_not_match:
-            self.assertFalse(Twitch.can_handle_url(url))
+
+class _TwitchHLSStreamReader(TwitchHLSStreamReader):
+    __writer__ = _TwitchHLSStreamWriter
+
+
+class _TwitchHLSStream(TwitchHLSStream):
+    __reader__ = _TwitchHLSStreamReader
 
 
 @patch("streamlink.stream.hls.HLSStreamWorker.wait", MagicMock(return_value=True))
 class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
-    __stream__ = TwitchHLSStream
+    __stream__ = _TwitchHLSStream
 
     def get_session(self, options=None, disable_ads=False, low_latency=False):
         session = super().get_session(options)
@@ -82,6 +92,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(0, [daterange, Segment(0), Segment(1)], end=True)
         ], disable_ads=True, low_latency=False)
 
+        self.await_write(2)
         self.assertEqual(self.await_read(read_all=True), self.content(segments), "Doesn't filter out segments")
         self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
 
@@ -91,6 +102,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(0, [daterange, Segment(0), Segment(1)], end=True)
         ], disable_ads=True, low_latency=False)
 
+        self.await_write(2)
         self.assertEqual(self.await_read(read_all=True), segments[1].content, "Filters out ad segments")
         self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
 
@@ -100,6 +112,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(0, [daterange, Segment(0), Segment(1)], end=True)
         ], disable_ads=True, low_latency=False)
 
+        self.await_write(2)
         self.assertEqual(self.await_read(read_all=True), segments[1].content, "Filters out ad segments")
         self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
 
@@ -109,6 +122,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(0, [daterange, Segment(0), Segment(1)], end=True)
         ], disable_ads=True, low_latency=False)
 
+        self.await_write(2)
         self.assertEqual(self.await_read(read_all=True), segments[1].content, "Filters out ad segments")
         self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
 
@@ -121,6 +135,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(4, [Segment(4), Segment(5)], end=True)
         ], disable_ads=True, low_latency=False)
 
+        self.await_write(6)
         self.assertEqual(
             self.await_read(read_all=True),
             self.content(segments, cond=lambda s: s.num >= 4),
@@ -141,6 +156,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(4, [Segment(4), Segment(5)], end=True)
         ], disable_ads=True, low_latency=False)
 
+        self.await_write(6)
         self.assertEqual(
             self.await_read(read_all=True),
             self.content(segments, cond=lambda s: s.num != 2 and s.num != 3),
@@ -159,6 +175,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(2, [Segment(2), Segment(3)], end=True)
         ], disable_ads=False, low_latency=False)
 
+        self.await_write(4)
         self.assertEqual(
             self.await_read(read_all=True),
             self.content(segments),
@@ -177,6 +194,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         self.assertEqual(2, self.session.options.get("hls-live-edge"))
         self.assertEqual(True, self.session.options.get("hls-segment-stream-data"))
 
+        self.await_write(6)
         self.assertEqual(
             self.await_read(read_all=True),
             self.content(segments, cond=lambda s: s.num >= 4),
@@ -198,6 +216,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         self.assertEqual(4, self.session.options.get("hls-live-edge"))
         self.assertEqual(False, self.session.options.get("hls-segment-stream-data"))
 
+        self.await_write(8)
         self.assertEqual(
             self.await_read(read_all=True),
             self.content(segments, cond=lambda s: s.num < 8),
@@ -217,6 +236,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         self.assertTrue(self.session.get_plugin_option("twitch", "low-latency"))
         self.assertFalse(self.session.get_plugin_option("twitch", "disable-ads"))
 
+        self.await_write(6)
         self.await_read(read_all=True)
         self.assertEqual(mock_log.info.mock_calls, [
             call("Low latency streaming (HLS live edge: 2)"),
@@ -231,6 +251,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True)
         ], disable_ads=False, low_latency=True)
 
+        self.await_write(8)
         self.assertEqual(
             self.await_read(read_all=True),
             self.content(segments, cond=lambda s: s.num > 1),
@@ -250,6 +271,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True)
         ], disable_ads=True, low_latency=True)
 
+        self.await_write(8)
         self.await_read(read_all=True)
         self.assertEqual(mock_log.info.mock_calls, [
             call("Will skip ad segments"),
@@ -265,6 +287,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7)], end=True)
         ], disable_ads=True, low_latency=True)
 
+        self.await_write(6)
         self.await_read(read_all=True)
         self.assertEqual(mock_log.info.mock_calls, [
             call("Will skip ad segments"),

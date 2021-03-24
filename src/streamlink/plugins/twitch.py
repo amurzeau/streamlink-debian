@@ -119,6 +119,8 @@ class TwitchHLSStreamReader(HLSStreamReader):
 
 
 class TwitchHLSStream(HLSStream):
+    __reader__ = TwitchHLSStreamReader
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.disable_ads = self.session.get_plugin_option("twitch", "disable-ads")
@@ -133,10 +135,7 @@ class TwitchHLSStream(HLSStream):
             self.session.options.set("hls-segment-stream-data", True)
             log.info("Low latency streaming (HLS live edge: {0})".format(live_edge))
 
-        reader = TwitchHLSStreamReader(self)
-        reader.open()
-
-        return reader
+        return super().open()
 
     @classmethod
     def _get_variant_playlist(cls, res):
@@ -305,11 +304,17 @@ class TwitchAPI:
                 "playerType": "embed"
             }
         }
-        subschema = {
-            "value": str,
-            "signature": str,
-            "__typename": "PlaybackAccessToken"
-        }
+        subschema = validate.any(None, validate.all(
+            {
+                "value": str,
+                "signature": str,
+                "__typename": "PlaybackAccessToken"
+            },
+            validate.union((
+                validate.get("signature"),
+                validate.get("value")
+            ))
+        ))
         return self.call_gql(request, schema=validate.Schema(
             {"data": validate.any(
                 validate.all(
@@ -321,11 +326,7 @@ class TwitchAPI:
                     validate.get("videoPlaybackAccessToken")
                 )
             )},
-            validate.get("data"),
-            validate.union((
-                validate.get("signature"),
-                validate.get("value")
-            ))
+            validate.get("data")
         ))
 
     def parse_token(self, tokenstr):
@@ -562,11 +563,8 @@ class Twitch(Plugin):
     def _access_token(self, is_live, channel_or_vod):
         try:
             sig, token = self.api.access_token(is_live, channel_or_vod)
-        except PluginError as err:
-            if "404 Client Error" in str(err):
-                raise NoStreamsError(self.url)
-            else:
-                raise
+        except (PluginError, TypeError):
+            raise NoStreamsError(self.url)
 
         try:
             restricted_bitrates = self.api.parse_token(token)

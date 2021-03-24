@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Streamlink'
-copyright = '2020, Streamlink'
+copyright = '2021, Streamlink'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -182,7 +182,7 @@ htmlhelp_basename = 'streamlinkdoc'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('cli', 'streamlink', 'extracts streams from various services and pipes them into a video player of choice', ['Streamlink Contributors'], 1)
+    ('_man', 'streamlink', 'extracts streams from various services and pipes them into a video player of choice', ['Streamlink Contributors'], 1)
 ]
 
 # If true, show URL addresses after external links.

@@ -7,6 +7,7 @@ from urllib.parse import unquote_plus, urlparse
 
 import websocket
 
+from streamlink import logger
 from streamlink.plugin import Plugin, PluginArgument, PluginArguments
 from streamlink.plugin.api import useragents
 from streamlink.stream import HLSStream
@@ -49,6 +50,14 @@ class NicoLive(Plugin):
             help="Value of the user-session token \n(can be used in "
                  "case you do not want to put your password here)"),
         PluginArgument(
+            "purge-credentials",
+            argument_name="niconico-purge-credentials",
+            action="store_true",
+            help="""
+        Purge cached Niconico credentials to initiate a new session
+        and reauthenticate.
+        """),
+        PluginArgument(
             "timeshift-offset",
             type=hours_minutes_seconds,
             argument_name="niconico-timeshift-offset",
@@ -71,21 +80,22 @@ class NicoLive(Plugin):
         return _url_re.match(url) is not None
 
     def _get_streams(self):
+        if self.options.get("purge_credentials"):
+            self.clear_cookies()
+            _log.info("All credentials were successfully removed")
+
         self.url = self.url.split("?")[0]
         self.session.http.headers.update({
             "User-Agent": useragents.CHROME,
         })
 
+        self.niconico_web_login()
         if not self.get_wss_api_url():
-            _log.debug("Coundn't extract wss_api_url. Attempting login...")
-            if not self.niconico_web_login():
-                return None
-            if not self.get_wss_api_url():
-                _log.error("Failed to get wss_api_url.")
-                _log.error(
-                    "Please check if the URL is correct, "
-                    "and make sure your account has access to the video.")
-                return None
+            _log.error(
+                "Failed to get wss_api_url. "
+                "Please check if the URL is correct, "
+                "and make sure your account has access to the video.")
+            return None
 
         self.api_connect(self.wss_api_url)
 
@@ -167,12 +177,24 @@ class NicoLive(Plugin):
                 proxy_options.get('http_proxy_port') or 80))
 
         _log.debug("Connecting: {0}".format(url))
+        if logger.root.level <= logger.TRACE:
+            websocket.enableTrace(True, _log)
+
+        def on_error(wssapp, error):
+            return self.api_on_error(wssapp, error)
+
+        def on_message(wssapp, message):
+            return self.handle_api_message(message)
+
+        def on_open(wssapp):
+            return self.api_on_open()
+
         self._ws = websocket.WebSocketApp(
             url,
             header=["User-Agent: {0}".format(useragents.CHROME)],
-            on_open=self.api_on_open,
-            on_message=self.handle_api_message,
-            on_error=self.api_on_error)
+            on_open=on_open,
+            on_message=on_message,
+            on_error=on_error)
         self.ws_worker_thread = threading.Thread(
             target=self._ws.run_forever,
             args=proxy_options)
@@ -316,7 +338,9 @@ class NicoLive(Plugin):
                 domain="nicovideo.jp")
             self.save_cookies()
             return True
-
+        elif self.session.http.cookies.get("user_session"):
+            _log.info("cached session cookie is provided. Using it.")
+            return True
         elif email is not None and password is not None:
             _log.info("Email and password are provided. Attemping login.")
 
@@ -343,9 +367,6 @@ class NicoLive(Plugin):
                 self.save_cookies()
                 return True
         else:
-            _log.warning(
-                "Neither a email and password combination nor a user session "
-                "token is provided. Cannot attempt login.")
             return False
 
 

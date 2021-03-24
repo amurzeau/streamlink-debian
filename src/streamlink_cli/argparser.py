@@ -303,6 +303,28 @@ def build_parser():
         Default is system locale.
         """
     )
+    general.add_argument(
+        "--interface",
+        type=str,
+        metavar="INTERFACE",
+        help="""
+        Set the network interface.
+        """
+    )
+    general.add_argument(
+        "-4", "--ipv4",
+        action="store_true",
+        help="""
+        Resolve address names to IPv4 only. This option overrides :option:`-6`.
+        """
+    )
+    general.add_argument(
+        "-6", "--ipv6",
+        action="store_true",
+        help="""
+        Resolve address names to IPv6 only. This option overrides :option:`-4`.
+        """
+    )
 
     player = parser.add_argument_group("Player options")
     player.add_argument(
@@ -1106,7 +1128,9 @@ def build_parser():
         type=str,
         metavar="OUTFORMAT",
         help="""
-        Set output file format.
+        When muxing streams, set the output format to OUTFORMAT.
+
+        Default is "matroska".
 
         Example: "mpegts"
         """
@@ -1115,7 +1139,7 @@ def build_parser():
         "--ffmpeg-video-transcode",
         metavar="CODEC",
         help="""
-        When muxing streams transcode the video to this CODEC.
+        When muxing streams, transcode the video to CODEC.
 
         Default is "copy".
 
@@ -1126,7 +1150,7 @@ def build_parser():
         "--ffmpeg-audio-transcode",
         metavar="CODEC",
         help="""
-        When muxing streams transcode the audio to this CODEC.
+        When muxing streams, transcode the audio to CODEC.
 
         Default is "copy".
 

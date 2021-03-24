@@ -1,6 +1,6 @@
 requests<3.0,>=2.21.0
 isodate
-websocket-client
+websocket-client>=0.58.0
 PySocks!=1.5.7,>=1.5.6
 pycryptodome<4,>=3.4.3
 iso-639
