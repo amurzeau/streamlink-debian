@@ -1,0 +1,24 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Fri, 26 Mar 2021 22:58:52 +0100
+Subject: Include .removed file in build
+
+This file is required by tests.
+
+Forwarded: no
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ setup.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/setup.py b/setup.py
+index 141c463..974b216 100644
+--- a/setup.py
++++ b/setup.py
+@@ -98,6 +98,7 @@ setup(name="streamlink",
+       license="Simplified BSD",
+       packages=find_packages("src"),
+       package_dir={"": "src"},
++      package_data={"streamlink.plugins": [".removed"]},
+       entry_points=entry_points,
+       data_files=data_files,
+       install_requires=deps,
