@@ -1,10 +1,12 @@
-streamlink (2.1.1-1) unstable; urgency=medium
+streamlink (2.1.1-1~exp1) experimental; urgency=medium
 
   * New upstream version 2.1.1
   * Update patches
   * d/copyright: update years to 2021
+  * d/patches: add patch to include .removed file in build (required by tests)
+  * d/streamlink.manpages: update manpage build location
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 26 Mar 2021 22:31:13 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 26 Mar 2021 23:09:46 +0100
 
 streamlink (2.0.0-1) unstable; urgency=medium
 
