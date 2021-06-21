@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "STREAMLINK" "1" "Mar 25, 2021" "2.1.1" "Streamlink"
+.TH "STREAMLINK" "1" "Jun 19, 2021" "2.2.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .
@@ -142,6 +142,52 @@ merged on top of each other where the last config has highest priority.
 Set the log message threshold.
 .sp
 Valid levels are: none, error, warning, info, debug, trace
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-logfile FILE
+Append log output to FILE instead of writing to stdout/stderr.
+.sp
+User prompts and download progress won\(aqt be written to FILE.
+.sp
+A value of \fB\-\fP will set the file name to an ISO8601\-like string
+and will choose the following default log directories.
+.sp
+Windows:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+%TEMP%\estreamlink\elogs
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+macOS:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+${HOME}/Library/Logs/streamlink
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Linux/BSD:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+${XDG_STATE_HOME:\-${HOME}/.local/state}/streamlink/logs
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1391,17 +1437,6 @@ A Steam account password to use with \fB\-\-steam\-email\fP\&.
 .B \-\-streann\-url URL
 Source URL where the iframe is located,
 only required for direct URLs of \fIott.streann.com\fP
-.UNINDENT
-.SS Tvplayer
-.INDENT 0.0
-.TP
-.B \-\-tvplayer\-email EMAIL
-The email address used to register with tvplayer.com.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-tvplayer\-password PASSWORD
-The password for your tvplayer.com account.
 .UNINDENT
 .SS Twitcasting
 .INDENT 0.0

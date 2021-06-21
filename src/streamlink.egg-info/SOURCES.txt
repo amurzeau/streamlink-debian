@@ -100,6 +100,7 @@ src/streamlink/plugins/bfmtv.py
 src/streamlink/plugins/bigo.py
 src/streamlink/plugins/bilibili.py
 src/streamlink/plugins/bloomberg.py
+src/streamlink/plugins/booyah.py
 src/streamlink/plugins/brightcove.py
 src/streamlink/plugins/btv.py
 src/streamlink/plugins/canalplus.py
@@ -137,14 +138,12 @@ src/streamlink/plugins/goodgame.py
 src/streamlink/plugins/googledrive.py
 src/streamlink/plugins/gulli.py
 src/streamlink/plugins/hds.py
-src/streamlink/plugins/hitbox.py
 src/streamlink/plugins/hls.py
 src/streamlink/plugins/http.py
 src/streamlink/plugins/huajiao.py
 src/streamlink/plugins/huomao.py
 src/streamlink/plugins/huya.py
 src/streamlink/plugins/idf1.py
-src/streamlink/plugins/ine.py
 src/streamlink/plugins/invintus.py
 src/streamlink/plugins/kugou.py
 src/streamlink/plugins/latina.py
@@ -156,6 +155,8 @@ src/streamlink/plugins/livestream.py
 src/streamlink/plugins/lrt.py
 src/streamlink/plugins/ltv_lsm_lv.py
 src/streamlink/plugins/mediaklikk.py
+src/streamlink/plugins/mediavitrina.py
+src/streamlink/plugins/mildom.py
 src/streamlink/plugins/mitele.py
 src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mrtmk.py
@@ -180,7 +181,6 @@ src/streamlink/plugins/periscope.py
 src/streamlink/plugins/picarto.py
 src/streamlink/plugins/piczel.py
 src/streamlink/plugins/pixiv.py
-src/streamlink/plugins/playtv.py
 src/streamlink/plugins/pluto.py
 src/streamlink/plugins/pluzz.py
 src/streamlink/plugins/powerapp.py
@@ -229,7 +229,6 @@ src/streamlink/plugins/tv8.py
 src/streamlink/plugins/tv999.py
 src/streamlink/plugins/tvibo.py
 src/streamlink/plugins/tvp.py
-src/streamlink/plugins/tvplayer.py
 src/streamlink/plugins/tvrby.py
 src/streamlink/plugins/tvrplus.py
 src/streamlink/plugins/tvtoya.py
@@ -326,6 +325,7 @@ tests/test_streamlink_api.py
 tests/test_utils.py
 tests/test_utils_args.py
 tests/test_utils_crypto.py
+tests/test_utils_named_pipe.py
 tests/test_utils_times.py
 tests/test_utils_url.py
 tests/mixins/__init__.py
@@ -352,6 +352,7 @@ tests/plugins/test_bfmtv.py
 tests/plugins/test_bigo.py
 tests/plugins/test_bilibili.py
 tests/plugins/test_bloomberg.py
+tests/plugins/test_booyah.py
 tests/plugins/test_brightcove.py
 tests/plugins/test_btv.py
 tests/plugins/test_canalplus.py
@@ -386,12 +387,10 @@ tests/plugins/test_goltelevision.py
 tests/plugins/test_goodgame.py
 tests/plugins/test_googledrive.py
 tests/plugins/test_gulli.py
-tests/plugins/test_hitbox.py
 tests/plugins/test_huajiao.py
 tests/plugins/test_huomao.py
 tests/plugins/test_huya.py
 tests/plugins/test_idf1.py
-tests/plugins/test_ine.py
 tests/plugins/test_invintus.py
 tests/plugins/test_kugou.py
 tests/plugins/test_latina.py
@@ -403,6 +402,8 @@ tests/plugins/test_livestream.py
 tests/plugins/test_lrt.py
 tests/plugins/test_ltv_lsm_lv.py
 tests/plugins/test_mediaklikk.py
+tests/plugins/test_mediavitrina.py
+tests/plugins/test_mildom.py
 tests/plugins/test_mitele.py
 tests/plugins/test_mjunoon.py
 tests/plugins/test_mrtmk.py
@@ -427,7 +428,6 @@ tests/plugins/test_periscope.py
 tests/plugins/test_picarto.py
 tests/plugins/test_piczel.py
 tests/plugins/test_pixiv.py
-tests/plugins/test_playtv.py
 tests/plugins/test_pluto.py
 tests/plugins/test_pluzz.py
 tests/plugins/test_powerapp.py
@@ -476,7 +476,6 @@ tests/plugins/test_tv8.py
 tests/plugins/test_tv999.py
 tests/plugins/test_tvibo.py
 tests/plugins/test_tvp.py
-tests/plugins/test_tvplayer.py
 tests/plugins/test_tvrby.py
 tests/plugins/test_tvrplus.py
 tests/plugins/test_tvtoya.py
@@ -506,6 +505,11 @@ tests/plugins/test_zeenews.py
 tests/plugins/test_zengatv.py
 tests/plugins/test_zhanqi.py
 tests/resources/__init__.py
+tests/resources/cli/config/custom
+tests/resources/cli/config/primary
+tests/resources/cli/config/primary.testplugin
+tests/resources/cli/config/secondary
+tests/resources/cli/config/secondary.testplugin
 tests/resources/dash/test_1.mpd
 tests/resources/dash/test_10.mpd
 tests/resources/dash/test_11_static.mpd
