@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import errno
 import logging
 import os
@@ -11,7 +12,9 @@ from distutils.version import StrictVersion
 from functools import partial
 from gettext import gettext
 from itertools import chain
+from pathlib import Path
 from time import sleep
+from typing import List
 
 import requests
 from socks import __version__ as socks_version
@@ -25,9 +28,9 @@ from streamlink.plugin import PluginOptions
 from streamlink.stream import StreamProcess
 from streamlink.utils import LazyFormatter, NamedPipe
 from streamlink_cli.argparser import build_parser
-from streamlink_cli.compat import is_win32, stdout
+from streamlink_cli.compat import DeprecatedPath, is_win32, stdout
 from streamlink_cli.console import ConsoleOutput, ConsoleUserInputRequester
-from streamlink_cli.constants import CONFIG_FILES, DEFAULT_STREAM_METADATA, PLUGINS_DIR, STREAM_SYNONYMS
+from streamlink_cli.constants import CONFIG_FILES, DEFAULT_STREAM_METADATA, LOG_DIR, PLUGIN_DIRS, STREAM_SYNONYMS
 from streamlink_cli.output import FileOutput, PlayerOutput
 from streamlink_cli.utils import HTTPServer, ignored, progress, stream_to_url
 
@@ -96,11 +99,8 @@ def create_output(plugin):
                          "executable with --player.")
 
         if args.player_fifo:
-            pipename = "streamlinkpipe-{0}".format(os.getpid())
-            log.info("Creating pipe {0}".format(pipename))
-
             try:
-                namedpipe = NamedPipe(pipename)
+                namedpipe = NamedPipe()
             except OSError as err:
                 console.exit("Failed to create pipe: {0}", err)
         elif args.player_http:
@@ -616,29 +616,26 @@ def print_plugins():
         console.msg("Loaded plugins: {0}", pluginlist_formatted)
 
 
-def load_plugins(dirs):
+def load_plugins(dirs: List[Path], showwarning: bool = True):
     """Attempts to load plugins from a list of directories."""
-
-    dirs = [os.path.expanduser(d) for d in dirs]
-
     for directory in dirs:
-        if os.path.isdir(directory):
-            streamlink.load_plugins(directory)
-        else:
-            log.warning("Plugin path {0} does not exist or is not "
-                        "a directory!".format(directory))
+        if directory.is_dir():
+            success = streamlink.load_plugins(str(directory))
+            if success and type(directory) is DeprecatedPath:
+                log.info(f"Loaded plugins from deprecated path, see CLI docs for how to migrate: {directory}")
+        elif showwarning:
+            log.warning(f"Plugin path {directory} does not exist or is not a directory!")
 
 
-def setup_args(parser, config_files=[], ignore_unknown=False):
+def setup_args(parser: argparse.ArgumentParser, config_files: List[Path] = None, ignore_unknown: bool = False):
     """Parses arguments."""
     global args
     arglist = sys.argv[1:]
 
     # Load arguments from config files
-    for config_file in filter(os.path.isfile, config_files):
-        arglist.insert(0, "@" + config_file)
+    configs = [f"@{config_file}" for config_file in config_files or []]
 
-    args, unknown = parser.parse_known_args(arglist)
+    args, unknown = parser.parse_known_args(configs + arglist)
     if unknown and not ignore_unknown:
         msg = gettext('unrecognized arguments: %s')
         parser.error(msg % ' '.join(unknown))
@@ -654,31 +651,37 @@ def setup_args(parser, config_files=[], ignore_unknown=False):
 def setup_config_args(parser, ignore_unknown=False):
     config_files = []
 
-    if streamlink and args.url:
-        with ignored(NoPluginError):
-            plugin = streamlink.resolve_url(args.url)
-            config_files += ["{0}.{1}".format(fn, plugin.module) for fn in CONFIG_FILES]
-
     if args.config:
         # We want the config specified last to get highest priority
-        config_files += list(reversed(args.config))
+        for config_file in map(lambda path: Path(path).expanduser(), reversed(args.config)):
+            if config_file.is_file():
+                config_files.append(config_file)
     else:
         # Only load first available default config
-        for config_file in filter(os.path.isfile, CONFIG_FILES):
+        for config_file in filter(lambda path: path.is_file(), CONFIG_FILES):
+            if type(config_file) is DeprecatedPath:
+                log.info(f"Loaded config from deprecated path, see CLI docs for how to migrate: {config_file}")
             config_files.append(config_file)
             break
+
+    if streamlink and args.url:
+        # Only load first available plugin config
+        with ignored(NoPluginError):
+            plugin = streamlink.resolve_url(args.url)
+            for config_file in CONFIG_FILES:
+                config_file = config_file.with_name(f"{config_file.name}.{plugin.module}")
+                if not config_file.is_file():
+                    continue
+                if type(config_file) is DeprecatedPath:
+                    log.info(f"Loaded plugin config from deprecated path, see CLI docs for how to migrate: {config_file}")
+                config_files.append(config_file)
+                break
 
     if config_files:
         setup_args(parser, config_files, ignore_unknown=ignore_unknown)
 
 
-def setup_console(output):
-    """Console setup."""
-    global console
-
-    # All console related operations is handled via the ConsoleOutput class
-    console = ConsoleOutput(output, args.json)
-
+def setup_signals():
     # Handle SIGTERM just like SIGINT
     signal.signal(signal.SIGTERM, signal.default_int_handler)
 
@@ -721,11 +724,10 @@ def setup_http_session():
 
 def setup_plugins(extra_plugin_dir=None):
     """Loads any additional plugins."""
-    if os.path.isdir(PLUGINS_DIR):
-        load_plugins([PLUGINS_DIR])
+    load_plugins(PLUGIN_DIRS, showwarning=False)
 
     if extra_plugin_dir:
-        load_plugins(extra_plugin_dir)
+        load_plugins([Path(path).expanduser() for path in extra_plugin_dir])
 
 
 def setup_streamlink():
@@ -919,7 +921,7 @@ def setup_plugin_options(session, plugin):
                                           console.ask(prompt + ": "))
 
 
-def check_root():
+def log_root_warning():
     if hasattr(os, "getuid"):
         if os.geteuid() == 0:
             log.info("streamlink is running as root! Be careful!")
@@ -1001,14 +1003,27 @@ def check_version(force=False):
         sys.exit()
 
 
-def setup_logging(stream=sys.stdout, level="info"):
-    logger.basicConfig(
+def setup_logger_and_console(stream=sys.stdout, filename=None, level="info", json=False):
+    global console
+
+    if filename == "-":
+        filename = LOG_DIR / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S.log")
+    elif filename:
+        filename = Path(filename).expanduser().resolve()
+
+    if filename:
+        filename.parent.mkdir(parents=True, exist_ok=True)
+
+    streamhandler = logger.basicConfig(
         stream=stream,
+        filename=filename,
         level=level,
         style="{",
         format=("[{asctime}]" if level == "trace" else "") + "[{name}][{levelname}] {message}",
         datefmt="%H:%M:%S" + (".%f" if level == "trace" else "")
     )
+
+    console = ConsoleOutput(streamhandler.stream, json)
 
 
 def main():
@@ -1029,8 +1044,10 @@ def main():
     # We don't want log output when we are printing JSON or a command-line.
     silent_log = any(getattr(args, attr) for attr in QUIET_OPTIONS)
     log_level = args.loglevel if not silent_log else "none"
-    setup_logging(console_out, log_level)
-    setup_console(console_out)
+    log_file = args.logfile if log_level != "none" else None
+    setup_logger_and_console(console_out, log_file, log_level, args.json)
+
+    setup_signals()
 
     setup_streamlink()
     # load additional plugins
@@ -1045,7 +1062,8 @@ def main():
     logger.root.setLevel(log_level)
 
     setup_http_session()
-    check_root()
+
+    log_root_warning()
     log_current_versions()
     log_current_arguments(streamlink, parser)
 

@@ -1,6 +1,9 @@
 import os
+import tempfile
+from pathlib import Path
+from typing import List
 
-from streamlink_cli.compat import is_win32
+from streamlink_cli.compat import DeprecatedPath, is_darwin, is_win32
 
 PLAYER_ARGS_INPUT_DEFAULT = "playerinput"
 PLAYER_ARGS_INPUT_FALLBACK = "filename"
@@ -20,17 +23,45 @@ SUPPORTED_PLAYERS = {
     "potplayer": ["potplayer", "potplayermini64.exe", "potplayermini.exe"]
 }
 
+CONFIG_FILES: List[Path]
+PLUGIN_DIRS: List[Path]
+LOG_DIR: Path
+
 if is_win32:
-    APPDATA = os.environ["APPDATA"]
-    CONFIG_FILES = [os.path.join(APPDATA, "streamlink", "streamlinkrc")]
-    PLUGINS_DIR = os.path.join(APPDATA, "streamlink", "plugins")
-else:
-    XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME", "~/.config")
+    APPDATA = Path(os.environ.get("APPDATA") or Path.home() / "AppData")
     CONFIG_FILES = [
-        os.path.expanduser(XDG_CONFIG_HOME + "/streamlink/config"),
-        os.path.expanduser("~/.streamlinkrc")
+        APPDATA / "streamlink" / "config",
+        DeprecatedPath(APPDATA / "streamlink" / "streamlinkrc")
     ]
-    PLUGINS_DIR = os.path.expanduser(XDG_CONFIG_HOME + "/streamlink/plugins")
+    PLUGIN_DIRS = [
+        APPDATA / "streamlink" / "plugins"
+    ]
+    LOG_DIR = Path(tempfile.gettempdir()) / "streamlink" / "logs"
+elif is_darwin:
+    XDG_CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME", "~/.config")).expanduser()
+    CONFIG_FILES = [
+        Path.home() / "Library" / "Application Support" / "streamlink" / "config",
+        DeprecatedPath(XDG_CONFIG_HOME / "streamlink" / "config"),
+        DeprecatedPath(Path.home() / ".streamlinkrc")
+    ]
+    PLUGIN_DIRS = [
+        Path.home() / "Library" / "Application Support" / "streamlink" / "plugins",
+        DeprecatedPath(XDG_CONFIG_HOME / "streamlink" / "plugins")
+    ]
+    LOG_DIR = DeprecatedPath(Path.home() / "Library" / "Logs" / "streamlink")
+else:
+    XDG_CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME", "~/.config")).expanduser()
+    XDG_DATA_HOME = Path(os.environ.get("XDG_DATA_HOME", "~/.local/share")).expanduser()
+    XDG_STATE_HOME = Path(os.environ.get("XDG_STATE_HOME", "~/.local/state")).expanduser()
+    CONFIG_FILES = [
+        XDG_CONFIG_HOME / "streamlink" / "config",
+        DeprecatedPath(Path.home() / ".streamlinkrc")
+    ]
+    PLUGIN_DIRS = [
+        XDG_DATA_HOME / "streamlink" / "plugins",
+        DeprecatedPath(XDG_CONFIG_HOME / "streamlink" / "plugins")
+    ]
+    LOG_DIR = XDG_STATE_HOME / "streamlink" / "logs"
 
 STREAM_SYNONYMS = ["best", "worst", "best-unfiltered", "worst-unfiltered"]
 STREAM_PASSTHROUGH = ["hls", "http", "rtmp"]
@@ -38,5 +69,5 @@ STREAM_PASSTHROUGH = ["hls", "http", "rtmp"]
 __all__ = [
     "PLAYER_ARGS_INPUT_DEFAULT", "PLAYER_ARGS_INPUT_FALLBACK",
     "DEFAULT_STREAM_METADATA", "SUPPORTED_PLAYERS",
-    "CONFIG_FILES", "PLUGINS_DIR", "STREAM_SYNONYMS", "STREAM_PASSTHROUGH"
+    "CONFIG_FILES", "PLUGIN_DIRS", "LOG_DIR", "STREAM_SYNONYMS", "STREAM_PASSTHROUGH"
 ]

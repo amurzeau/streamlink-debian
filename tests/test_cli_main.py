@@ -1,20 +1,28 @@
-import os.path
+import datetime
+import os
+import sys
 import tempfile
 import unittest
+from pathlib import Path, PosixPath, WindowsPath
 from unittest.mock import Mock, call, patch
 
+import freezegun
+
 import streamlink_cli.main
+import tests.resources
 from streamlink.plugin.plugin import Plugin
 from streamlink.session import Streamlink
+from streamlink_cli.compat import DeprecatedPath, is_win32
 from streamlink_cli.main import (
+    NoPluginError,
     check_file_output,
     create_output,
     format_valid_streams,
     handle_stream,
     handle_url,
     log_current_arguments,
-    log_current_versions,
-    resolve_stream_name
+    resolve_stream_name,
+    setup_config_args
 )
 from streamlink_cli.output import FileOutput, PlayerOutput
 
@@ -265,35 +273,148 @@ class TestCLIMain(unittest.TestCase):
 
 
 @patch("streamlink_cli.main.log")
-@patch("streamlink_cli.main.CONFIG_FILES", ["/dev/null"])
-@patch("streamlink_cli.main.setup_plugins", Mock())
-@patch("streamlink_cli.main.setup_streamlink", Mock())
-@patch("streamlink.session.Streamlink.load_builtin_plugins", Mock())
-class TestCLIMainDebugLogging(unittest.TestCase):
-    def subject(self, argv):
+class TestCLIMainSetupConfigArgs(unittest.TestCase):
+    configdir = Path(tests.resources.__path__[0], "cli", "config")
+    parser = Mock()
+
+    @classmethod
+    def subject(cls, config_files, **args):
+        def resolve_url(name):
+            if name == "noplugin":
+                raise NoPluginError()
+            return Mock(module="testplugin")
+
+        session = Mock()
+        session.resolve_url.side_effect = resolve_url
+        args.setdefault("url", "testplugin")
+
+        with patch("streamlink_cli.main.setup_args") as mock_setup_args, \
+             patch("streamlink_cli.main.args", **args), \
+             patch("streamlink_cli.main.streamlink", session), \
+             patch("streamlink_cli.main.CONFIG_FILES", config_files):
+            setup_config_args(cls.parser)
+            return mock_setup_args
+
+    def test_no_plugin(self, mock_log):
+        mock_setup_args = self.subject(
+            [self.configdir / "primary", DeprecatedPath(self.configdir / "secondary")],
+            config=None,
+            url="noplugin"
+        )
+        expected = [self.configdir / "primary"]
+        mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
+        self.assertEqual(mock_log.info.mock_calls, [])
+
+    def test_default_primary(self, mock_log):
+        mock_setup_args = self.subject(
+            [self.configdir / "primary", DeprecatedPath(self.configdir / "secondary")],
+            config=None
+        )
+        expected = [self.configdir / "primary", self.configdir / "primary.testplugin"]
+        mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
+        self.assertEqual(mock_log.info.mock_calls, [])
+
+    def test_default_secondary_deprecated(self, mock_log):
+        mock_setup_args = self.subject(
+            [self.configdir / "non-existent", DeprecatedPath(self.configdir / "secondary")],
+            config=None
+        )
+        expected = [self.configdir / "secondary", self.configdir / "secondary.testplugin"]
+        mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
+        self.assertEqual(mock_log.info.mock_calls, [
+            call(f"Loaded config from deprecated path, see CLI docs for how to migrate: {expected[0]}"),
+            call(f"Loaded plugin config from deprecated path, see CLI docs for how to migrate: {expected[1]}")
+        ])
+
+    def test_custom_with_primary_plugin(self, mock_log):
+        mock_setup_args = self.subject(
+            [self.configdir / "primary", DeprecatedPath(self.configdir / "secondary")],
+            config=[str(self.configdir / "custom")]
+        )
+        expected = [self.configdir / "custom", self.configdir / "primary.testplugin"]
+        mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
+        self.assertEqual(mock_log.info.mock_calls, [])
+
+    def test_custom_with_deprecated_plugin(self, mock_log):
+        mock_setup_args = self.subject(
+            [self.configdir / "non-existent", DeprecatedPath(self.configdir / "secondary")],
+            config=[str(self.configdir / "custom")]
+        )
+        expected = [self.configdir / "custom", DeprecatedPath(self.configdir / "secondary.testplugin")]
+        mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
+        self.assertEqual(mock_log.info.mock_calls, [
+            call(f"Loaded plugin config from deprecated path, see CLI docs for how to migrate: {expected[1]}")
+        ])
+
+    def test_custom_multiple(self, mock_log):
+        mock_setup_args = self.subject(
+            [self.configdir / "primary", DeprecatedPath(self.configdir / "secondary")],
+            config=[str(self.configdir / "non-existent"), str(self.configdir / "primary"), str(self.configdir / "secondary")]
+        )
+        expected = [self.configdir / "secondary", self.configdir / "primary", self.configdir / "primary.testplugin"]
+        mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
+        self.assertEqual(mock_log.info.mock_calls, [])
+
+
+class _TestCLIMainLogging(unittest.TestCase):
+    @classmethod
+    def subject(cls, argv):
         session = Streamlink()
         session.load_plugins(os.path.join(os.path.dirname(__file__), "plugin"))
 
-        with patch("streamlink_cli.main.streamlink", session), patch("sys.argv") as mock_argv:
+        def _log_current_arguments(*args, **kwargs):
+            log_current_arguments(*args, **kwargs)
+            raise SystemExit
+
+        with patch("streamlink_cli.main.streamlink", session), \
+             patch("streamlink_cli.main.log_current_arguments", side_effect=_log_current_arguments), \
+             patch("streamlink_cli.main.CONFIG_FILES", []), \
+             patch("streamlink_cli.main.setup_signals"), \
+             patch("streamlink_cli.main.setup_streamlink"), \
+             patch("streamlink_cli.main.setup_plugins"), \
+             patch("streamlink_cli.main.setup_http_session"), \
+             patch("streamlink.session.Streamlink.load_builtin_plugins"), \
+             patch("sys.argv") as mock_argv:
             mock_argv.__getitem__.side_effect = lambda x: argv[x]
             try:
                 streamlink_cli.main.main()
             except SystemExit:
                 pass
 
-    @patch("streamlink_cli.main.log_current_versions")
+    def tearDown(self):
+        streamlink_cli.main.logger.root.handlers.clear()
+
+    # python >=3.7.2: https://bugs.python.org/issue35046
+    _write_calls = (
+        ([call("[cli][info] foo\n")]
+         if sys.version_info >= (3, 7, 2)
+         else [call("[cli][info] foo"), call("\n")])
+        + [call("bar\n")]
+    )
+
+    def write_file_and_assert(self, mock_mkdir: Mock, mock_write: Mock, mock_stdout: Mock):
+        streamlink_cli.main.log.info("foo")
+        streamlink_cli.main.console.msg("bar")
+        self.assertEqual(mock_mkdir.mock_calls, [call(parents=True, exist_ok=True)])
+        self.assertEqual(mock_write.mock_calls, self._write_calls)
+        self.assertFalse(mock_stdout.write.called)
+
+
+class TestCLIMainLogging(_TestCLIMainLogging):
+    @unittest.skipIf(is_win32, "test only applicable on a POSIX OS")
+    @patch("streamlink_cli.main.log")
+    @patch("streamlink_cli.main.os.geteuid", Mock(return_value=0))
+    def test_log_root_warning(self, mock_log):
+        self.subject(["streamlink"])
+        self.assertEqual(mock_log.info.mock_calls, [call("streamlink is running as root! Be careful!")])
+
+    @patch("streamlink_cli.main.log")
     @patch("streamlink_cli.main.streamlink_version", "streamlink")
     @patch("streamlink_cli.main.requests.__version__", "requests")
     @patch("streamlink_cli.main.socks_version", "socks")
     @patch("streamlink_cli.main.websocket_version", "websocket")
     @patch("platform.python_version", Mock(return_value="python"))
-    def test_log_current_versions(self, mock_log_current_versions, mock_log):
-        def _log_current_versions():
-            log_current_versions()
-            raise SystemExit
-
-        mock_log_current_versions.side_effect = _log_current_versions
-
+    def test_log_current_versions(self, mock_log):
         self.subject(["streamlink", "--loglevel", "info"])
         self.assertEqual(mock_log.debug.mock_calls, [], "Doesn't log anything if not debug logging")
 
@@ -301,7 +422,7 @@ class TestCLIMainDebugLogging(unittest.TestCase):
              patch("platform.platform", Mock(return_value="linux")):
             self.subject(["streamlink", "--loglevel", "debug"])
             self.assertEqual(
-                mock_log.debug.mock_calls,
+                mock_log.debug.mock_calls[:4],
                 [
                     call("OS:         linux"),
                     call("Python:     python"),
@@ -309,13 +430,13 @@ class TestCLIMainDebugLogging(unittest.TestCase):
                     call("Requests(requests), Socks(socks), Websocket(websocket)")
                 ]
             )
-            mock_log.debug.mock_calls.clear()
+            mock_log.debug.reset_mock()
 
         with patch("sys.platform", "darwin"), \
              patch("platform.mac_ver", Mock(return_value=["0.0.0"])):
             self.subject(["streamlink", "--loglevel", "debug"])
             self.assertEqual(
-                mock_log.debug.mock_calls,
+                mock_log.debug.mock_calls[:4],
                 [
                     call("OS:         macOS 0.0.0"),
                     call("Python:     python"),
@@ -323,14 +444,14 @@ class TestCLIMainDebugLogging(unittest.TestCase):
                     call("Requests(requests), Socks(socks), Websocket(websocket)")
                 ]
             )
-            mock_log.debug.mock_calls.clear()
+            mock_log.debug.reset_mock()
 
         with patch("sys.platform", "win32"), \
              patch("platform.system", Mock(return_value="Windows")), \
              patch("platform.release", Mock(return_value="0.0.0")):
             self.subject(["streamlink", "--loglevel", "debug"])
             self.assertEqual(
-                mock_log.debug.mock_calls,
+                mock_log.debug.mock_calls[:4],
                 [
                     call("OS:         Windows 0.0.0"),
                     call("Python:     python"),
@@ -338,17 +459,10 @@ class TestCLIMainDebugLogging(unittest.TestCase):
                     call("Requests(requests), Socks(socks), Websocket(websocket)")
                 ]
             )
-            mock_log.debug.mock_calls.clear()
+            mock_log.debug.reset_mock()
 
-    @patch("streamlink_cli.main.log_current_arguments")
-    @patch("streamlink_cli.main.log_current_versions", Mock())
-    def test_log_current_arguments(self, mock_log_current_arguments, mock_log):
-        def _log_current_arguments(*args, **kwargs):
-            log_current_arguments(*args, **kwargs)
-            raise SystemExit
-
-        mock_log_current_arguments.side_effect = _log_current_arguments
-
+    @patch("streamlink_cli.main.log")
+    def test_log_current_arguments(self, mock_log):
         self.subject([
             "streamlink",
             "--loglevel", "info"
@@ -365,7 +479,7 @@ class TestCLIMainDebugLogging(unittest.TestCase):
             "best,worst"
         ])
         self.assertEqual(
-            mock_log.debug.mock_calls,
+            mock_log.debug.mock_calls[-7:],
             [
                 call("Arguments:"),
                 call(" url=website.tld/channel"),
@@ -375,4 +489,116 @@ class TestCLIMainDebugLogging(unittest.TestCase):
                 call(" --testplugin-bool=True"),
                 call(" --testplugin-password=********")
             ]
+        )
+
+
+class TestCLIMainLoggingLogfile(_TestCLIMainLogging):
+    @patch("sys.stdout")
+    @patch("builtins.open")
+    def test_logfile_no_logfile(self, mock_open, mock_stdout):
+        self.subject(["streamlink"])
+        streamlink_cli.main.log.info("foo")
+        streamlink_cli.main.console.msg("bar")
+        self.assertEqual(streamlink_cli.main.console.output, sys.stdout)
+        self.assertFalse(mock_open.called)
+        self.assertEqual(mock_stdout.write.mock_calls, self._write_calls)
+
+    @patch("sys.stdout")
+    @patch("builtins.open")
+    def test_logfile_loglevel_none(self, mock_open, mock_stdout):
+        self.subject(["streamlink", "--loglevel", "none", "--logfile", "foo"])
+        streamlink_cli.main.log.info("foo")
+        streamlink_cli.main.console.msg("bar")
+        self.assertEqual(streamlink_cli.main.console.output, sys.stdout)
+        self.assertFalse(mock_open.called)
+        self.assertEqual(mock_stdout.write.mock_calls, [call("bar\n")])
+
+    @patch("sys.stdout")
+    @patch("builtins.open")
+    @patch("pathlib.Path.mkdir", Mock())
+    def test_logfile_path_relative(self, mock_open, mock_stdout):
+        path = Path("foo").resolve()
+        self.subject(["streamlink", "--logfile", "foo"])
+        self.write_file_and_assert(
+            mock_mkdir=path.mkdir,
+            mock_write=mock_open(str(path), "a").write,
+            mock_stdout=mock_stdout
+        )
+
+
+@unittest.skipIf(is_win32, "test only applicable on a POSIX OS")
+class TestCLIMainLoggingLogfilePosix(_TestCLIMainLogging):
+    @patch("sys.stdout")
+    @patch("builtins.open")
+    @patch("pathlib.Path.mkdir", Mock())
+    def test_logfile_path_absolute(self, mock_open, mock_stdout):
+        self.subject(["streamlink", "--logfile", "/foo/bar"])
+        self.write_file_and_assert(
+            mock_mkdir=PosixPath("/foo").mkdir,
+            mock_write=mock_open("/foo/bar", "a").write,
+            mock_stdout=mock_stdout
+        )
+
+    @patch("sys.stdout")
+    @patch("builtins.open")
+    @patch("pathlib.Path.mkdir", Mock())
+    def test_logfile_path_expanduser(self, mock_open, mock_stdout):
+        with patch.dict(os.environ, {"HOME": "/foo"}):
+            self.subject(["streamlink", "--logfile", "~/bar"])
+        self.write_file_and_assert(
+            mock_mkdir=PosixPath("/foo").mkdir,
+            mock_write=mock_open("/foo/bar", "a").write,
+            mock_stdout=mock_stdout
+        )
+
+    @patch("sys.stdout")
+    @patch("builtins.open")
+    @patch("pathlib.Path.mkdir", Mock())
+    @freezegun.freeze_time(datetime.datetime(2000, 1, 2, 3, 4, 5))
+    def test_logfile_path_auto(self, mock_open, mock_stdout):
+        with patch("streamlink_cli.constants.LOG_DIR", PosixPath("/foo")):
+            self.subject(["streamlink", "--logfile", "-"])
+        self.write_file_and_assert(
+            mock_mkdir=PosixPath("/foo").mkdir,
+            mock_write=mock_open("/foo/2000-01-02_03-04-05.log", "a").write,
+            mock_stdout=mock_stdout
+        )
+
+
+@unittest.skipIf(not is_win32, "test only applicable on Windows")
+class TestCLIMainLoggingLogfileWindows(_TestCLIMainLogging):
+    @patch("sys.stdout")
+    @patch("builtins.open")
+    @patch("pathlib.Path.mkdir", Mock())
+    def test_logfile_path_absolute(self, mock_open, mock_stdout):
+        self.subject(["streamlink", "--logfile", "C:\\foo\\bar"])
+        self.write_file_and_assert(
+            mock_mkdir=WindowsPath("C:\\foo").mkdir,
+            mock_write=mock_open("C:\\foo\\bar", "a").write,
+            mock_stdout=mock_stdout
+        )
+
+    @patch("sys.stdout")
+    @patch("builtins.open")
+    @patch("pathlib.Path.mkdir", Mock())
+    def test_logfile_path_expanduser(self, mock_open, mock_stdout):
+        with patch.dict(os.environ, {"USERPROFILE": "C:\\foo"}):
+            self.subject(["streamlink", "--logfile", "~\\bar"])
+        self.write_file_and_assert(
+            mock_mkdir=WindowsPath("C:\\foo").mkdir,
+            mock_write=mock_open("C:\\foo\\bar", "a").write,
+            mock_stdout=mock_stdout
+        )
+
+    @patch("sys.stdout")
+    @patch("builtins.open")
+    @patch("pathlib.Path.mkdir", Mock())
+    @freezegun.freeze_time(datetime.datetime(2000, 1, 2, 3, 4, 5))
+    def test_logfile_path_auto(self, mock_open, mock_stdout):
+        with patch("streamlink_cli.constants.LOG_DIR", WindowsPath("C:\\foo")):
+            self.subject(["streamlink", "--logfile", "-"])
+        self.write_file_and_assert(
+            mock_mkdir=WindowsPath("C:\\foo").mkdir,
+            mock_write=mock_open("C:\\foo\\2000-01-02_03-04-05.log", "a").write,
+            mock_stdout=mock_stdout
         )
