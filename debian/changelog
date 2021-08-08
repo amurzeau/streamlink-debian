@@ -1,8 +1,11 @@
-streamlink (2.3.0-1) UNRELEASED; urgency=medium
+streamlink (2.3.0-1~exp1) experimental; urgency=medium
 
   * New upstream version 2.3.0
+  * Update patches
+  * d/control: rearrange dependencies and remove python3-mock
+  * d/rules: fix dh_python3 mapping of python3-requests dependency
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 08 Aug 2021 22:21:02 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 09 Aug 2021 00:52:33 +0200
 
 streamlink (2.2.0-1~exp1) experimental; urgency=medium
 
