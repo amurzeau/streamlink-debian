@@ -26,3 +26,7 @@ override_dh_installchangelogs:
 # Needed to prevent docs/changelog.html from being compressed
 override_dh_compress:
 	dh_compress -X.html
+
+# Needed to correctly include non-windows dependencies
+override_dh_python3:
+	dh_python3 --depends-section=':platform_system != "Windows"'
