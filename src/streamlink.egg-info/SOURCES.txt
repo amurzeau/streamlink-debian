@@ -17,6 +17,7 @@ docs/applications.rst
 docs/changelog.md
 docs/cli.rst
 docs/conf.py
+docs/deprecations.rst
 docs/developing.rst
 docs/docutils.conf
 docs/donate.rst
@@ -103,7 +104,6 @@ src/streamlink/plugins/bloomberg.py
 src/streamlink/plugins/booyah.py
 src/streamlink/plugins/brightcove.py
 src/streamlink/plugins/btv.py
-src/streamlink/plugins/canalplus.py
 src/streamlink/plugins/cbsnews.py
 src/streamlink/plugins/cdnbg.py
 src/streamlink/plugins/ceskatelevize.py
@@ -120,7 +120,6 @@ src/streamlink/plugins/deutschewelle.py
 src/streamlink/plugins/dlive.py
 src/streamlink/plugins/dogan.py
 src/streamlink/plugins/dogus.py
-src/streamlink/plugins/dommune.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
 src/streamlink/plugins/egame.py
@@ -149,7 +148,6 @@ src/streamlink/plugins/kugou.py
 src/streamlink/plugins/latina.py
 src/streamlink/plugins/linelive.py
 src/streamlink/plugins/live_russia_tv.py
-src/streamlink/plugins/liveedu.py
 src/streamlink/plugins/liveme.py
 src/streamlink/plugins/livestream.py
 src/streamlink/plugins/lrt.py
@@ -177,13 +175,11 @@ src/streamlink/plugins/oneplusone.py
 src/streamlink/plugins/onetv.py
 src/streamlink/plugins/openrectv.py
 src/streamlink/plugins/orf_tvthek.py
-src/streamlink/plugins/periscope.py
 src/streamlink/plugins/picarto.py
 src/streamlink/plugins/piczel.py
 src/streamlink/plugins/pixiv.py
 src/streamlink/plugins/pluto.py
 src/streamlink/plugins/pluzz.py
-src/streamlink/plugins/powerapp.py
 src/streamlink/plugins/qq.py
 src/streamlink/plugins/radiko.py
 src/streamlink/plugins/radionet.py
@@ -191,7 +187,6 @@ src/streamlink/plugins/raiplay.py
 src/streamlink/plugins/reuters.py
 src/streamlink/plugins/rotana.py
 src/streamlink/plugins/rtbf.py
-src/streamlink/plugins/rtlxl.py
 src/streamlink/plugins/rtmp.py
 src/streamlink/plugins/rtpplay.py
 src/streamlink/plugins/rtve.py
@@ -207,18 +202,15 @@ src/streamlink/plugins/ssh101.py
 src/streamlink/plugins/stadium.py
 src/streamlink/plugins/steam.py
 src/streamlink/plugins/streamable.py
-src/streamlink/plugins/streamingvideoprovider.py
 src/streamlink/plugins/streann.py
 src/streamlink/plugins/stv.py
 src/streamlink/plugins/svtplay.py
 src/streamlink/plugins/swisstxt.py
 src/streamlink/plugins/teamliquid.py
-src/streamlink/plugins/teleclubzoom.py
 src/streamlink/plugins/telefe.py
 src/streamlink/plugins/tf1.py
 src/streamlink/plugins/tga.py
 src/streamlink/plugins/theplatform.py
-src/streamlink/plugins/tigerdile.py
 src/streamlink/plugins/tlctr.py
 src/streamlink/plugins/turkuvaz.py
 src/streamlink/plugins/tv360.py
@@ -355,7 +347,6 @@ tests/plugins/test_bloomberg.py
 tests/plugins/test_booyah.py
 tests/plugins/test_brightcove.py
 tests/plugins/test_btv.py
-tests/plugins/test_canalplus.py
 tests/plugins/test_cbsnews.py
 tests/plugins/test_cdnbg.py
 tests/plugins/test_ceskatelevize.py
@@ -370,7 +361,6 @@ tests/plugins/test_deutschewelle.py
 tests/plugins/test_dlive.py
 tests/plugins/test_dogan.py
 tests/plugins/test_dogus.py
-tests/plugins/test_dommune.py
 tests/plugins/test_drdk.py
 tests/plugins/test_earthcam.py
 tests/plugins/test_egame.py
@@ -396,7 +386,6 @@ tests/plugins/test_kugou.py
 tests/plugins/test_latina.py
 tests/plugins/test_linelive.py
 tests/plugins/test_live_russia_tv.py
-tests/plugins/test_liveedu.py
 tests/plugins/test_liveme.py
 tests/plugins/test_livestream.py
 tests/plugins/test_lrt.py
@@ -424,13 +413,11 @@ tests/plugins/test_oneplusone.py
 tests/plugins/test_onetv.py
 tests/plugins/test_openrectv.py
 tests/plugins/test_orf_tvthek.py
-tests/plugins/test_periscope.py
 tests/plugins/test_picarto.py
 tests/plugins/test_piczel.py
 tests/plugins/test_pixiv.py
 tests/plugins/test_pluto.py
 tests/plugins/test_pluzz.py
-tests/plugins/test_powerapp.py
 tests/plugins/test_qq.py
 tests/plugins/test_radiko.py
 tests/plugins/test_radionet.py
@@ -438,7 +425,6 @@ tests/plugins/test_raiplay.py
 tests/plugins/test_reuters.py
 tests/plugins/test_rotana.py
 tests/plugins/test_rtbf.py
-tests/plugins/test_rtlxl.py
 tests/plugins/test_rtpplay.py
 tests/plugins/test_rtve.py
 tests/plugins/test_rtvs.py
@@ -454,18 +440,15 @@ tests/plugins/test_stadium.py
 tests/plugins/test_steam.py
 tests/plugins/test_stream.py
 tests/plugins/test_streamable.py
-tests/plugins/test_streamingvideoprovider.py
 tests/plugins/test_streann.py
 tests/plugins/test_stv.py
 tests/plugins/test_svtplay.py
 tests/plugins/test_swisstxt.py
 tests/plugins/test_teamliquid.py
-tests/plugins/test_teleclubzoom.py
 tests/plugins/test_telefe.py
 tests/plugins/test_tf1.py
 tests/plugins/test_tga.py
 tests/plugins/test_theplatform.py
-tests/plugins/test_tigerdile.py
 tests/plugins/test_tlctr.py
 tests/plugins/test_turkuvaz.py
 tests/plugins/test_tv360.py
