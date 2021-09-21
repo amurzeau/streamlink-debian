@@ -1,8 +1,14 @@
-streamlink (2.4.0-1) UNRELEASED; urgency=medium
+streamlink (2.4.0-1) unstable; urgency=medium
 
   * New upstream version 2.4.0
+  * Update patches
+  * d/control: add new dependency on python3-lxml
+  * Bump Standards-Version to 4.6.0 (no changes)
+  * d/tests/check_docs: fix looking for doc-base files by using install-docs
+  * d/tests/check_docs.sh: check for broken symlinks
+  * Merge changes in experimental to unstable
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 21 Sep 2021 20:06:17 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 21 Sep 2021 21:35:26 +0200
 
 streamlink (2.3.0-1~exp1) experimental; urgency=medium
 
