@@ -3,41 +3,59 @@ from urllib.parse import urlparse
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
-from streamlink.plugin.api.utils import itertags
-from streamlink.stream import HTTPStream
+from streamlink.stream import HLSStream, HTTPStream
+from streamlink.utils import update_scheme
 
 
 @pluginmatcher(re.compile(
-    r'https?://(?:\w+\.)*euronews\.com/'
+    r'https?://(?:(?P<subdomain>\w+)\.)?euronews\.com/'
 ))
 class Euronews(Plugin):
-    def _get_vod_stream(self):
-        def find_video_url(content):
-            for elem in itertags(content, "meta"):
-                if elem.attributes.get("property") == "og:video":
-                    return elem.attributes.get("content")
+    API_URL = "https://{subdomain}.euronews.com/api/watchlive.json"
 
-        video_url = self.session.http.get(self.url, schema=validate.Schema(
-            validate.transform(find_video_url),
-            validate.any(None, validate.url())
+    def _get_vod_stream(self):
+        root = self.session.http.get(self.url, schema=validate.Schema(
+            validate.parse_html()
         ))
 
-        if video_url is not None:
+        video_url = root.xpath("string(.//meta[@property='og:video'][1]/@content)")
+        if video_url:
             return dict(vod=HTTPStream(self.session, video_url))
 
-    def _get_live_streams(self):
-        def find_video_id(content):
-            for elem in itertags(content, "div"):
-                if elem.attributes.get("id") == "pfpPlayer" and elem.attributes.get("data-google-src") is not None:
-                    return elem.attributes.get("data-video-id")
+        video_id = root.xpath("string(.//div[@data-google-src]/@data-video-id)")
+        if video_id:
+            return self.session.streams(f"https://www.youtube.com/watch?v={video_id}")
 
+        video_url = root.xpath("string(.//iframe[@id='pfpPlayer'][starts-with(@src,'https://www.youtube.com/')][1]/@src)")
+        if video_url:
+            return self.session.streams(video_url)
+
+    def _get_live_streams(self):
         video_id = self.session.http.get(self.url, schema=validate.Schema(
-            validate.transform(find_video_id),
-            validate.any(None, str)
+            validate.parse_html(),
+            validate.xml_xpath_string(".//div[@data-google-src]/@data-video-id")
         ))
 
-        if video_id is not None:
+        if video_id:
             return self.session.streams(f"https://www.youtube.com/watch?v={video_id}")
+
+        info_url = self.session.http.get(self.API_URL.format(subdomain=self.match.group("subdomain")), schema=validate.Schema(
+            validate.parse_json(),
+            {"url": validate.url()},
+            validate.get("url"),
+            validate.transform(lambda url: update_scheme("https://", url))
+        ))
+        hls_url = self.session.http.get(info_url, schema=validate.Schema(
+            validate.parse_json(),
+            {
+                "status": "ok",
+                "protocol": "hls",
+                "primary": validate.url()
+            },
+            validate.get("primary")
+        ))
+
+        return HLSStream.parse_variant_playlist(self.session, hls_url)
 
     def _get_streams(self):
         parsed = urlparse(self.url)

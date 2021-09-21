@@ -12,7 +12,7 @@ from Crypto.Cipher import AES
 # noinspection PyPackageRequirements
 from Crypto.Util.Padding import unpad
 from requests import Response
-from requests.exceptions import ChunkedEncodingError
+from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError
 
 from streamlink.exceptions import StreamError
 from streamlink.stream import hls_playlist
@@ -31,19 +31,15 @@ class Sequence(NamedTuple):
 
 
 class HLSStreamWriter(SegmentedStreamWriter):
-    def __init__(self, reader, *args, **kwargs):
-        options = reader.stream.session.options
-        kwargs["retries"] = options.get("hls-segment-attempts")
-        kwargs["threads"] = options.get("hls-segment-threads")
-        kwargs["timeout"] = options.get("hls-segment-timeout")
-        super().__init__(reader, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        options = self.session.options
 
         self.byterange_offsets = defaultdict(int)
-        self.map_cache: LRUCache[Sequence.segment.map.uri, Future] = LRUCache(kwargs["threads"])
+        self.map_cache: LRUCache[Sequence.segment.map.uri, Future] = LRUCache(self.threads)
         self.key_data = None
         self.key_uri = None
         self.key_uri_override = options.get("hls-segment-key-uri")
-        self.stream_data = options.get("hls-segment-stream-data")
 
         self.ignore_names = False
         ignore_names = {*options.get("hls-segment-ignore-names")}
@@ -131,13 +127,13 @@ class HLSStreamWriter(SegmentedStreamWriter):
 
     def fetch(self, sequence: Sequence) -> Optional[Response]:
         try:
-            return self._fetch(sequence.segment, self.stream_data and not sequence.segment.key)
+            return self._fetch(sequence.segment, not sequence.segment.key)
         except StreamError as err:  # pragma: no cover
             log.error(f"Failed to fetch segment {sequence.num}: {err}")
 
     def fetch_map(self, sequence: Sequence) -> Optional[Response]:
         try:
-            return self._fetch(sequence.segment.map, self.stream_data and not sequence.segment.key)
+            return self._fetch(sequence.segment.map, False)
         except StreamError as err:  # pragma: no cover
             log.error(f"Failed to fetch map for segment {sequence.num}: {err}")
 
@@ -198,8 +194,8 @@ class HLSStreamWriter(SegmentedStreamWriter):
             try:
                 for chunk in res.iter_content(8192):
                     self.reader.buffer.write(chunk)
-            except ChunkedEncodingError:
-                log.error(f"Download of segment {sequence.num} failed")
+            except (ChunkedEncodingError, ContentDecodingError, ConnectionError) as err:
+                log.error(f"Download of segment {sequence.num} failed ({err})")
                 return
 
         if is_map:
@@ -235,7 +231,7 @@ class HLSStreamWorker(SegmentedStreamWorker):
         return hls_playlist.load(text, url)
 
     def reload_playlist(self):
-        if self.closed:
+        if self.closed:  # pragma: no cover
             return
 
         self.reader.buffer.wait_free()
@@ -250,11 +246,10 @@ class HLSStreamWorker(SegmentedStreamWorker):
             raise StreamError(err)
 
         if playlist.is_master:
-            raise StreamError("Attempted to play a variant playlist, use "
-                              "'hls://{0}' instead".format(self.stream.url))
+            raise StreamError(f"Attempted to play a variant playlist, use 'hls://{self.stream.url}' instead")
 
         if playlist.iframes_only:
-            raise StreamError("Streams containing I-frames only is not playable")
+            raise StreamError("Streams containing I-frames only are not playable")
 
         media_sequence = playlist.media_sequence or 0
         sequences = [Sequence(media_sequence + i, s)
@@ -322,7 +317,12 @@ class HLSStreamWorker(SegmentedStreamWorker):
         return default
 
     def iter_segments(self):
-        self.reload_playlist()
+        try:
+            self.reload_playlist()
+        except StreamError as err:
+            log.error(f'{err}')
+            self.reader.close()
+            return
 
         if self.playlist_end is None:
             if self.duration_offset_start > 0:
@@ -380,9 +380,7 @@ class HLSStreamReader(SegmentedStreamReader):
         self.filter_event = Event()
         self.filter_event.set()
 
-        timeout = stream.session.options.get("hls-timeout")
-
-        super().__init__(stream, timeout)
+        super().__init__(stream)
 
     def read(self, size):
         while True:

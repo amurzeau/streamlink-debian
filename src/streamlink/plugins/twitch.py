@@ -10,10 +10,10 @@ import requests
 from streamlink.exceptions import NoStreamsError, PluginError
 from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
 from streamlink.plugin.api import validate
-from streamlink.plugin.api.utils import parse_json, parse_query
 from streamlink.stream import HLSStream, HTTPStream
 from streamlink.stream.hls import HLSStreamReader, HLSStreamWorker, HLSStreamWriter
 from streamlink.stream.hls_playlist import M3U8, M3U8Parser, load as load_hls_playlist
+from streamlink.utils import parse_json, parse_qsd
 from streamlink.utils.times import hours_minutes_seconds
 from streamlink.utils.url import update_qsd
 
@@ -124,7 +124,6 @@ class TwitchHLSStreamReader(HLSStreamReader):
         if stream.low_latency:
             live_edge = max(1, min(LOW_LATENCY_MAX_LIVE_EDGE, stream.session.options.get("hls-live-edge")))
             stream.session.options.set("hls-live-edge", live_edge)
-            stream.session.options.set("hls-segment-stream-data", True)
             log.info(f"Low latency streaming (HLS live edge: {live_edge})")
         super().__init__(stream)
 
@@ -172,36 +171,24 @@ class UsherService:
 
 
 class TwitchAPI:
-    # Streamlink's client-id used for public API calls (don't steal this and register your own application on Twitch)
-    TWITCH_CLIENT_ID = "pwkzresl8kj2rdj6g7bvxl9ys1wly3j"
-    # Twitch's client-id used for private API calls (see issue #2680 for why we are doing this)
-    TWITCH_CLIENT_ID_PRIVATE = "kimne78kx3ncx6brgo4mv6wki5h1ko"
+    headers = {
+        "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko"
+    }
 
     def __init__(self, session):
         self.session = session
 
-    def _call(self, method="GET", subdomain="api", path="/", headers=None, private=False, data=None, **params):
-        url = "https://{0}.twitch.tv{1}".format(subdomain, path)
-        headers = headers or dict()
-        headers.update({
-            "Client-ID": self.TWITCH_CLIENT_ID if not private else self.TWITCH_CLIENT_ID_PRIVATE
-        })
-
-        return self.session.http.request(method, url, data=data, params=params, headers=headers)
-
-    def call(self, path, schema=None, **params):
-        headers = {"Accept": "application/vnd.twitchtv.v5+json"}
-        res = self._call(path=path, headers=headers, **params)
+    def call(self, data, schema=None):
+        res = self.session.http.post(
+            "https://gql.twitch.tv/gql",
+            data=json.dumps(data),
+            headers=self.headers
+        )
 
         return self.session.http.json(res, schema=schema)
 
-    def call_gql(self, data, schema=None, **params):
-        res = self._call(method="POST", subdomain="gql", path="/gql", data=json.dumps(data), private=True, **params)
-
-        return self.session.http.json(res, schema=schema)
-
-    @classmethod
-    def _gql_persisted_query(cls, operationname, sha256hash, **variables):
+    @staticmethod
+    def _gql_persisted_query(operationname, sha256hash, **variables):
         return {
             "operationName": operationname,
             "extensions": {
@@ -213,57 +200,83 @@ class TwitchAPI:
             "variables": dict(**variables)
         }
 
-    # Public API calls
-
-    def channel_from_video_id(self, video_id):
-        return self.call("/kraken/videos/{0}".format(video_id), schema=validate.Schema(
-            {"channel": {
-                "_id": validate.transform(int),
-                "name": validate.all(str, validate.transform(lambda n: n.lower()))
-            }},
-            validate.get("channel"),
-            validate.union_get("_id", "name")
-        ))
-
-    def channel_from_login(self, channel):
-        return self.call("/kraken/users", login=channel, schema=validate.Schema(
-            {"users": [{
-                "_id": validate.transform(int)
-            }]},
-            validate.get(("users", 0, "_id"))
-        ))
-
-    def metadata_video(self, video_id):
-        return self.call("/kraken/videos/{0}".format(video_id), schema=validate.Schema(validate.any(
-            validate.all(
-                {
-                    "title": str,
-                    "game": str,
-                    "channel": {"display_name": str}
-                },
-                validate.union_get(("channel", "display_name"), "title", "game")
-            ),
-            validate.all({}, validate.transform(lambda _: (None,) * 3))
-        )))
-
-    def metadata_channel(self, channel_id):
-        return self.call("/kraken/streams/{0}".format(channel_id), schema=validate.Schema(
-            {"stream": validate.any(
-                validate.all(
-                    {"channel": {
-                        "display_name": str,
-                        "game": str,
-                        "status": str
-                    }},
-                    validate.get("channel"),
-                    validate.union_get("display_name", "status", "game")
-                ),
-                validate.all(None, validate.transform(lambda _: (None,) * 3))
-            )},
-            validate.get("stream")
+    @staticmethod
+    def parse_token(tokenstr):
+        return parse_json(tokenstr, schema=validate.Schema(
+            {"chansub": {"restricted_bitrates": validate.all(
+                [str],
+                validate.filter(lambda n: not re.match(r"(.+_)?archives|live|chunked", n))
+            )}},
+            validate.get(("chansub", "restricted_bitrates"))
         ))
 
     # GraphQL API calls
+
+    def metadata_video(self, video_id):
+        query = self._gql_persisted_query(
+            "VideoMetadata",
+            "cb3b1eb2f2d2b2f65b8389ba446ec521d76c3aa44f5424a1b1d235fe21eb4806",
+            channelLogin="",  # parameter can be empty
+            videoID=video_id
+        )
+
+        return self.call(query, schema=validate.Schema(
+            {"data": {"video": {
+                "owner": {
+                    "displayName": str
+                },
+                "title": str,
+                "game": {
+                    "displayName": str
+                }
+            }}},
+            validate.get(("data", "video")),
+            validate.union_get(
+                ("owner", "displayName"),
+                "title",
+                ("game", "displayName")
+            )
+        ))
+
+    def metadata_channel(self, channel):
+        queries = [
+            self._gql_persisted_query(
+                "ChannelShell",
+                "c3ea5a669ec074a58df5c11ce3c27093fa38534c94286dc14b68a25d5adcbf55",
+                login=channel,
+                lcpVideosEnabled=False
+            ),
+            self._gql_persisted_query(
+                "StreamMetadata",
+                "059c4653b788f5bdb2f5a2d2a24b0ddc3831a15079001a3d927556a96fb0517f",
+                channelLogin=channel
+            )
+        ]
+
+        return self.call(queries, schema=validate.Schema(
+            [
+                validate.all(
+                    {"data": {"userOrError": {
+                        "displayName": str
+                    }}}
+                ),
+                validate.all(
+                    {"data": {"user": {
+                        "lastBroadcast": {
+                            "title": str
+                        },
+                        "stream": {"game": {
+                            "name": str
+                        }}
+                    }}}
+                )
+            ],
+            validate.union_get(
+                (0, "data", "userOrError", "displayName"),
+                (1, "data", "user", "lastBroadcast", "title"),
+                (1, "data", "user", "stream", "game", "name")
+            )
+        ))
 
     def access_token(self, is_live, channel_or_vod):
         query = self._gql_persisted_query(
@@ -283,7 +296,7 @@ class TwitchAPI:
             validate.union_get("signature", "value")
         ))
 
-        return self.call_gql(query, schema=validate.Schema(
+        return self.call(query, schema=validate.Schema(
             {"data": validate.any(
                 validate.all(
                     {"streamPlaybackAccessToken": subschema},
@@ -295,16 +308,6 @@ class TwitchAPI:
                 )
             )},
             validate.get("data")
-        ))
-
-    @classmethod
-    def parse_token(cls, tokenstr):
-        return parse_json(tokenstr, schema=validate.Schema(
-            {"chansub": {"restricted_bitrates": validate.all(
-                [str],
-                validate.filter(lambda n: not re.match(r"(.+_)?archives|live|chunked", n))
-            )}},
-            validate.get(("chansub", "restricted_bitrates"))
         ))
 
     def clips(self, clipname):
@@ -326,7 +329,7 @@ class TwitchAPI:
             )
         ]
 
-        return self.call_gql(queries, schema=validate.Schema([
+        return self.call(queries, schema=validate.Schema([
             validate.all(
                 {"data": {"clip": {
                     "playbackAccessToken": validate.all(
@@ -371,7 +374,7 @@ class TwitchAPI:
             channelLogin=channel
         )
 
-        return self.call_gql(query, schema=validate.Schema(
+        return self.call(query, schema=validate.Schema(
             {"data": {"user": {"stream": {"type": str}}}},
             validate.get(("data", "user", "stream"))
         ))
@@ -383,16 +386,15 @@ class TwitchAPI:
             channelLogin=channel
         )
 
-        return self.call_gql(query, schema=validate.Schema(
+        return self.call(query, schema=validate.Schema(
             {"data": {"user": {
                 "hosting": {
-                    "id": validate.transform(int),
                     "login": str,
                     "displayName": str
                 }
             }}},
             validate.get(("data", "user", "hosting")),
-            validate.union_get("id", "login", "displayName")
+            validate.union_get("login", "displayName")
         ))
 
 
@@ -436,18 +438,19 @@ class Twitch(Plugin):
         PluginArgument(
             "low-latency",
             action="store_true",
-            help="""
+            help=f"""
             Enables low latency streaming by prefetching HLS segments.
-            Sets --hls-segment-stream-data to true and --hls-live-edge to {live_edge}, if it is higher.
-            Reducing --hls-live-edge to 1 will result in the lowest latency possible.
+            Sets --hls-live-edge to {LOW_LATENCY_MAX_LIVE_EDGE}, if it is higher.
+            Reducing it to 1 will result in the lowest latency possible, but will most likely cause buffering.
 
-            Low latency streams have to be enabled by the broadcasters on Twitch themselves.
-            Regular streams can cause buffering issues with this option enabled.
+            In order to achieve true low latency streaming during playback, the player's caching/buffering settings will
+            need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
+            This depends on the stream's bitrate and the quality of the connection to Twitch's servers. Please refer to the
+            player's own documentation for the required configuration. Player parameters can be set via --player-args.
 
-            Note: The caching/buffering settings of the chosen player may need to be adjusted as well.
-            Please refer to the player's own documentation for the required parameters and its configuration.
-            Player parameters can be set via Streamlink's --player or --player-args parameters.
-            """.format(live_edge=LOW_LATENCY_MAX_LIVE_EDGE)
+            Note: Low latency streams have to be enabled by the broadcasters on Twitch themselves.
+            Regular streams can cause buffering issues with this option enabled due to the reduced --hls-live-edge value.
+            """
         )
     )
 
@@ -455,26 +458,22 @@ class Twitch(Plugin):
         super().__init__(url)
         match = self.match.groupdict()
         parsed = urlparse(url)
-        self.params = parse_query(parsed.query)
+        self.params = parse_qsd(parsed.query)
         self.subdomain = match.get("subdomain")
         self.video_id = None
-        self._channel_id = None
-        self._channel = None
+        self.channel = None
         self.clip_name = None
-        self.title = None
-        self.author = None
-        self.category = None
 
         if self.subdomain == "player":
             # pop-out player
             if self.params.get("video"):
                 self.video_id = self.params["video"]
-            self._channel = self.params.get("channel")
+            self.channel = self.params.get("channel")
         elif self.subdomain == "clips":
             # clip share URL
             self.clip_name = match.get("channel")
         else:
-            self._channel = match.get("channel") and match.get("channel").lower()
+            self.channel = match.get("channel") and match.get("channel").lower()
             self.video_id = match.get("video_id") or match.get("videos_id")
             self.clip_name = match.get("clip_name")
 
@@ -497,40 +496,15 @@ class Twitch(Plugin):
         return self.category
 
     def _get_metadata(self):
-        if self.video_id:
-            (self.author, self.title, self.category) = self.api.metadata_video(self.video_id)
-        elif self.clip_name:
-            self._get_clips()
-        elif self._channel:
-            (self.author, self.title, self.category) = self.api.metadata_channel(self.channel_id)
-
-    @property
-    def channel(self):
-        if not self._channel:
+        try:
             if self.video_id:
-                self._channel_from_video_id(self.video_id)
-        return self._channel
-
-    @property
-    def channel_id(self):
-        if not self._channel_id:
-            if self._channel:
-                self._channel_from_login(self._channel)
-            elif self.video_id:
-                self._channel_from_video_id(self.video_id)
-        return self._channel_id
-
-    def _channel_from_video_id(self, video_id):
-        try:
-            self._channel_id, self._channel = self.api.channel_from_video_id(video_id)
-        except PluginError:
-            raise PluginError("Unable to find video: {0}".format(video_id))
-
-    def _channel_from_login(self, channel):
-        try:
-            self._channel_id = self.api.channel_from_login(channel)
-        except PluginError:
-            raise PluginError("Unable to find channel: {0}".format(channel))
+                (self.author, self.title, self.category) = self.api.metadata_video(self.video_id)
+            elif self.clip_name:
+                self._get_clips()
+            elif self.channel:
+                (self.author, self.title, self.category) = self.api.metadata_channel(self.channel)
+        except (PluginError, TypeError):
+            pass
 
     def _access_token(self, is_live, channel_or_vod):
         try:
@@ -550,7 +524,7 @@ class Twitch(Plugin):
         hosted_chain = [self.channel]
         while True:
             try:
-                target_id, login, display_name = self.api.hosted_channel(self.channel)
+                login, display_name = self.api.hosted_channel(self.channel)
             except PluginError:
                 return False
 
@@ -566,8 +540,7 @@ class Twitch(Plugin):
 
             hosted_chain.append(login)
             log.info("switching to {0}".format(login))
-            self._channel_id = target_id
-            self._channel = login
+            self.channel = login
             self.author = display_name
 
     def _check_for_rerun(self):
@@ -591,7 +564,7 @@ class Twitch(Plugin):
             return
 
         # only get the token once the channel has been resolved
-        log.debug("Getting live HLS streams for {0}".format(self.channel))
+        log.debug(f"Getting live HLS streams for {self.channel}")
         self.session.http.headers.update({
             "referer": "https://player.twitch.tv",
             "origin": "https://player.twitch.tv",
@@ -602,7 +575,7 @@ class Twitch(Plugin):
         return self._get_hls_streams(url, restricted_bitrates)
 
     def _get_hls_streams_video(self):
-        log.debug("Getting video HLS streams for {0}".format(self.channel))
+        log.debug(f"Getting HLS streams for video ID {self.video_id}")
         sig, token, restricted_bitrates = self._access_token(False, self.video_id)
         url = self.usher.video(self.video_id, nauthsig=sig, nauth=token)
 
@@ -646,7 +619,7 @@ class Twitch(Plugin):
             return self._get_hls_streams_video()
         elif self.clip_name:
             return self._get_clips()
-        elif self._channel:
+        elif self.channel:
             return self._get_hls_streams_live()
 
 
