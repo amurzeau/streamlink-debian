@@ -9,4 +9,4 @@ Restrictions: allow-stderr
 
 # Test doc package
 Test-Command: bash debian/tests/check_docs.sh
-Depends: bash, python3-streamlink-doc
+Depends: bash, python3-streamlink-doc, doc-base

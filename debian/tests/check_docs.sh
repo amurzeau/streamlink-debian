@@ -1,6 +1,10 @@
 #!/bin/bash
 
+set -e
+
 RESULT=0
+
+DOCBASE_DATA=$(/usr/sbin/install-docs -s python3-streamlink-doc)
 
 check-file() {
 	local TARGET_FILE="$1"
@@ -14,17 +18,17 @@ check-file() {
 	return 0
 }
 
-if ! [ -f /usr/share/doc-base/python3-streamlink-doc ]; then
-	echo "Cannot read /usr/share/doc-base/python3-streamlink-doc" >&2
+if [ -z "$DOCBASE_DATA" ]; then
+	echo "Cannot read install-docs -s python3-streamlink-doc" >&2
 	exit 1
 fi
 
 echo "Doc-base file content:"
-cat /usr/share/doc-base/python3-streamlink-doc
+echo "$DOCBASE_DATA"
 echo "---------"
 
 echo "Checking Files field"
-DOC_FILES_WILDCARD=$(grep Files /usr/share/doc-base/python3-streamlink-doc | sed 's/Files: //')
+DOC_FILES_WILDCARD=$(grep Files <<<"$DOCBASE_DATA" | sed 's/Files: //')
 echo "Content of $DOC_FILES_WILDCARD:"
 # no quotes intended: doc-base file use wildcards and we want them to be expanded
 # shellcheck disable=SC2086
@@ -39,7 +43,7 @@ if ! [ -f "${DOC_FILES_COUNT[0]}" ]; then
 fi
 
 echo "Checking files:"
-INDEX_HTML_LOCATION=$(grep Index /usr/share/doc-base/python3-streamlink-doc | sed 's/Index: //')
+INDEX_HTML_LOCATION=$(grep Index <<<"$DOCBASE_DATA" | sed 's/Index: //')
 
 case $INDEX_HTML_LOCATION in /usr/share/doc/*)
 	;;
@@ -47,8 +51,6 @@ case $INDEX_HTML_LOCATION in /usr/share/doc/*)
 	echo "index.html must be in /usr/share/doc/ but is \"$INDEX_HTML_LOCATION\"" >&2
 	exit 2
 esac
-
-HTML_BASE_DIR=$(dirname "$INDEX_HTML_LOCATION")
 
 check-file "$INDEX_HTML_LOCATION" || exit 3
 
