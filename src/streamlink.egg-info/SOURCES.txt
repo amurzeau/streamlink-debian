@@ -90,7 +90,6 @@ src/streamlink/plugins/adultswim.py
 src/streamlink/plugins/afreeca.py
 src/streamlink/plugins/akamaihd.py
 src/streamlink/plugins/albavision.py
-src/streamlink/plugins/animelab.py
 src/streamlink/plugins/app17.py
 src/streamlink/plugins/ard_live.py
 src/streamlink/plugins/ard_mediathek.py
@@ -130,7 +129,6 @@ src/streamlink/plugins/filmon.py
 src/streamlink/plugins/foxtr.py
 src/streamlink/plugins/funimationnow.py
 src/streamlink/plugins/galatasaraytv.py
-src/streamlink/plugins/gardenersworld.py
 src/streamlink/plugins/garena.py
 src/streamlink/plugins/goltelevision.py
 src/streamlink/plugins/goodgame.py
@@ -140,7 +138,6 @@ src/streamlink/plugins/hds.py
 src/streamlink/plugins/hls.py
 src/streamlink/plugins/http.py
 src/streamlink/plugins/huajiao.py
-src/streamlink/plugins/huomao.py
 src/streamlink/plugins/huya.py
 src/streamlink/plugins/idf1.py
 src/streamlink/plugins/invintus.py
@@ -272,6 +269,7 @@ src/streamlink/utils/crypto.py
 src/streamlink/utils/l10n.py
 src/streamlink/utils/lazy_formatter.py
 src/streamlink/utils/named_pipe.py
+src/streamlink/utils/parse.py
 src/streamlink/utils/times.py
 src/streamlink/utils/url.py
 src/streamlink_cli/__init__.py
@@ -283,7 +281,9 @@ src/streamlink_cli/constants.py
 src/streamlink_cli/main.py
 src/streamlink_cli/output.py
 src/streamlink_cli/utils/__init__.py
+src/streamlink_cli/utils/formatter.py
 src/streamlink_cli/utils/http_server.py
+src/streamlink_cli/utils/path.py
 src/streamlink_cli/utils/player.py
 src/streamlink_cli/utils/progress.py
 src/streamlink_cli/utils/stream.py
@@ -295,6 +295,8 @@ tests/test_cache.py
 tests/test_cli_main.py
 tests/test_cli_playerout.py
 tests/test_cli_util_progress.py
+tests/test_cli_utils_formatter.py
+tests/test_cli_utils_path.py
 tests/test_cmdline.py
 tests/test_cmdline_player_fifo.py
 tests/test_cmdline_title.py
@@ -333,7 +335,6 @@ tests/plugins/test_abweb.py
 tests/plugins/test_adultswim.py
 tests/plugins/test_afreeca.py
 tests/plugins/test_albavision.py
-tests/plugins/test_animelab.py
 tests/plugins/test_app17.py
 tests/plugins/test_ard_live.py
 tests/plugins/test_ard_mediathek.py
@@ -371,14 +372,12 @@ tests/plugins/test_filmon.py
 tests/plugins/test_foxtr.py
 tests/plugins/test_funimationnow.py
 tests/plugins/test_galatasaraytv.py
-tests/plugins/test_gardenersworld.py
 tests/plugins/test_garena.py
 tests/plugins/test_goltelevision.py
 tests/plugins/test_goodgame.py
 tests/plugins/test_googledrive.py
 tests/plugins/test_gulli.py
 tests/plugins/test_huajiao.py
-tests/plugins/test_huomao.py
 tests/plugins/test_huya.py
 tests/plugins/test_idf1.py
 tests/plugins/test_invintus.py

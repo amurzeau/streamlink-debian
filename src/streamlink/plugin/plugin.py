@@ -202,6 +202,11 @@ class Plugin:
     # a reference to the `re.Match` result of the first matching matcher
     match: Match
 
+    # plugin metadata attributes
+    author: Optional[str] = None
+    category: Optional[str] = None
+    title: Optional[str] = None
+
     cache = None
     logger = None
     module = "unknown"
@@ -425,14 +430,21 @@ class Plugin:
     def _get_streams(self):
         raise NotImplementedError
 
-    def get_title(self):
-        return None
+    def get_metadata(self) -> Dict[str, Optional[str]]:
+        return dict(
+            author=self.get_author(),
+            category=self.get_category(),
+            title=self.get_title()
+        )
 
-    def get_author(self):
-        return None
+    def get_title(self) -> Optional[str]:
+        return self.title
 
-    def get_category(self):
-        return None
+    def get_author(self) -> Optional[str]:
+        return self.author
+
+    def get_category(self) -> Optional[str]:
+        return self.category
 
     def save_cookies(self, cookie_filter=None, default_expires=60 * 60 * 24 * 7):
         """
@@ -480,7 +492,7 @@ class Plugin:
         :return: list of the restored cookie names
         """
         if not self.session or not self.cache:
-            raise RuntimeError("Cannot loaded cached cookies in unbound plugin")
+            raise RuntimeError("Cannot load cached cookies in unbound plugin")
 
         restored = []
 
@@ -504,7 +516,7 @@ class Plugin:
         :return: list of the removed cookie names
         """
         if not self.session or not self.cache:
-            raise RuntimeError("Cannot loaded cached cookies in unbound plugin")
+            raise RuntimeError("Cannot clear cached cookies in unbound plugin")
 
         cookie_filter = cookie_filter or (lambda c: True)
         removed = []

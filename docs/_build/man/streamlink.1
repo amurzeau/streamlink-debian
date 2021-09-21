@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "STREAMLINK" "1" "Jul 26, 2021" "2.3.0" "Streamlink"
+.TH "STREAMLINK" "1" "Sep 07, 2021" "2.4.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .
@@ -511,6 +511,11 @@ the stream, so it doesn\(aqt need its own separate handling.
 .TP
 .B {url}
 URL of the stream.
+.TP
+.B {time}
+The current timestamp, which can optionally be formatted via {time:format}.
+This format parameter string is passed to Python\(aqs datetime.strftime() method,
+so all usual time directives are available. The default format is "%Y\-%m\-%d_%H\-%M\-%S".
 .UNINDENT
 .sp
 Examples:
@@ -535,6 +540,9 @@ streamlink \-p mpv \-\-title "{title} \-\- {author} \-\- {category} \-\- (\e${{m
 Write stream data to FILENAME instead of playing it.
 .sp
 You will be prompted if the file already exists.
+.sp
+The formatting variables available for the \fB\-\-title\fP option may be used.
+Unsupported characters in substituted variables will be replaced with an underscore.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -564,6 +572,9 @@ Write stream data to stdout instead of playing it.
 Open the stream in the player, while at the same time writing it to FILENAME.
 .sp
 You will be prompted if the file already exists.
+.sp
+The formatting variables available for the \fB\-\-title\fP option may be used.
+Unsupported characters in substituted variables will be replaced with an underscore.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -573,6 +584,33 @@ You will be prompted if the file already exists.
 Write stream data to stdout, while at the same time writing it to FILENAME.
 .sp
 You will be prompted if the file already exists.
+.sp
+The formatting variables available for the \fB\-\-title\fP option may be used.
+Unsupported characters in substituted variables will be replaced with an underscore.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-fs\-safe\-rules
+The rules used to make formatting variables filesystem\-safe are chosen
+automatically according to the type of system in use. This overrides
+the automatic detection.
+.sp
+Intended for use when Streamlink is running on a UNIX\-like OS but writing
+to Windows filesystems such as NTFS; USB devices using VFAT or exFAT; CIFS
+shares that are enforcing Windows filename limitations, etc.
+.sp
+These characters are replaced with an underscore for the rules in use:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+POSIX  : \ex00\-\ex1F /
+Windows: \ex00\-\ex1F \ex7F " * / : < > ? \e |
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .SH STREAM OPTIONS
 .INDENT 0.0
@@ -707,69 +745,109 @@ For example this will exclude streams from two quality types:
 .SH STREAM TRANSPORT OPTIONS
 .INDENT 0.0
 .TP
-.B \-\-hds\-live\-edge SECONDS
-The time live HDS streams will start from the edge of stream.
+.B \-\-ringbuffer\-size SIZE
+The maximum size of the ringbuffer. Mega\- or kilobytes can be specified via the M or K suffix respectively.
 .sp
-Default is: \fB10.0\fP\&.
+The ringbuffer is used as a temporary storage between the stream and the player.
+This allows Streamlink to download the stream faster than the player which reads the data from the ringbuffer.
+.sp
+The smaller the size of the ringbuffer, the higher the chance of the player buffering if the download speed decreases,
+and the higher the size, the more data can be use as a storage to recover from volatile download speeds.
+.sp
+Most players have their own additional cache and will read the ringbuffer\(aqs content as soon as data is available.
+If the player stops reading data while playback is paused, Streamlink will continue to download the stream in the
+background as long as the ringbuffer doesn\(aqt get full.
+.sp
+Default is: \fB"16M"\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+A smaller size is recommended on lower end systems (such as Raspberry Pi) when playing stream types that require
+some extra processing (such as HDS) to avoid unnecessary background processing.
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-hds\-segment\-attempts ATTEMPTS
-How many attempts should be done to download each HDS segment before
-giving up.
+.B \-\-stream\-segment\-attempts ATTEMPTS
+How many attempts should be done to download each segment before giving up.
+.sp
+This applies to all different kinds of segmented stream types, such as DASH, HDS, HLS, etc.
 .sp
 Default is: \fB3\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-hds\-segment\-threads THREADS
-The size of the thread pool used to download HDS segments. Minimum value
-is 1 and maximum is 10.
+.B \-\-stream\-segment\-threads THREADS
+The size of the thread pool used to download segments. Minimum value is 1 and maximum is 10.
+.sp
+This applies to all different kinds of segmented stream types, such as DASH, HDS, HLS, etc.
 .sp
 Default is: \fB1\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-hds\-segment\-timeout TIMEOUT
-HDS segment connect and read timeout.
+.B \-\-stream\-segment\-timeout TIMEOUT
+Segment connect and read timeout.
+.sp
+This applies to all different kinds of segmented stream types, such as DASH, HDS, HLS, etc.
 .sp
 Default is: \fB10.0\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-hds\-timeout TIMEOUT
-Timeout for reading data from HDS streams.
+.B \-\-stream\-timeout TIMEOUT
+Timeout for reading data from streams.
+.sp
+This applies to all different kinds of stream types, such as DASH, HDS, HLS, HTTP, RTMP, etc.
 .sp
 Default is: \fB60.0\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
+.B \-\-mux\-subtitles
+Automatically mux available subtitles into the output stream.
+.sp
+Needs to be supported by the used plugin.
+.sp
+\fBSupported plugins:\fP funimationnow, pluzz, rtve, svtplay, vimeo
+.UNINDENT
+.SS HDS options
+.INDENT 0.0
+.TP
+.B \-\-hds\-live\-edge SECONDS
+The time live HDS streams will start from the edge of the stream.
+.sp
+Default is: \fB10.0\fP\&.
+.UNINDENT
+.SS HLS options
+.INDENT 0.0
+.TP
 .B \-\-hls\-live\-edge SEGMENTS
-How many segments from the end to start live HLS streams on.
+Number of segments from the live stream\(aqs current live position to begin streaming.
+The size or length of each segment is determined by the streaming provider.
 .sp
-The lower the value the lower latency from the source you will be,
-but also increases the chance of buffering.
-.sp
-Default is: \fB3\fP\&.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-hls\-segment\-stream\-data
-Immediately write segment data into output buffer while downloading.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-hls\-segment\-attempts ATTEMPTS
-How many attempts should be done to download each HLS segment before
-giving up.
+Lower values will decrease the latency, but will also increase the chance of buffering, as there is less time for
+Streamlink to download segments and write their data to the output buffer. The number of parallel segment downloads
+can be set with \fB\-\-stream\-segment\-threads\fP and the HLS playlist reload time to fetch and queue new segments can be
+overridden with \fB\-\-hls\-playlist\-reload\-time\fP\&.
 .sp
 Default is: \fB3\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+During live playback, the caching/buffering settings of the used player will add additional latency. To adjust
+this, please refer to the player\(aqs own documentation for the required configuration. Player parameters can be set via
+\fB\-\-player\-args\fP\&.
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-hls\-playlist\-reload\-attempts ATTEMPTS
-How many attempts should be done to reload the HLS playlist before
-giving up.
+How many attempts should be done to reload the HLS playlist before giving up.
 .sp
 Default is: \fB3\fP\&.
 .UNINDENT
@@ -795,21 +873,6 @@ Default is: \fBdefault\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-hls\-segment\-threads THREADS
-The size of the thread pool used to download HLS segments. Minimum value
-is 1 and maximum is 10.
-.sp
-Default is: \fB1\fP\&.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-hls\-segment\-timeout TIMEOUT
-HLS segment connect and read timeout.
-.sp
-Default is: \fB10.0\fP\&.
-.UNINDENT
-.INDENT 0.0
-.TP
 .B \-\-hls\-segment\-ignore\-names NAMES
 A comma\-delimited list of segment names that will get filtered out.
 .sp
@@ -822,11 +885,10 @@ Default is: \fBNone\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-hls\-segment\-key\-uri URI
-URI to segment encryption key. If no URI is specified, the URI contained
-in the segments will be used.
+Override the segment encryption key URIs for encrypted streams.
 .sp
-URI can be templated using the following variables, which will be
-replaced with its respective part from the source segment URI:
+The value can be templated using the following variables, which will be
+replaced with their respective part from the source segment URI:
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -886,13 +948,6 @@ exists.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-hls\-timeout TIMEOUT
-Timeout for reading data from HLS streams.
-.sp
-Default is: \fB60.0\fP\&.
-.UNINDENT
-.INDENT 0.0
-.TP
 .B \-\-hls\-start\-offset [HH:]MM:SS
 Amount of time to skip from the beginning of the stream. For live
 streams, this is a negative offset from the end of the stream (rewind).
@@ -913,48 +968,7 @@ Default is: \fBunlimited\fP\&.
 .B \-\-hls\-live\-restart
 Skip to the beginning of a live stream, or as far back as possible.
 .UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-http\-stream\-timeout TIMEOUT
-Timeout for reading data from HTTP streams.
-.sp
-Default is: \fB60.0\fP\&.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-ringbuffer\-size SIZE
-The maximum size of ringbuffer. Add a M or K suffix to specify mega or
-kilo bytes instead of bytes.
-.sp
-The ringbuffer is used as a temporary storage between the stream and the
-player. This is to allows us to download the stream faster than the
-player wants to read it.
-.sp
-The smaller the size, the higher chance of the player buffering if there
-are download speed dips and the higher size the more data we can use as
-a storage to catch up from speed dips.
-.sp
-It also allows you to temporary pause as long as the ringbuffer doesn\(aqt
-get full since we continue to download the stream in the background.
-.sp
-Default is: \fB"16M"\fP\&.
-.sp
-\fBNOTE:\fP
-.INDENT 7.0
-.INDENT 3.5
-A smaller size is recommended on lower end systems (such as
-Raspberry Pi) when playing stream types that require some extra
-processing (such as HDS) to avoid unnecessary background processing.
-.UNINDENT
-.UNINDENT
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-rtmp\-proxy PROXY
-A SOCKS proxy that RTMP streams will use.
-.sp
-Example: 127.0.0.1:9050
-.UNINDENT
+.SS RTMP options
 .INDENT 0.0
 .TP
 .B \-\-rtmp\-rtmpdump FILENAME
@@ -965,53 +979,12 @@ Example: "/usr/local/bin/rtmpdump"
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-rtmp\-timeout TIMEOUT
-Timeout for reading data from RTMP streams.
+.B \-\-rtmp\-proxy PROXY
+A SOCKS proxy that RTMP streams will use.
 .sp
-Default is: \fB60.0\fP\&.
+Example: 127.0.0.1:9050
 .UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-stream\-segment\-attempts ATTEMPTS
-How many attempts should be done to download each segment before giving
-up.
-.sp
-This is generic option used by streams not covered by other options,
-such as stream protocols specific to plugins, e.g. UStream.
-.sp
-Default is: \fB3\fP\&.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-stream\-segment\-threads THREADS
-The size of the thread pool used to download segments. Minimum value is
-1 and maximum is 10.
-.sp
-This is generic option used by streams not covered by other options,
-such as stream protocols specific to plugins, e.g. UStream.
-.sp
-Default is: \fB1\fP\&.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-stream\-segment\-timeout TIMEOUT
-Segment connect and read timeout.
-.sp
-This is generic option used by streams not covered by other options,
-such as stream protocols specific to plugins, e.g. UStream.
-.sp
-Default is: \fB10.0\fP\&.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-stream\-timeout TIMEOUT
-Timeout for reading data from streams.
-.sp
-This is generic option used by streams not covered by other options,
-such as stream protocols specific to plugins, e.g. UStream.
-.sp
-Default is: \fB60.0\fP\&.
-.UNINDENT
+.SS Subprocess options
 .INDENT 0.0
 .TP
 .B \-\-subprocess\-cmdline
@@ -1035,6 +1008,7 @@ file. Takes precedence over subprocess\-errorlog.
 .sp
 Useful when debugging rtmpdump related issues.
 .UNINDENT
+.SS FFmpeg options
 .INDENT 0.0
 .TP
 .B \-\-ffmpeg\-ffmpeg FILENAME
@@ -1091,15 +1065,6 @@ the initial start time offset value.
 .TP
 .B \-\-ffmpeg\-start\-at\-zero
 Enable the \-start_at_zero ffmpeg option when using copyts.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-mux\-subtitles
-Automatically mux available subtitles into the output stream.
-.sp
-Needs to be supported by the used plugin.
-.sp
-\fBSupported plugins:\fP funimationnow, pluzz, rtve, svtplay, vimeo
 .UNINDENT
 .SH HTTP OPTIONS
 .INDENT 0.0
@@ -1215,17 +1180,6 @@ A afreecatv.com account password to use with \fB\-\-afreeca\-username\fP\&.
 .B \-\-afreeca\-purge\-credentials
 Purge cached AfreecaTV credentials to initiate a new session
 and reauthenticate.
-.UNINDENT
-.SS Animelab
-.INDENT 0.0
-.TP
-.B \-\-animelab\-email EMAIL
-The email address used to register with animelab.com.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-animelab\-password PASSWORD
-A animelab.com account password to use with \fB\-\-animelab\-email\fP\&.
 .UNINDENT
 .SS Bbciplayer
 .INDENT 0.0
@@ -1454,18 +1408,19 @@ Do not open the stream if the target channel is currently broadcasting a rerun.
 .TP
 .B \-\-twitch\-low\-latency
 Enables low latency streaming by prefetching HLS segments.
-Sets \fB\-\-hls\-segment\-stream\-data\fP to true and \fB\-\-hls\-live\-edge\fP to 2, if it is higher.
-Reducing \fB\-\-hls\-live\-edge\fP to 1 will result in the lowest latency possible.
+Sets \fB\-\-hls\-live\-edge\fP to 2, if it is higher.
+Reducing it to 1 will result in the lowest latency possible, but will most likely cause buffering.
 .sp
-Low latency streams have to be enabled by the broadcasters on Twitch themselves.
-Regular streams can cause buffering issues with this option enabled.
+In order to achieve true low latency streaming during playback, the player\(aqs caching/buffering settings will
+need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
+This depends on the stream\(aqs bitrate and the quality of the connection to Twitch\(aqs servers. Please refer to the
+player\(aqs own documentation for the required configuration. Player parameters can be set via \fB\-\-player\-args\fP\&.
 .sp
 \fBNOTE:\fP
 .INDENT 7.0
 .INDENT 3.5
-The caching/buffering settings of the chosen player may need to be adjusted as well.
-Please refer to the player\(aqs own documentation for the required parameters and its configuration.
-Player parameters can be set via Streamlink\(aqs \fB\-\-player\fP or \fB\-\-player\-args\fP parameters.
+Low latency streams have to be enabled by the broadcasters on Twitch themselves.
+Regular streams can cause buffering issues with this option enabled due to the reduced \fB\-\-hls\-live\-edge\fP value.
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -1544,7 +1499,7 @@ the following types are allowed:
 .IP \(bu 2
 dash
 .IP \(bu 2
-hls5
+hls7
 .UNINDENT
 .sp
 Default is: \fB"dash"\fP\&.
