@@ -1,3 +1,9 @@
+streamlink (2.4.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 2.4.0
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 21 Sep 2021 20:06:17 +0200
+
 streamlink (2.3.0-1~exp1) experimental; urgency=medium
 
   * New upstream version 2.3.0
