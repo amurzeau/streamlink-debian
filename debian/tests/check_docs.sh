@@ -54,4 +54,15 @@ esac
 
 check-file "$INDEX_HTML_LOCATION" || exit 3
 
+HTML_BASE_DIR=$(dirname "$INDEX_HTML_LOCATION")
+
+echo "Checking broken symlinks in $HTML_BASE_DIR"
+BROKEN_SYMLINKS_COUNT=$(find "$HTML_BASE_DIR" -xtype l | tee /dev/stderr | wc -l)
+if [ "$BROKEN_SYMLINKS_COUNT" -gt 0 ]; then
+	echo "ERROR: There are broken symlinks"
+	exit 4
+else
+	echo "OK"
+fi
+
 exit "$RESULT"
