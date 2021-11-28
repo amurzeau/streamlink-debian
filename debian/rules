@@ -3,10 +3,6 @@
 # Place streamlink executable in the correct place right away.
 export PYBUILD_INSTALL_ARGS_python3 = --install-scripts usr/share/streamlink/
 
-# Debian has a python3-pycountry package but not a iso639 package so use
-# pycountry.
-export STREAMLINK_USE_PYCOUNTRY=1
-
 # Provides DEB_VERSION
 include /usr/share/dpkg/pkg-info.mk
 
