@@ -12,33 +12,47 @@ pycryptodomex instead of pycryptodome.
 Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
- setup.py                          | 2 +-
- src/streamlink/plugins/abematv.py | 2 +-
- src/streamlink/plugins/mjunoon.py | 4 ++--
- src/streamlink/plugins/rtve.py    | 2 +-
- src/streamlink/plugins/steam.py   | 4 ++--
- src/streamlink/plugins/ustvnow.py | 6 +++---
- src/streamlink/plugins/webtv.py   | 2 +-
- src/streamlink/stream/hls.py      | 4 ++--
- src/streamlink/utils/crypto.py    | 2 +-
- tests/streams/test_hls.py         | 4 ++--
- 10 files changed, 16 insertions(+), 16 deletions(-)
+ setup.cfg                            | 2 +-
+ src/streamlink.egg-info/requires.txt | 2 +-
+ src/streamlink/plugins/abematv.py    | 2 +-
+ src/streamlink/plugins/mjunoon.py    | 4 ++--
+ src/streamlink/plugins/rtve.py       | 2 +-
+ src/streamlink/plugins/steam.py      | 4 ++--
+ src/streamlink/plugins/ustvnow.py    | 6 +++---
+ src/streamlink/plugins/webtv.py      | 2 +-
+ src/streamlink/stream/hls.py         | 4 ++--
+ src/streamlink/utils/crypto.py       | 2 +-
+ tests/stream/test_hls.py             | 4 ++--
+ 11 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/setup.py b/setup.py
-index 6f79f04..95f74c2 100644
---- a/setup.py
-+++ b/setup.py
-@@ -23,7 +23,7 @@ if environ.get("STREAMLINK_USE_PYCRYPTO"):
-     deps.append("pycrypto")
- else:
-     # this version of pycryptodome is known to work and has a Windows wheel for py2.7, py3.3-3.6
--    deps.append("pycryptodome>=3.4.3,<4")
-+    deps.append("pycryptodomex>=3.4.3,<4")
- 
- # for localization
- if environ.get("STREAMLINK_USE_PYCOUNTRY"):
+diff --git a/setup.cfg b/setup.cfg
+index 8dc740b..d343c56 100644
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -42,7 +42,7 @@ install_requires =
+ 	isodate
+ 	lxml >=4.6.4,<5.0
+ 	pycountry
+-	pycryptodome >=3.4.3,<4
++	pycryptodomex >=3.4.3,<4
+ 	PySocks !=1.5.7,>=1.5.6
+ 	requests >=2.26.0,<3.0
+ 	websocket-client >=1.2.1,<2.0
+diff --git a/src/streamlink.egg-info/requires.txt b/src/streamlink.egg-info/requires.txt
+index 898d658..48b8742 100644
+--- a/src/streamlink.egg-info/requires.txt
++++ b/src/streamlink.egg-info/requires.txt
+@@ -1,7 +1,7 @@
+ isodate
+ lxml<5.0,>=4.6.4
+ pycountry
+-pycryptodome<4,>=3.4.3
++pycryptodomex<4,>=3.4.3
+ PySocks!=1.5.7,>=1.5.6
+ requests<3.0,>=2.26.0
+ websocket-client<2.0,>=1.2.1
 diff --git a/src/streamlink/plugins/abematv.py b/src/streamlink/plugins/abematv.py
-index 587b10d..319ab55 100644
+index 7dbbc24..a694889 100644
 --- a/src/streamlink/plugins/abematv.py
 +++ b/src/streamlink/plugins/abematv.py
 @@ -8,7 +8,7 @@ import uuid
@@ -51,7 +65,7 @@ index 587b10d..319ab55 100644
  from requests.adapters import BaseAdapter
  
 diff --git a/src/streamlink/plugins/mjunoon.py b/src/streamlink/plugins/mjunoon.py
-index d6b2f8a..84991a4 100644
+index fbc05c3..9d513ab 100644
 --- a/src/streamlink/plugins/mjunoon.py
 +++ b/src/streamlink/plugins/mjunoon.py
 @@ -3,8 +3,8 @@ import logging
@@ -66,7 +80,7 @@ index d6b2f8a..84991a4 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/rtve.py b/src/streamlink/plugins/rtve.py
-index 802c218..8cff2c4 100644
+index 3ac3c1a..7268900 100644
 --- a/src/streamlink/plugins/rtve.py
 +++ b/src/streamlink/plugins/rtve.py
 @@ -3,7 +3,7 @@ import logging
@@ -79,7 +93,7 @@ index 802c218..8cff2c4 100644
  from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/steam.py b/src/streamlink/plugins/steam.py
-index 561e9ba..59730b8 100644
+index 058461e..b0eb8f1 100644
 --- a/src/streamlink/plugins/steam.py
 +++ b/src/streamlink/plugins/steam.py
 @@ -4,8 +4,8 @@ import re
@@ -94,7 +108,7 @@ index 561e9ba..59730b8 100644
  import streamlink
  from streamlink.exceptions import FatalPluginError
 diff --git a/src/streamlink/plugins/ustvnow.py b/src/streamlink/plugins/ustvnow.py
-index 022d600..5221763 100644
+index 716c0ad..c12d77a 100644
 --- a/src/streamlink/plugins/ustvnow.py
 +++ b/src/streamlink/plugins/ustvnow.py
 @@ -5,9 +5,9 @@ import re
@@ -109,9 +123,9 @@ index 022d600..5221763 100644
 +from Cryptodome.Util.Padding import pad, unpad
  
  from streamlink.plugin import Plugin, PluginArgument, PluginArguments, PluginError, pluginmatcher
- from streamlink.stream import HLSStream
+ from streamlink.stream.hls import HLSStream
 diff --git a/src/streamlink/plugins/webtv.py b/src/streamlink/plugins/webtv.py
-index 1de5dd5..c950ab0 100644
+index ec5b701..c9019d7 100644
 --- a/src/streamlink/plugins/webtv.py
 +++ b/src/streamlink/plugins/webtv.py
 @@ -3,7 +3,7 @@ import binascii
@@ -124,7 +138,7 @@ index 1de5dd5..c950ab0 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index a94a557..bba029d 100644
+index aa4584c..181c356 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -8,9 +8,9 @@ from typing import List, NamedTuple, Optional, Union
@@ -151,10 +165,10 @@ index abc3901..a71203f 100644
  
  
  def evp_bytestokey(password, salt, key_len, iv_len):
-diff --git a/tests/streams/test_hls.py b/tests/streams/test_hls.py
-index f7b5b4a..594f2a6 100644
---- a/tests/streams/test_hls.py
-+++ b/tests/streams/test_hls.py
+diff --git a/tests/stream/test_hls.py b/tests/stream/test_hls.py
+index d5c9540..b92f8aa 100644
+--- a/tests/stream/test_hls.py
++++ b/tests/stream/test_hls.py
 @@ -6,8 +6,8 @@ from unittest.mock import Mock, call, patch
  
  import pytest
@@ -165,4 +179,4 @@ index f7b5b4a..594f2a6 100644
 +from Cryptodome.Util.Padding import pad
  
  from streamlink.session import Streamlink
- from streamlink.stream import hls
+ from streamlink.stream.hls import HLSStream, HLSStreamReader
