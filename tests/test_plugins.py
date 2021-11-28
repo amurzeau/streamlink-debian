@@ -4,21 +4,15 @@ import unittest
 
 import streamlink.plugins
 from streamlink.plugin.plugin import Matcher, Plugin
-from streamlink.utils import load_module
+from streamlink.utils.module import load_module
 
 
 class PluginTestMeta(type):
     def __new__(mcs, name, bases, dict):
         plugin_path = os.path.dirname(streamlink.plugins.__file__)
-        plugins = []
-        for loader, pname, ispkg in pkgutil.iter_modules([plugin_path]):
-            module = load_module(f"streamlink.plugins.{pname}", plugin_path)
-            if hasattr(module, "__plugin__"):
-                plugins.append((loader, pname))
 
-        def gentest(loader, pname):
+        def gentest(plugin):
             def load_plugin_test(self):
-                plugin = loader.find_module(pname).load_module(pname)
                 assert hasattr(plugin, "__plugin__"), "It exports __plugin__"
 
                 pluginclass = plugin.__plugin__
@@ -37,8 +31,12 @@ class PluginTestMeta(type):
 
             return load_plugin_test
 
-        for loader, pname in plugins:
-            dict[f"test_{pname}_load"] = gentest(loader, pname)
+        pname: str
+        for finder, pname, ispkg in pkgutil.iter_modules([plugin_path]):
+            if pname.startswith("common_"):
+                continue
+            plugin_module = load_module(f"streamlink.plugins.{pname}", plugin_path)
+            dict[f"test_{pname}_load"] = gentest(plugin_module)
 
         return type.__new__(mcs, name, bases, dict)
 

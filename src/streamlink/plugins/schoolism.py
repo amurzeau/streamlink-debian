@@ -4,8 +4,8 @@ from functools import partial
 
 from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
 from streamlink.plugin.api import useragents, validate
-from streamlink.stream import HLSStream, HTTPStream
-from streamlink.utils import parse_json
+from streamlink.stream.hls import HLSStream
+from streamlink.stream.http import HTTPStream
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class Schoolism(Plugin):
                 validate.transform(js_to_json),
                 validate.transform(fix_brackets),  # remove invalid ,
                 validate.transform(fix_colon_in_title),
-                validate.transform(parse_json),
+                validate.parse_json(),
                 [{
                     "sources": validate.all([{
                         validate.optional("playlistTitle"): validate.text,

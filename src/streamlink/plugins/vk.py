@@ -7,8 +7,9 @@ from streamlink.exceptions import NoStreamsError
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import useragents
 from streamlink.plugin.api.utils import itertags
-from streamlink.stream import HLSStream, HTTPStream
-from streamlink.utils import update_scheme
+from streamlink.stream.hls import HLSStream
+from streamlink.stream.http import HTTPStream
+from streamlink.utils.url import update_scheme
 
 log = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class VK(Plugin):
 
         for _i in itertags(res.text, 'iframe'):
             if _i.attributes.get('src'):
-                iframe_url = update_scheme(self.url, _i.attributes['src'])
+                iframe_url = update_scheme("https://", _i.attributes["src"])
                 log.debug('Found iframe: {0}'.format(iframe_url))
                 yield from self.session.streams(iframe_url).items()
 

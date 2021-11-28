@@ -9,6 +9,7 @@ PLAYER_ARGS_INPUT_DEFAULT = "playerinput"
 PLAYER_ARGS_INPUT_FALLBACK = "filename"
 
 DEFAULT_STREAM_METADATA = {
+    "id": "Unknown ID",
     "title": "Unknown Title",
     "author": "Unknown Author",
     "category": "No Category",
@@ -64,7 +65,7 @@ else:
     LOG_DIR = XDG_STATE_HOME / "streamlink" / "logs"
 
 STREAM_SYNONYMS = ["best", "worst", "best-unfiltered", "worst-unfiltered"]
-STREAM_PASSTHROUGH = ["hls", "http", "rtmp"]
+STREAM_PASSTHROUGH = ["hls", "http"]
 
 __all__ = [
     "PLAYER_ARGS_INPUT_DEFAULT", "PLAYER_ARGS_INPUT_FALLBACK",

@@ -13,7 +13,7 @@ from gettext import gettext
 from itertools import chain
 from pathlib import Path
 from time import sleep
-from typing import List
+from typing import Dict, List, Type
 
 import requests
 from socks import __version__ as socks_version
@@ -24,8 +24,8 @@ from streamlink import NoPluginError, PluginError, StreamError, Streamlink, __ve
 from streamlink.cache import Cache
 from streamlink.exceptions import FatalPluginError
 from streamlink.plugin import Plugin, PluginOptions
-from streamlink.stream import StreamIO, StreamProcess
-from streamlink.utils import NamedPipe
+from streamlink.stream.stream import Stream, StreamIO
+from streamlink.utils.named_pipe import NamedPipe
 from streamlink_cli.argparser import build_parser
 from streamlink_cli.compat import DeprecatedPath, is_win32, stdout
 from streamlink_cli.console import ConsoleOutput, ConsoleUserInputRequester
@@ -38,14 +38,15 @@ try:
     ACCEPTABLE_ERRNO += (errno.WSAECONNABORTED,)
 except AttributeError:
     pass  # Not windows
-QUIET_OPTIONS = ("json", "stream_url", "subprocess_cmdline", "quiet")
+QUIET_OPTIONS = ("json", "stream_url", "quiet")
 
 args = None
 console: ConsoleOutput = None
 output: Output = None
-plugin: Plugin = None
 stream_fd: StreamIO = None
 streamlink: Streamlink = None
+
+Streams = Dict[str, Stream]
 
 log = logging.getLogger("streamlink.cli")
 
@@ -54,6 +55,7 @@ def get_formatter(plugin: Plugin):
     return Formatter(
         {
             "url": lambda: args.url,
+            "id": lambda: plugin.get_id(),
             "author": lambda: plugin.get_author(),
             "category": lambda: plugin.get_category(),
             "game": lambda: plugin.get_category(),
@@ -66,22 +68,22 @@ def get_formatter(plugin: Plugin):
     )
 
 
-def check_file_output(filename, force):
+def check_file_output(path: Path, force):
     """Checks if file already exists and ask the user if it should
     be overwritten if it does."""
 
     log.debug("Checking file output")
 
-    if os.path.isfile(filename) and not force:
+    if path.is_file() and not force:
         if sys.stdin.isatty():
-            answer = console.ask(f"File {filename} already exists! Overwrite it? [y/N] ")
+            answer = console.ask(f"File {path} already exists! Overwrite it? [y/N] ")
             if answer.lower() != "y":
                 sys.exit()
         else:
-            log.error(f"File {filename} already exists, use --force to overwrite it.")
+            log.error(f"File {path} already exists, use --force to overwrite it.")
             sys.exit()
 
-    return FileOutput(filename)
+    return FileOutput(path)
 
 
 def create_output(formatter: Formatter):
@@ -102,11 +104,11 @@ def create_output(formatter: Formatter):
         if args.output == "-":
             out = FileOutput(fd=stdout)
         else:
-            out = check_file_output(formatter.filename(args.output, args.fs_safe_rules), args.force)
+            out = check_file_output(formatter.path(args.output, args.fs_safe_rules), args.force)
     elif args.stdout:
         out = FileOutput(fd=stdout)
     elif args.record_and_pipe:
-        record = check_file_output(formatter.filename(args.record_and_pipe, args.fs_safe_rules), args.force)
+        record = check_file_output(formatter.path(args.record_and_pipe, args.fs_safe_rules), args.force)
         out = FileOutput(fd=stdout, record=record)
     else:
         http = namedpipe = record = None
@@ -125,7 +127,7 @@ def create_output(formatter: Formatter):
             http = create_http_server()
 
         if args.record:
-            record = check_file_output(formatter.filename(args.record, args.fs_safe_rules), args.force)
+            record = check_file_output(formatter.path(args.record, args.fs_safe_rules), args.force)
 
         log.info(f"Starting player: {args.player}")
 
@@ -173,7 +175,7 @@ def iter_http_requests(server, player):
             continue
 
 
-def output_stream_http(plugin, initial_streams, formatter: Formatter, external=False, port=0):
+def output_stream_http(plugin: Plugin, initial_streams: Streams, formatter: Formatter, external=False, port=0):
     """Continuously output the stream over HTTP."""
     global output
 
@@ -394,12 +396,12 @@ def read_stream(stream, output, prebuffer, formatter: Formatter, chunk_size=8192
         log.info("Stream ended")
 
 
-def handle_stream(plugin, streams, stream_name):
+def handle_stream(plugin: Plugin, streams: Streams, stream_name: str) -> None:
     """Decides what to do with the selected stream.
 
     Depending on arguments it can be one of these:
-     - Output internal command-line
      - Output JSON represenation
+     - Output the stream URL
      - Continuously output the stream over HTTP
      - Output stream data to selected output
 
@@ -408,21 +410,8 @@ def handle_stream(plugin, streams, stream_name):
     stream_name = resolve_stream_name(streams, stream_name)
     stream = streams[stream_name]
 
-    # Print internal command-line if this stream
-    # uses a subprocess.
-    if args.subprocess_cmdline:
-        if isinstance(stream, StreamProcess):
-            try:
-                cmdline = stream.cmdline()
-            except StreamError as err:
-                console.exit(err)
-
-            console.msg(cmdline)
-        else:
-            console.exit("The stream specified cannot be translated to a command")
-
     # Print JSON representation of the stream
-    elif args.json:
+    if args.json:
         console.msg_json(
             stream,
             metadata=plugin.get_metadata()
@@ -464,14 +453,14 @@ def handle_stream(plugin, streams, stream_name):
                 break
 
 
-def fetch_streams(plugin):
+def fetch_streams(plugin: Plugin) -> Streams:
     """Fetches streams using correct parameters."""
 
     return plugin.streams(stream_types=args.stream_types,
                           sorting_excludes=args.stream_sorting_excludes)
 
 
-def fetch_streams_with_retry(plugin, interval, count):
+def fetch_streams_with_retry(plugin: Plugin, interval: float, count: int) -> Streams:
     """Attempts to fetch streams repeatedly
        until some are returned or limit hit."""
 
@@ -503,7 +492,7 @@ def fetch_streams_with_retry(plugin, interval, count):
     return streams
 
 
-def resolve_stream_name(streams, stream_name):
+def resolve_stream_name(streams: Streams, stream_name: str) -> str:
     """Returns the real stream name of a synonym."""
 
     if stream_name in STREAM_SYNONYMS and stream_name in streams:
@@ -514,7 +503,7 @@ def resolve_stream_name(streams, stream_name):
     return stream_name
 
 
-def format_valid_streams(plugin, streams):
+def format_valid_streams(plugin: Plugin, streams: Streams) -> str:
     """Formats a dict of streams.
 
     Filters out synonyms and displays them next to
@@ -559,8 +548,9 @@ def handle_url():
     """
 
     try:
-        plugin = streamlink.resolve_url(args.url)
-        setup_plugin_options(streamlink, plugin)
+        pluginclass, resolved_url = streamlink.resolve_url(args.url)
+        setup_plugin_options(streamlink, pluginclass)
+        plugin = pluginclass(resolved_url)
         log.info(f"Found matching plugin {plugin.module} for URL {args.url}")
 
         if args.retry_max or args.retry_streams:
@@ -570,8 +560,7 @@ def handle_url():
                 retry_streams = args.retry_streams
             if args.retry_max:
                 retry_max = args.retry_max
-            streams = fetch_streams_with_retry(plugin, retry_streams,
-                                               retry_max)
+            streams = fetch_streams_with_retry(plugin, retry_streams, retry_max)
         else:
             streams = fetch_streams(plugin)
     except NoPluginError:
@@ -682,9 +671,9 @@ def setup_config_args(parser, ignore_unknown=False):
     if streamlink and args.url:
         # Only load first available plugin config
         with ignored(NoPluginError):
-            plugin = streamlink.resolve_url(args.url)
+            pluginclass, resolved_url = streamlink.resolve_url(args.url)
             for config_file in CONFIG_FILES:
-                config_file = config_file.with_name(f"{config_file.name}.{plugin.module}")
+                config_file = config_file.with_name(f"{config_file.name}.{pluginclass.module}")
                 if not config_file.is_file():
                     continue
                 if type(config_file) is DeprecatedPath:
@@ -697,7 +686,9 @@ def setup_config_args(parser, ignore_unknown=False):
 
 
 def setup_signals():
-    # Handle SIGTERM just like SIGINT
+    # restore default behavior of raising a KeyboardInterrupt on SIGINT (and SIGTERM)
+    # so cleanup code can be run when the user stops execution
+    signal.signal(signal.SIGINT, signal.default_int_handler)
     signal.signal(signal.SIGTERM, signal.default_int_handler)
 
 
@@ -766,11 +757,11 @@ def setup_options():
     if args.mux_subtitles:
         streamlink.set_option("mux-subtitles", args.mux_subtitles)
 
-    if args.hds_live_edge:
-        streamlink.set_option("hds-live-edge", args.hds_live_edge)
-
     if args.hls_live_edge:
         streamlink.set_option("hls-live-edge", args.hls_live_edge)
+    if args.hls_segment_stream_data:
+        streamlink.set_option("hls-segment-stream-data", args.hls_segment_stream_data)
+
     if args.hls_playlist_reload_attempts:
         streamlink.set_option("hls-playlist-reload-attempts", args.hls_playlist_reload_attempts)
     if args.hls_playlist_reload_time:
@@ -788,22 +779,7 @@ def setup_options():
     if args.hls_live_restart:
         streamlink.set_option("hls-live-restart", args.hls_live_restart)
 
-    if args.rtmp_rtmpdump:
-        streamlink.set_option("rtmp-rtmpdump", args.rtmp_rtmpdump)
-    elif args.rtmpdump:
-        streamlink.set_option("rtmp-rtmpdump", args.rtmpdump)
-    if args.rtmp_proxy:
-        streamlink.set_option("rtmp-proxy", args.rtmp_proxy)
-
     # deprecated
-    if args.hds_segment_attempts:
-        streamlink.set_option("hds-segment-attempts", args.hds_segment_attempts)
-    if args.hds_segment_threads:
-        streamlink.set_option("hds-segment-threads", args.hds_segment_threads)
-    if args.hds_segment_timeout:
-        streamlink.set_option("hds-segment-timeout", args.hds_segment_timeout)
-    if args.hds_timeout:
-        streamlink.set_option("hds-timeout", args.hds_timeout)
     if args.hls_segment_attempts:
         streamlink.set_option("hls-segment-attempts", args.hls_segment_attempts)
     if args.hls_segment_threads:
@@ -814,8 +790,6 @@ def setup_options():
         streamlink.set_option("hls-timeout", args.hls_timeout)
     if args.http_stream_timeout:
         streamlink.set_option("http-stream-timeout", args.http_stream_timeout)
-    if args.rtmp_timeout:
-        streamlink.set_option("rtmp-timeout", args.rtmp_timeout)
 
     # generic stream- arguments take precedence over deprecated stream-type arguments
     if args.stream_segment_attempts:
@@ -844,8 +818,6 @@ def setup_options():
     if args.ffmpeg_start_at_zero:
         streamlink.set_option("ffmpeg-start-at-zero", args.ffmpeg_start_at_zero)
 
-    streamlink.set_option("subprocess-errorlog", args.subprocess_errorlog)
-    streamlink.set_option("subprocess-errorlog-path", args.subprocess_errorlog_path)
     streamlink.set_option("locale", args.locale)
 
 
@@ -877,7 +849,7 @@ def setup_plugin_args(session, parser):
         plugin.options = PluginOptions(defaults)
 
 
-def setup_plugin_options(session, plugin):
+def setup_plugin_options(session: Streamlink, plugin: Type[Plugin]):
     """Sets Streamlink plugin options."""
     pname = plugin.module
     required = OrderedDict({})
@@ -1036,8 +1008,6 @@ def main():
     log_file = args.logfile if log_level != "none" else None
     setup_logger_and_console(console_out, log_file, log_level, args.json)
 
-    setup_signals()
-
     setup_streamlink()
     # load additional plugins
     setup_plugins(args.plugin_dirs)
@@ -1056,11 +1026,15 @@ def main():
     log_current_versions()
     log_current_arguments(streamlink, parser)
 
+    setup_signals()
+
     if args.version_check or args.auto_version_check:
         with ignored(Exception):
             check_version(force=args.version_check)
 
-    if args.plugins:
+    if args.help:
+        parser.print_help()
+    elif args.plugins:
         print_plugins()
     elif args.can_handle_url:
         try:
@@ -1093,8 +1067,6 @@ def main():
                     stream_fd.close()
                 except KeyboardInterrupt:
                     error_code = 130
-    elif args.help:
-        parser.print_help()
     else:
         usage = parser.format_usage()
         console.msg(

@@ -7,9 +7,10 @@ from Crypto.Cipher import AES
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
-from streamlink.stream import HLSStream
-from streamlink.utils import parse_json, update_scheme
+from streamlink.stream.hls import HLSStream
 from streamlink.utils.crypto import unpad_pkcs5
+from streamlink.utils.parse import parse_json
+from streamlink.utils.url import update_scheme
 
 log = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class WebTV(Plugin):
             for source in sdata:
                 log.debug(f"Found stream of type: {source['type']}")
                 if source["type"] == "application/vnd.apple.mpegurl":
-                    url = update_scheme(self.url, source["src"])
+                    url = update_scheme("https://", source["src"], force=False)
 
                     try:
                         # try to parse the stream as a variant playlist

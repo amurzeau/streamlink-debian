@@ -48,11 +48,11 @@ def parse_html(
     """Wrapper around lxml.etree.HTML with some extras.
 
     Provides these extra features:
-     - Handles incorrectly encoded HTML
+     - Removes XML declarations of invalid XHTML5 documents
      - Wraps errors in custom exception with a snippet of the data in the message
     """
-    if isinstance(data, str):
-        data = bytes(data, "utf8")
+    if isinstance(data, str) and data.lstrip().startswith("<?xml"):
+        data = re.sub(r"^\s*<\?xml.+?\?>", "", data)
 
     return _parse(HTML, data, name, exception, schema, *args, **kwargs)
 
@@ -76,7 +76,7 @@ def parse_xml(
     if isinstance(data, str):
         data = bytes(data, "utf8")
     if ignore_ns:
-        data = re.sub(br"[\t ]xmlns=\"(.+?)\"", b"", data)
+        data = re.sub(br"\s+xmlns=\"(.+?)\"", b"", data)
     if invalid_char_entities:
         data = re.sub(br"&(?!(?:#(?:[0-9]+|[Xx][0-9A-Fa-f]+)|[A-Za-z0-9]+);)", b"&amp;", data)
 

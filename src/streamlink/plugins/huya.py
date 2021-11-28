@@ -5,8 +5,8 @@ from html import unescape as html_unescape
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
-from streamlink.stream import HTTPStream
-from streamlink.utils import parse_json
+from streamlink.stream.http import HTTPStream
+from streamlink.utils.parse import parse_json
 
 log = logging.getLogger(__name__)
 

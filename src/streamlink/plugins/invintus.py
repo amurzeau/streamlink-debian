@@ -3,7 +3,7 @@ import re
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
-from streamlink.stream import HLSStream
+from streamlink.stream.hls import HLSStream
 from streamlink.utils.url import update_scheme
 
 
@@ -38,7 +38,7 @@ class InvintusMedia(Plugin):
             return
 
         hls_url = api_response["data"]["streamingURIs"]["main"]
-        return HLSStream.parse_variant_playlist(self.session, update_scheme(self.url, hls_url))
+        return HLSStream.parse_variant_playlist(self.session, update_scheme("https://", hls_url))
 
 
 __plugin__ = InvintusMedia

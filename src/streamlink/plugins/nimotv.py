@@ -3,8 +3,7 @@ import re
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import useragents, validate
-from streamlink.stream import HLSStream
-from streamlink.utils import parse_json
+from streamlink.stream.hls import HLSStream
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ class NimoTV(Plugin):
         validate.transform(data_re.search),
         validate.any(None, validate.all(
             validate.get(1),
-            validate.transform(parse_json), {
+            validate.parse_json(), {
                 'title': str,
                 'nickname': str,
                 'game': str,

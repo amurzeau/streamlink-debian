@@ -1,48 +1,41 @@
 #!/usr/bin/env python
-import codecs
-from os import environ, path
-from sys import argv, path as sys_path
+from os import path
+from sys import argv, exit, version_info
+from textwrap import dedent
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 import versioneer
 
 
-data_files = []
-deps = [
-    "requests>=2.26.0,<3.0",
-    "isodate",
-    "lxml>=4.6.3",
-    "websocket-client>=0.58.0",
-    # Support for SOCKS proxies
-    "PySocks!=1.5.7,>=1.5.6",
-]
+def format_msg(text, *args, **kwargs):
+    return dedent(text).strip(" \n").format(*args, **kwargs)
 
-# for encrypted streams
-if environ.get("STREAMLINK_USE_PYCRYPTO"):
-    deps.append("pycrypto")
-else:
-    # this version of pycryptodome is known to work and has a Windows wheel for py2.7, py3.3-3.6
-    deps.append("pycryptodome>=3.4.3,<4")
 
-# for localization
-if environ.get("STREAMLINK_USE_PYCOUNTRY"):
-    deps.append("pycountry")
-else:
-    deps.append("iso-639")
-    deps.append("iso3166")
+CURRENT_PYTHON = version_info[:2]
+REQUIRED_PYTHON = (3, 6)
 
-# When we build an egg for the Win32 bootstrap we don"t want dependency
-# information built into it.
-if environ.get("NO_DEPS"):
-    deps = []
+# This check and everything above must remain compatible with older Python versions
+if CURRENT_PYTHON < REQUIRED_PYTHON:
+    exit(format_msg("""
+        ========================================================
+                       Unsupported Python version
+        ========================================================
+        This version of Streamlink requires at least Python {}.{},
+        but you're trying to install it on Python {}.{}.
 
-this_directory = path.abspath(path.dirname(__file__))
-srcdir = path.join(this_directory, "src/")
-sys_path.insert(0, srcdir)
+        This may be because you are using a version of pip that
+        doesn't understand the python_requires classifier.
+        Make sure you have pip >= 9.0 and setuptools >= 24.2
+    """, *(REQUIRED_PYTHON + CURRENT_PYTHON)))
 
-with codecs.open(path.join(this_directory, "README.md"), 'r', "utf8") as f:
-    long_description = f.read()
+# Explicitly disable running tests via setuptools
+if "test" in argv:
+    exit(format_msg("""
+        Running `python setup.py test` has been deprecated since setuptools 41.5.0.
+        Streamlink requires pytest for collecting and running tests, via one of these commands:
+        `pytest` or `python -m pytest` (see the pytest docs for more infos about this)
+    """))
 
 
 def is_wheel_for_windows():
@@ -65,60 +58,27 @@ if is_wheel_for_windows():
     entry_points["gui_scripts"] = ["streamlinkw=streamlink_cli.main:main"]
 
 
-additional_files = [
+# optional data files
+data_files = [
+    # shell completions
+    #  requires pre-built completion files via shtab (dev-requirements.txt)
+    #  `./script/build-shell-completions.sh`
+    ("share/bash-completion/completions", ["completions/bash/streamlink"]),
+    ("share/zsh/site-functions", ["completions/zsh/_streamlink"]),
+    # man page
+    #  requires pre-built man page file via sphinx (docs-requirements.txt)
+    #  `make --directory=docs clean man`
     ("share/man/man1", ["docs/_build/man/streamlink.1"])
 ]
-
-for destdir, srcfiles in additional_files:
-    files = []
-    for srcfile in srcfiles:
-        if path.exists(srcfile):
-            files.append(srcfile)
-    if files:
-        data_files.append((destdir, files))
+data_files = [
+    (destdir, [file for file in srcfiles if path.exists(file)])
+    for destdir, srcfiles in data_files
+]
 
 
-setup(name="streamlink",
-      version=versioneer.get_version(),
-      cmdclass=versioneer.get_cmdclass(),
-      description="Streamlink is a command-line utility that extracts streams "
-                  "from various services and pipes them into a video player of "
-                  "choice.",
-      long_description=long_description,
-      long_description_content_type="text/markdown",
-      url="https://github.com/streamlink/streamlink",
-      project_urls={
-          "Documentation": "https://streamlink.github.io/",
-          "Tracker": "https://github.com/streamlink/streamlink/issues",
-          "Source": "https://github.com/streamlink/streamlink",
-          "Funding": "https://opencollective.com/streamlink"
-      },
-      author="Streamlink",
-      # temp until we have a mailing list / global email
-      author_email="streamlink@protonmail.com",
-      license="Simplified BSD",
-      packages=find_packages("src"),
-      package_dir={"": "src"},
-      package_data={"streamlink.plugins": [".removed"]},
-      entry_points=entry_points,
-      data_files=data_files,
-      install_requires=deps,
-      test_suite="tests",
-      python_requires=">=3.6, <4",
-      classifiers=["Development Status :: 5 - Production/Stable",
-                   "License :: OSI Approved :: BSD License",
-                   "Environment :: Console",
-                   "Intended Audience :: End Users/Desktop",
-                   "Operating System :: POSIX",
-                   "Operating System :: Microsoft :: Windows",
-                   "Operating System :: MacOS",
-                   "Programming Language :: Python :: 3",
-                   "Programming Language :: Python :: 3 :: Only",
-                   "Programming Language :: Python :: 3.6",
-                   "Programming Language :: Python :: 3.7",
-                   "Programming Language :: Python :: 3.8",
-                   "Programming Language :: Python :: 3.9",
-                   "Topic :: Internet :: WWW/HTTP",
-                   "Topic :: Multimedia :: Sound/Audio",
-                   "Topic :: Multimedia :: Video",
-                   "Topic :: Utilities"])
+setup(
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
+    entry_points=entry_points,
+    data_files=data_files,
+)

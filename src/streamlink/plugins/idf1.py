@@ -2,8 +2,8 @@ import re
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import useragents, validate
-from streamlink.stream import HLSStream
-from streamlink.utils import parse_json, update_scheme
+from streamlink.stream.hls import HLSStream
+from streamlink.utils.url import update_scheme
 
 
 @pluginmatcher(re.compile(
@@ -24,7 +24,7 @@ class IDF1(Plugin):
     _player_url = 'http://ssl.p.jwpcdn.com/player/v/7.12.6/jwplayer.flash.swf'
 
     _api_schema = validate.Schema(
-        validate.transform(parse_json),
+        validate.parse_json(),
         {
             validate.optional('html5'): validate.all(
                 [
@@ -42,7 +42,7 @@ class IDF1(Plugin):
     )
 
     _token_schema = validate.Schema(
-        validate.transform(parse_json),
+        validate.parse_json(),
         {'token': validate.text},
         validate.get('token')
     )

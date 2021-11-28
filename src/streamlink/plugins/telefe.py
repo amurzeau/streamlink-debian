@@ -3,8 +3,9 @@ import re
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import useragents
-from streamlink.stream import HLSStream, HTTPStream
-from streamlink.utils import parse_json
+from streamlink.stream.hls import HLSStream
+from streamlink.stream.http import HTTPStream
+from streamlink.utils.parse import parse_json
 
 log = logging.getLogger(__name__)
 

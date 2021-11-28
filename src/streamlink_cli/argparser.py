@@ -10,7 +10,7 @@ from streamlink.utils.args import (
 )
 from streamlink.utils.times import hours_minutes_seconds
 from streamlink_cli.constants import (
-    DEFAULT_STREAM_METADATA, PLAYER_ARGS_INPUT_DEFAULT, PLAYER_ARGS_INPUT_FALLBACK, STREAM_PASSTHROUGH, SUPPORTED_PLAYERS
+    PLAYER_ARGS_INPUT_DEFAULT, PLAYER_ARGS_INPUT_FALLBACK, STREAM_PASSTHROUGH, SUPPORTED_PLAYERS
 )
 from streamlink_cli.utils import find_default_player
 
@@ -510,79 +510,27 @@ def build_parser():
     player.add_argument(
         "-t", "--title",
         metavar="TITLE",
-        help="""
-        This option allows you to supply a title to be displayed in the
-        title bar of the window that the video player is launched in.
+        help=f"""
+        Change the title of the video player's window.
 
-        This value can contain formatting variables surrounded by curly braces,
-        {{ and }}. If you need to include a brace character, it can be escaped
-        by doubling, e.g. {{{{ and }}}}.
+        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables.
 
-        This option is only supported for the following players: {0}.
+        This option is only supported for the following players: {', '.join(sorted(SUPPORTED_PLAYERS.keys()))}
 
         VLC specific information:
-            VLC has certain codes you can use inside your title.
-            These are accessible inside --title by using a backslash
-            before the dollar sign VLC uses to denote a format character.
-
-            e.g. to put the current date in your VLC window title,
-            the string "\\$A" could be inserted inside your --title string.
-
-            A full list of the format codes VLC uses is available here:
+            VLC does support special formatting variables on its own:
             https://wiki.videolan.org/Documentation:Format_String/
 
-        mpv specific information:
-            mpv has certain codes you can use inside your title.
-            These are accessible inside --title by using a backslash
-            before the dollar sign mpv uses to denote a format character.
+            These variables are accessible in the --title option by adding a backslash
+            in front of the dollar sign which VLC uses as its formatting character.
 
-            e.g. to put the current version of mpv running inside your
-            mpv window title, the string "\\${{{{mpv-version}}}}" could be
-            inserted inside your --title string.
+            For example, to put the current date in your VLC window title,
+            the string "\\\\$A" could be inserted inside the --title string.
 
-            A full list of the format codes mpv uses is available here:
-            https://mpv.io/manual/stable/#property-list
+        Example:
 
-        Formatting variables available to use in --title:
-
-        {{title}}
-            If available, this is the title of the stream.
-            Otherwise, it is the string "{1}"
-
-        {{author}}
-            If available, this is the author of the stream.
-            Otherwise, it is the string "{2}"
-
-        {{category}}
-            If available, this is the category the stream has been placed into.
-
-            - For Twitch, this is the game being played
-            - For YouTube, it's the category e.g. Gaming, Sports, Music...
-
-            Otherwise, it is the string "{3}"
-
-        {{game}}
-            This is just a synonym for {{category}} which may make more sense for
-            gaming oriented platforms. "Game being played" is a way to categorize
-            the stream, so it doesn't need its own separate handling.
-
-        {{url}}
-            URL of the stream.
-
-        {{time}}
-            The current timestamp, which can optionally be formatted via {{time:format}}.
-            This format parameter string is passed to Python's datetime.strftime() method,
-            so all usual time directives are available. The default format is "%%Y-%%m-%%d_%%H-%%M-%%S".
-
-        Examples:
-
-            %(prog)s -p vlc --title "{{title}} -!- {{author}} -!- {{category}} \\$A" <url> [stream]
-            %(prog)s -p mpv --title "{{title}} -- {{author}} -- {{category}} -- (\\${{{{mpv-version}}}})" <url> [stream]
-
-        """.format(', '.join(sorted(SUPPORTED_PLAYERS.keys())),
-                   DEFAULT_STREAM_METADATA['title'],
-                   DEFAULT_STREAM_METADATA['author'],
-                   DEFAULT_STREAM_METADATA['category'])
+            %(prog)s -p mpv --title "{{author}} - {{category}} - {{title}}" <URL> [STREAM]
+        """
     )
 
     output = parser.add_argument_group("File output options")
@@ -594,8 +542,13 @@ def build_parser():
 
         You will be prompted if the file already exists.
 
-        The formatting variables available for the --title option may be used.
+        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables.
+
         Unsupported characters in substituted variables will be replaced with an underscore.
+
+        Example:
+
+            %(prog)s --output "~/recordings/{author}/{category}/{id}-{time:%%Y%%m%%d%%H%%M%%S}.ts" <URL> [STREAM]
         """
     )
     output.add_argument(
@@ -628,8 +581,13 @@ def build_parser():
 
         You will be prompted if the file already exists.
 
-        The formatting variables available for the --title option may be used.
+        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables.
+
         Unsupported characters in substituted variables will be replaced with an underscore.
+
+        Example:
+
+            %(prog)s --record "~/recordings/{author}/{category}/{id}-{time:%%Y%%m%%d%%H%%M%%S}.ts" <URL> [STREAM]
         """
     )
     output.add_argument(
@@ -640,8 +598,13 @@ def build_parser():
 
         You will be prompted if the file already exists.
 
-        The formatting variables available for the --title option may be used.
+        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables.
+
         Unsupported characters in substituted variables will be replaced with an underscore.
+
+        Example:
+
+            %(prog)s --record-and-pipe "~/recordings/{author}/{category}/{id}-{time:%%Y%%m%%d%%H%%M%%S}.ts" <URL> [STREAM]
         """
     )
     output.add_argument(
@@ -752,7 +715,7 @@ def build_parser():
         not listed will be omitted from the available streams list.  A ``*`` can
         be used as a wildcard to match any other type of stream, eg. muxed-stream.
 
-        Default is "rtmp,hls,hds,http,akamaihd,*".
+        Default is "hls,http,*".
         """
     )
     stream.add_argument(
@@ -787,10 +750,7 @@ def build_parser():
     )
 
     transport = parser.add_argument_group("Stream transport options")
-    transport_hds = transport.add_argument_group("HDS options")
     transport_hls = transport.add_argument_group("HLS options")
-    transport_rtmp = transport.add_argument_group("RTMP options")
-    transport_subprocess = transport.add_argument_group("Subprocess options")
     transport_ffmpeg = transport.add_argument_group("FFmpeg options")
 
     transport.add_argument(
@@ -813,7 +773,7 @@ def build_parser():
         Default is "16M".
 
         Note: A smaller size is recommended on lower end systems (such as Raspberry Pi) when playing stream types that require
-        some extra processing (such as HDS) to avoid unnecessary background processing.
+        some extra processing to avoid unnecessary background processing.
         """
     )
     transport.add_argument(
@@ -823,7 +783,7 @@ def build_parser():
         help="""
         How many attempts should be done to download each segment before giving up.
 
-        This applies to all different kinds of segmented stream types, such as DASH, HDS, HLS, etc.
+        This applies to all different kinds of segmented stream types, such as DASH, HLS, etc.
 
         Default is 3.
         """
@@ -835,7 +795,7 @@ def build_parser():
         help="""
         The size of the thread pool used to download segments. Minimum value is 1 and maximum is 10.
 
-        This applies to all different kinds of segmented stream types, such as DASH, HDS, HLS, etc.
+        This applies to all different kinds of segmented stream types, such as DASH, HLS, etc.
 
         Default is 1.
         """
@@ -847,7 +807,7 @@ def build_parser():
         help="""
         Segment connect and read timeout.
 
-        This applies to all different kinds of segmented stream types, such as DASH, HDS, HLS, etc.
+        This applies to all different kinds of segmented stream types, such as DASH, HLS, etc.
 
         Default is 10.0.
         """
@@ -859,7 +819,7 @@ def build_parser():
         help="""
         Timeout for reading data from streams.
 
-        This applies to all different kinds of stream types, such as DASH, HDS, HLS, HTTP, RTMP, etc.
+        This applies to all different kinds of stream types, such as DASH, HLS, HTTP, etc.
 
         Default is 60.0.
         """
@@ -873,21 +833,6 @@ def build_parser():
         Needs to be supported by the used plugin.
         """
     )
-
-    transport_hds.add_argument(
-        "--hds-live-edge",
-        type=num(float, min=0),
-        metavar="SECONDS",
-        help="""
-        The time live HDS streams will start from the edge of the stream.
-
-        Default is 10.0.
-        """
-    )
-    transport_hds.add_argument("--hds-segment-attempts", help=argparse.SUPPRESS)
-    transport_hds.add_argument("--hds-segment-threads", help=argparse.SUPPRESS)
-    transport_hds.add_argument("--hds-segment-timeout", help=argparse.SUPPRESS)
-    transport_hds.add_argument("--hds-timeout", help=argparse.SUPPRESS)
 
     transport_hls.add_argument(
         "--hls-live-edge",
@@ -907,6 +852,13 @@ def build_parser():
         Note: During live playback, the caching/buffering settings of the used player will add additional latency. To adjust
         this, please refer to the player's own documentation for the required configuration. Player parameters can be set via
         --player-args.
+        """
+    )
+    transport_hls.add_argument(
+        "--hls-segment-stream-data",
+        action="store_true",
+        help="""
+        Immediately write segment data into output buffer while downloading.
         """
     )
     transport_hls.add_argument(
@@ -1023,63 +975,9 @@ def build_parser():
     transport_hls.add_argument("--hls-segment-attempts", help=argparse.SUPPRESS)
     transport_hls.add_argument("--hls-segment-threads", help=argparse.SUPPRESS)
     transport_hls.add_argument("--hls-segment-timeout", help=argparse.SUPPRESS)
-    transport_hls.add_argument("--hls-segment-stream-data", action="store_true", help=argparse.SUPPRESS)
     transport_hls.add_argument("--hls-timeout", help=argparse.SUPPRESS)
 
     transport.add_argument("--http-stream-timeout", help=argparse.SUPPRESS)
-
-    transport_rtmp.add_argument(
-        "--rtmp-rtmpdump",
-        metavar="FILENAME",
-        help="""
-        RTMPDump is used to access RTMP streams. You can specify the
-        location of the rtmpdump executable if it is not in your PATH.
-
-        Example: "/usr/local/bin/rtmpdump"
-        """
-    )
-    transport_rtmp.add_argument(
-        "--rtmp-proxy",
-        metavar="PROXY",
-        help="""
-        A SOCKS proxy that RTMP streams will use.
-
-        Example: 127.0.0.1:9050
-        """
-    )
-    transport_rtmp.add_argument("--rtmpdump", help=argparse.SUPPRESS)
-    transport_rtmp.add_argument("--rtmp-timeout", help=argparse.SUPPRESS)
-
-    transport_subprocess.add_argument(
-        "--subprocess-cmdline",
-        action="store_true",
-        help="""
-        Print the command-line used internally to play the stream.
-
-        This is only available on RTMP streams.
-        """
-    )
-    transport_subprocess.add_argument(
-        "--subprocess-errorlog",
-        action="store_true",
-        help="""
-        Log possible errors from internal subprocesses to a temporary file. The
-        file will be saved in your systems temporary directory.
-
-        Useful when debugging rtmpdump related issues.
-        """
-    )
-    transport_subprocess.add_argument(
-        "--subprocess-errorlog-path",
-        type=str,
-        metavar="PATH",
-        help="""
-        Log the subprocess errorlog to a specific file rather than a temporary
-        file. Takes precedence over subprocess-errorlog.
-
-        Useful when debugging rtmpdump related issues.
-        """
-    )
 
     transport_ffmpeg.add_argument(
         "--ffmpeg-ffmpeg",
@@ -1162,21 +1060,12 @@ def build_parser():
         "--http-proxy",
         metavar="HTTP_PROXY",
         help="""
-        A HTTP proxy to use for all HTTP requests, including WebSocket connections.
-        By default this proxy will be used for all HTTPS requests too.
+        A HTTP proxy to use for all HTTP and HTTPS requests, including WebSocket connections.
 
         Example: "http://hostname:port/"
         """
     )
-    http.add_argument(
-        "--https-proxy",
-        metavar="HTTPS_PROXY",
-        help="""
-        A HTTPS capable proxy to use for all HTTPS requests.
-
-        Example: "https://hostname:port/"
-        """
-    )
+    http.add_argument("--https-proxy", help=argparse.SUPPRESS)
     http.add_argument(
         "--http-cookie",
         metavar="KEY=VALUE",

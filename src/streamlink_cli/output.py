@@ -4,7 +4,9 @@ import re
 import shlex
 import subprocess
 import sys
+from pathlib import Path
 from time import sleep
+from typing import BinaryIO, Optional
 
 from streamlink_cli.compat import is_win32, stdout
 from streamlink_cli.constants import PLAYER_ARGS_INPUT_DEFAULT, PLAYER_ARGS_INPUT_FALLBACK, SUPPORTED_PLAYERS
@@ -47,7 +49,12 @@ class Output:
 
 
 class FileOutput(Output):
-    def __init__(self, filename=None, fd=None, record=None):
+    def __init__(
+        self,
+        filename: Optional[Path] = None,
+        fd: Optional[BinaryIO] = None,
+        record: Optional["FileOutput"] = None
+    ):
         super().__init__()
         self.filename = filename
         self.fd = fd
@@ -55,6 +62,7 @@ class FileOutput(Output):
 
     def _open(self):
         if self.filename:
+            self.filename.parent.mkdir(parents=True, exist_ok=True)
             self.fd = open(self.filename, "wb")
 
         if self.record:
@@ -139,44 +147,6 @@ class PlayerOutput(Output):
                 if cmd.startswith(possiblecmd):
                     return player
 
-    @classmethod
-    def _mpv_title_escape(cls, title_string):
-        # mpv has a "disable property-expansion" token which must be handled
-        # in order to accurately represent $$ in title
-        if r'\$>' in title_string:
-            processed_title = ""
-            double_dollars = True
-            i = dollars = 0
-            while i < len(title_string):
-                if double_dollars:
-                    if title_string[i] == "\\":
-                        if title_string[i + 1] == "$":
-                            processed_title += "$"
-                            dollars += 1
-                            i += 1
-                            if title_string[i + 1] == ">" and dollars % 2 == 1:
-                                double_dollars = False
-                                processed_title += ">"
-                                i += 1
-                        else:
-                            processed_title += "\\"
-                    elif title_string[i] == "$":
-                        processed_title += "$$"
-                    else:
-                        dollars = 0
-                        processed_title += title_string[i]
-                else:
-                    if title_string[i:i + 2] == "\\$":
-                        processed_title += "$"
-                        i += 1
-                    else:
-                        processed_title += title_string[i]
-                i += 1
-            return processed_title
-        else:
-            # not possible for property-expansion to be disabled, happy days
-            return title_string.replace("$", "$$").replace(r'\$$', "$")
-
     def _create_arguments(self):
         if self.namedpipe:
             filename = self.namedpipe.path
@@ -202,8 +172,7 @@ class PlayerOutput(Output):
 
             # mpv
             if self.player_name == "mpv":
-                # see https://mpv.io/manual/stable/#property-expansion, allow escaping with \$, respect mpv's $>
-                self.title = self._mpv_title_escape(self.title)
+                # property expansion is only available in MPV's --title parameter
                 extra_args.append(f"--force-media-title={self.title}")
 
             # potplayer
