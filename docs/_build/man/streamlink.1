@@ -1,8 +1,5 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "STREAMLINK" "1" "Sep 07, 2021" "2.4.0" "Streamlink"
-.SH NAME
-streamlink \- extracts streams from various services and pipes them into a video player of choice
 .
 .nr rst2man-indent-level 0
 .
@@ -30,6 +27,9 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
+.TH "STREAMLINK" "1" "Nov 27, 2021" "3.0.3" "Streamlink"
+.SH NAME
+streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
 .INDENT 0.0
 .INDENT 3.5
@@ -44,7 +44,7 @@ streamlink \-\-player\-external\-http \-\-player\-external\-http\-port 8888 URL 
 streamlink \-\-output /path/to/file \-\-http\-timeout 60 URL STREAM
 streamlink \-\-stdout URL STREAM | ffmpeg \-i pipe:0 ...
 streamlink \-\-http\-header \(aqAuthorization=OAuth TOKEN\(aq \-\-http\-header \(aqReferer=URL\(aq URL STREAM
-streamlink \-\-hls\-live\-edge 5 \-\-hls\-segment\-threads 5 \(aqhls://https://host/playlist.m3u8\(aq best
+streamlink \-\-hls\-live\-edge 5 \-\-stream\-segment\-threads 5 \(aqhls://https://host/playlist.m3u8\(aq best
 streamlink \-\-twitch\-low\-latency \-p mpv \-a \(aq\-\-cache=yes \-\-demuxer\-max\-bytes=750k\(aq twitch.tv/CHANNEL best
 .ft P
 .fi
@@ -425,8 +425,6 @@ Stream types that can be converted into a playable URL are:
 hls
 .IP \(bu 2
 http
-.IP \(bu 2
-rtmp
 .UNINDENT
 .sp
 Make sure your player can handle the stream type when using this.
@@ -448,84 +446,31 @@ This option will instead let the player decide when to exit.
 .B \-t TITLE
 .TP
 .B \-\-title TITLE
-This option allows you to supply a title to be displayed in the
-title bar of the window that the video player is launched in.
+Change the title of the video player\(aqs window.
 .sp
-This value can contain formatting variables surrounded by curly braces,
-{ and }. If you need to include a brace character, it can be escaped
-by doubling, e.g. {{ and }}.
+Please see the "Metadata variables" section of Streamlink\(aqs CLI documentation for all available metadata variables.
 .sp
-This option is only supported for the following players: mpv, potplayer, vlc.
+This option is only supported for the following players: mpv, potplayer, vlc
 .INDENT 7.0
 .TP
 .B VLC specific information:
-VLC has certain codes you can use inside your title.
-These are accessible inside \-\-title by using a backslash
-before the dollar sign VLC uses to denote a format character.
-.sp
-e.g. to put the current date in your VLC window title,
-the string "$A" could be inserted inside your \-\-title string.
-.sp
-A full list of the format codes VLC uses is available here:
+VLC does support special formatting variables on its own:
 \fI\%https://wiki.videolan.org/Documentation:Format_String/\fP
-.TP
-.B mpv specific information:
-mpv has certain codes you can use inside your title.
-These are accessible inside \-\-title by using a backslash
-before the dollar sign mpv uses to denote a format character.
 .sp
-e.g. to put the current version of mpv running inside your
-mpv window title, the string "${{mpv\-version}}" could be
-inserted inside your \-\-title string.
+These variables are accessible in the \-\-title option by adding a backslash
+in front of the dollar sign which VLC uses as its formatting character.
 .sp
-A full list of the format codes mpv uses is available here:
-\fI\%https://mpv.io/manual/stable/#property\-list\fP
+For example, to put the current date in your VLC window title,
+the string "\e$A" could be inserted inside the \-\-title string.
 .UNINDENT
 .sp
-Formatting variables available to use in \fB\-\-title\fP:
-.INDENT 7.0
-.TP
-.B {title}
-If available, this is the title of the stream.
-Otherwise, it is the string "Unknown Title"
-.TP
-.B {author}
-If available, this is the author of the stream.
-Otherwise, it is the string "Unknown Author"
-.TP
-.B {category}
-If available, this is the category the stream has been placed into.
-.INDENT 7.0
-.IP \(bu 2
-For Twitch, this is the game being played
-.IP \(bu 2
-For YouTube, it\(aqs the category e.g. Gaming, Sports, Music...
-.UNINDENT
-.sp
-Otherwise, it is the string "No Category"
-.TP
-.B {game}
-This is just a synonym for {category} which may make more sense for
-gaming oriented platforms. "Game being played" is a way to categorize
-the stream, so it doesn\(aqt need its own separate handling.
-.TP
-.B {url}
-URL of the stream.
-.TP
-.B {time}
-The current timestamp, which can optionally be formatted via {time:format}.
-This format parameter string is passed to Python\(aqs datetime.strftime() method,
-so all usual time directives are available. The default format is "%Y\-%m\-%d_%H\-%M\-%S".
-.UNINDENT
-.sp
-Examples:
+Example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
-streamlink \-p vlc \-\-title "{title} \-!\- {author} \-!\- {category} \e$A" <url> [stream]
-streamlink \-p mpv \-\-title "{title} \-\- {author} \-\- {category} \-\- (\e${{mpv\-version}})" <url> [stream]
+streamlink \-p mpv \-\-title "{author} \- {category} \- {title}" <URL> [STREAM]
 .ft P
 .fi
 .UNINDENT
@@ -541,8 +486,21 @@ Write stream data to FILENAME instead of playing it.
 .sp
 You will be prompted if the file already exists.
 .sp
-The formatting variables available for the \fB\-\-title\fP option may be used.
+Please see the "Metadata variables" section of Streamlink\(aqs CLI documentation for all available metadata variables.
+.sp
 Unsupported characters in substituted variables will be replaced with an underscore.
+.sp
+Example:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+streamlink \-\-output "~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts" <URL> [STREAM]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -573,8 +531,21 @@ Open the stream in the player, while at the same time writing it to FILENAME.
 .sp
 You will be prompted if the file already exists.
 .sp
-The formatting variables available for the \fB\-\-title\fP option may be used.
+Please see the "Metadata variables" section of Streamlink\(aqs CLI documentation for all available metadata variables.
+.sp
 Unsupported characters in substituted variables will be replaced with an underscore.
+.sp
+Example:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+streamlink \-\-record "~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts" <URL> [STREAM]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -585,8 +556,21 @@ Write stream data to stdout, while at the same time writing it to FILENAME.
 .sp
 You will be prompted if the file already exists.
 .sp
-The formatting variables available for the \fB\-\-title\fP option may be used.
+Please see the "Metadata variables" section of Streamlink\(aqs CLI documentation for all available metadata variables.
+.sp
 Unsupported characters in substituted variables will be replaced with an underscore.
+.sp
+Example:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+streamlink \-\-record\-and\-pipe "~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts" <URL> [STREAM]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -690,7 +674,7 @@ streams with the same name but different stream types. Any stream type
 not listed will be omitted from the available streams list.  A \fB*\fP can
 be used as a wildcard to match any other type of stream, eg. muxed\-stream.
 .sp
-Default is: \fB"rtmp,hls,hds,http,akamaihd,*"\fP\&.
+Default is: \fB"hls,http,*"\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -764,7 +748,7 @@ Default is: \fB"16M"\fP\&.
 .INDENT 7.0
 .INDENT 3.5
 A smaller size is recommended on lower end systems (such as Raspberry Pi) when playing stream types that require
-some extra processing (such as HDS) to avoid unnecessary background processing.
+some extra processing to avoid unnecessary background processing.
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -773,7 +757,7 @@ some extra processing (such as HDS) to avoid unnecessary background processing.
 .B \-\-stream\-segment\-attempts ATTEMPTS
 How many attempts should be done to download each segment before giving up.
 .sp
-This applies to all different kinds of segmented stream types, such as DASH, HDS, HLS, etc.
+This applies to all different kinds of segmented stream types, such as DASH, HLS, etc.
 .sp
 Default is: \fB3\fP\&.
 .UNINDENT
@@ -782,7 +766,7 @@ Default is: \fB3\fP\&.
 .B \-\-stream\-segment\-threads THREADS
 The size of the thread pool used to download segments. Minimum value is 1 and maximum is 10.
 .sp
-This applies to all different kinds of segmented stream types, such as DASH, HDS, HLS, etc.
+This applies to all different kinds of segmented stream types, such as DASH, HLS, etc.
 .sp
 Default is: \fB1\fP\&.
 .UNINDENT
@@ -791,7 +775,7 @@ Default is: \fB1\fP\&.
 .B \-\-stream\-segment\-timeout TIMEOUT
 Segment connect and read timeout.
 .sp
-This applies to all different kinds of segmented stream types, such as DASH, HDS, HLS, etc.
+This applies to all different kinds of segmented stream types, such as DASH, HLS, etc.
 .sp
 Default is: \fB10.0\fP\&.
 .UNINDENT
@@ -800,7 +784,7 @@ Default is: \fB10.0\fP\&.
 .B \-\-stream\-timeout TIMEOUT
 Timeout for reading data from streams.
 .sp
-This applies to all different kinds of stream types, such as DASH, HDS, HLS, HTTP, RTMP, etc.
+This applies to all different kinds of stream types, such as DASH, HLS, HTTP, etc.
 .sp
 Default is: \fB60.0\fP\&.
 .UNINDENT
@@ -811,15 +795,7 @@ Automatically mux available subtitles into the output stream.
 .sp
 Needs to be supported by the used plugin.
 .sp
-\fBSupported plugins:\fP funimationnow, pluzz, rtve, svtplay, vimeo
-.UNINDENT
-.SS HDS options
-.INDENT 0.0
-.TP
-.B \-\-hds\-live\-edge SECONDS
-The time live HDS streams will start from the edge of the stream.
-.sp
-Default is: \fB10.0\fP\&.
+\fBSupported plugins:\fP funimationnow, rtve, svtplay, vimeo
 .UNINDENT
 .SS HLS options
 .INDENT 0.0
@@ -843,6 +819,11 @@ this, please refer to the player\(aqs own documentation for the required configu
 \fB\-\-player\-args\fP\&.
 .UNINDENT
 .UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-hls\-segment\-stream\-data
+Immediately write segment data into output buffer while downloading.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -968,46 +949,6 @@ Default is: \fBunlimited\fP\&.
 .B \-\-hls\-live\-restart
 Skip to the beginning of a live stream, or as far back as possible.
 .UNINDENT
-.SS RTMP options
-.INDENT 0.0
-.TP
-.B \-\-rtmp\-rtmpdump FILENAME
-RTMPDump is used to access RTMP streams. You can specify the
-location of the rtmpdump executable if it is not in your PATH.
-.sp
-Example: "/usr/local/bin/rtmpdump"
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-rtmp\-proxy PROXY
-A SOCKS proxy that RTMP streams will use.
-.sp
-Example: 127.0.0.1:9050
-.UNINDENT
-.SS Subprocess options
-.INDENT 0.0
-.TP
-.B \-\-subprocess\-cmdline
-Print the command\-line used internally to play the stream.
-.sp
-This is only available on RTMP streams.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-subprocess\-errorlog
-Log possible errors from internal subprocesses to a temporary file. The
-file will be saved in your systems temporary directory.
-.sp
-Useful when debugging rtmpdump related issues.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-subprocess\-errorlog\-path PATH
-Log the subprocess errorlog to a specific file rather than a temporary
-file. Takes precedence over subprocess\-errorlog.
-.sp
-Useful when debugging rtmpdump related issues.
-.UNINDENT
 .SS FFmpeg options
 .INDENT 0.0
 .TP
@@ -1070,17 +1011,9 @@ Enable the \-start_at_zero ffmpeg option when using copyts.
 .INDENT 0.0
 .TP
 .B \-\-http\-proxy HTTP_PROXY
-A HTTP proxy to use for all HTTP requests, including WebSocket connections.
-By default this proxy will be used for all HTTPS requests too.
+A HTTP proxy to use for all HTTP and HTTPS requests, including WebSocket connections.
 .sp
 Example: "\fI\%http://hostname:port/\fP"
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-https\-proxy HTTPS_PROXY
-A HTTPS capable proxy to use for all HTTPS requests.
-.sp
-Example: "\fI\%https://hostname:port/\fP"
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1282,8 +1215,7 @@ Value of the user\-session token
 .INDENT 0.0
 .TP
 .B \-\-niconico\-purge\-credentials
-Purge cached Niconico credentials to initiate a new session
-and reauthenticate.
+Purge cached Niconico credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1408,8 +1340,8 @@ Do not open the stream if the target channel is currently broadcasting a rerun.
 .TP
 .B \-\-twitch\-low\-latency
 Enables low latency streaming by prefetching HLS segments.
-Sets \fB\-\-hls\-live\-edge\fP to 2, if it is higher.
-Reducing it to 1 will result in the lowest latency possible, but will most likely cause buffering.
+Sets \fB\-\-hls\-segment\-stream\-data\fP to true and \fB\-\-hls\-live\-edge\fP to 2, if it is higher.
+Reducing \fB\-\-hls\-live\-edge\fP to 1 will result in the lowest latency possible, but will most likely cause buffering.
 .sp
 In order to achieve true low latency streaming during playback, the player\(aqs caching/buffering settings will
 need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
@@ -1423,6 +1355,13 @@ Low latency streams have to be enabled by the broadcasters on Twitch themselves.
 Regular streams can cause buffering issues with this option enabled due to the reduced \fB\-\-hls\-live\-edge\fP value.
 .UNINDENT
 .UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-twitch\-api\-header KEY=VALUE
+A header to add to each Twitch API HTTP request.
+.sp
+Can be repeated to add multiple headers.
 .UNINDENT
 .SS Ustreamtv
 .INDENT 0.0

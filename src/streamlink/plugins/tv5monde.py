@@ -1,75 +1,74 @@
 import re
+from urllib.parse import urlparse
 
-from streamlink.plugin import Plugin, pluginmatcher
+from streamlink.plugin import Plugin, PluginError, pluginmatcher
 from streamlink.plugin.api import validate
-from streamlink.plugins.common_jwplayer import _js_to_json
-from streamlink.stream import HLSStream, HTTPStream, RTMPStream
-from streamlink.utils import parse_json
+from streamlink.stream.hls import HLSStream
+from streamlink.stream.http import HTTPStream
+from streamlink.utils.url import update_scheme
 
 
-@pluginmatcher(re.compile(
-    r'https?://([\w-]+\.)*(tv|tivi)5monde(plus(afrique)?)?\.com'
-))
+@pluginmatcher(re.compile(r"""
+    https?://(?:[\w-]+\.)*(?:tv5monde|tivi5mondeplus)\.com/
+""", re.VERBOSE))
 class TV5Monde(Plugin):
-    _videos_re = re.compile(r'"?(?:files|sources)"?:\s*(?P<videos>\[.+?\])')
-    _videos_embed_re = re.compile(r'(?:file:\s*|src=)"(?P<embed>.+?\.mp4|.+?/embed/.+?)"')
-
-    _videos_schema = validate.Schema(
-        validate.transform(_js_to_json),
-        validate.transform(parse_json),
-        validate.all([
+    def _get_hls(self, root):
+        schema_live = validate.Schema(
+            validate.xml_xpath_string(".//*[contains(@data-broadcast,'m3u8')]/@data-broadcast"),
+            str,
+            validate.parse_json(),
             validate.any(
-                validate.Schema(
-                    {'url': validate.url()},
-                    validate.get('url')
+                validate.all({"files": list}, validate.get("files")),
+                list
+            ),
+            [{
+                "url": validate.url(path=validate.endswith(".m3u8"))
+            }],
+            validate.get((0, "url")),
+            validate.transform(lambda content_url: update_scheme("https://", content_url))
+        )
+        try:
+            live = schema_live.validate(root)
+        except PluginError:
+            return
+
+        return HLSStream.parse_variant_playlist(self.session, live)
+
+    def _get_vod(self, root):
+        schema_vod = validate.Schema(
+            validate.xml_xpath_string(".//script[@type='application/ld+json'][contains(text(),'VideoObject')][1]/text()"),
+            str,
+            validate.transform(lambda jsonlike: re.sub(r"[\r\n]+", "", jsonlike)),
+            validate.parse_json(),
+            validate.any(
+                validate.all(
+                    {"@graph": [dict]},
+                    validate.get("@graph"),
+                    validate.filter(lambda obj: obj["@type"] == "VideoObject"),
+                    validate.get(0)
                 ),
-                validate.Schema(
-                    {'file': validate.url()},
-                    validate.get('file')
-                ),
-            )
-        ])
-    )
+                dict
+            ),
+            {"contentUrl": validate.url()},
+            validate.get("contentUrl"),
+            validate.transform(lambda content_url: update_scheme("https://", content_url))
+        )
+        try:
+            vod = schema_vod.validate(root)
+        except PluginError:
+            return
 
-    def _get_non_embed_streams(self, page):
-        match = self._videos_re.search(page)
-        if match is not None:
-            videos = self._videos_schema.validate(match.group('videos'))
-            return videos
+        if urlparse(vod).path.endswith(".m3u8"):
+            return HLSStream.parse_variant_playlist(self.session, vod)
 
-        return []
-
-    def _get_embed_streams(self, page):
-        match = self._videos_embed_re.search(page)
-        if match is None:
-            return []
-
-        url = match.group('embed')
-        if '.mp4' in url:
-            return [url]
-
-        res = self.session.http.get(url)
-        videos = self._get_non_embed_streams(res.text)
-        if videos:
-            return videos
-
-        return []
+        return {"vod": HTTPStream(self.session, vod)}
 
     def _get_streams(self):
-        res = self.session.http.get(self.url)
-        match = self._videos_re.search(res.text)
-        if match is not None:
-            videos = self._videos_schema.validate(match.group('videos'))
-        else:
-            videos = self._get_embed_streams(res.text)
+        root = self.session.http.get(self.url, schema=validate.Schema(
+            validate.parse_html()
+        ))
 
-        for url in videos:
-            if '.m3u8' in url:
-                yield from HLSStream.parse_variant_playlist(self.session, url).items()
-            elif 'rtmp' in url:
-                yield 'vod', RTMPStream(self.session, {'rtmp': url})
-            elif '.mp4' in url:
-                yield 'vod', HTTPStream(self.session, url)
+        return self._get_hls(root) or self._get_vod(root)
 
 
 __plugin__ = TV5Monde

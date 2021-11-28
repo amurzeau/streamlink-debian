@@ -4,8 +4,7 @@ import re
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.plugin.api.utils import itertags
-from streamlink.stream import HLSStream
-from streamlink.utils import parse_json
+from streamlink.stream.hls import HLSStream
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class VTVgo(Plugin):
         ]
     )
     _schema_stream_url = validate.Schema(
-        validate.transform(parse_json),
+        validate.parse_json(),
         {"stream_url": [validate.url()]},
         validate.get("stream_url"),
         validate.get(0)

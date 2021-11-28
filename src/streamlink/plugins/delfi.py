@@ -9,8 +9,10 @@ import re
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api.utils import itertags
-from streamlink.stream import DASHStream, HLSStream, HTTPStream
-from streamlink.utils import update_scheme
+from streamlink.stream.dash import DASHStream
+from streamlink.stream.hls import HLSStream
+from streamlink.stream.http import HTTPStream
+from streamlink.utils.url import update_scheme
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ class Delfi(Plugin):
         data = self.session.http.json(res)
         if data["success"]:
             for x in itertools.chain(*data['data']['versions'].values()):
-                src = update_scheme(self.url, x['src'])
+                src = update_scheme("https://", x["src"], force=False)
                 if x['type'] == "application/x-mpegurl":
                     yield from HLSStream.parse_variant_playlist(self.session, src).items()
                 elif x['type'] == "application/dash+xml":

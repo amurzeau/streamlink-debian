@@ -6,10 +6,11 @@ from urllib.parse import urlparse, urlunparse
 
 from streamlink.plugin import Plugin, PluginError, pluginmatcher
 from streamlink.plugin.api import useragents, validate
-from streamlink.plugin.api.utils import itertags
-from streamlink.stream import HLSStream, HTTPStream
 from streamlink.stream.ffmpegmux import MuxedStream
-from streamlink.utils import parse_json, search_dict
+from streamlink.stream.hls import HLSStream
+from streamlink.stream.http import HTTPStream
+from streamlink.utils.data import search_dict
+from streamlink.utils.parse import parse_json
 
 log = logging.getLogger(__name__)
 
@@ -102,6 +103,23 @@ class YouTube(Plugin):
 
         return weight, group
 
+    @staticmethod
+    def _schema_consent(data):
+        schema_consent = validate.Schema(
+            validate.parse_html(),
+            validate.xml_findall(".//input[@type='hidden']")
+        )
+        return schema_consent.validate(data)
+
+    def _schema_canonical(self, data):
+        schema_canonical = validate.Schema(
+            validate.parse_html(),
+            validate.xml_xpath_string(".//link[@rel='canonical'][1]/@href"),
+            validate.transform(self.matcher.match),
+            validate.get("video_id")
+        )
+        return schema_canonical.validate(data)
+
     @classmethod
     def _schema_playabilitystatus(cls, data):
         schema = validate.Schema(
@@ -117,23 +135,34 @@ class YouTube(Plugin):
     @classmethod
     def _schema_videodetails(cls, data):
         schema = validate.Schema(
-            {"videoDetails": {
-                "videoId": str,
-                "author": str,
-                "title": str,
-                validate.optional("isLive"): validate.transform(bool),
-                validate.optional("isLiveContent"): validate.transform(bool),
-                validate.optional("isLiveDvrEnabled"): validate.transform(bool),
-                validate.optional("isLowLatencyLiveStream"): validate.transform(bool),
-                validate.optional("isPrivate"): validate.transform(bool),
-            }},
-            validate.get("videoDetails"),
+            {
+                "videoDetails": {
+                    "videoId": str,
+                    "author": str,
+                    "title": str,
+                    validate.optional("isLive"): validate.transform(bool),
+                    validate.optional("isLiveContent"): validate.transform(bool),
+                    validate.optional("isLiveDvrEnabled"): validate.transform(bool),
+                    validate.optional("isLowLatencyLiveStream"): validate.transform(bool),
+                    validate.optional("isPrivate"): validate.transform(bool),
+                },
+                "microformat": {
+                    "playerMicroformatRenderer": {
+                        "category": str
+                    }
+                }
+            },
+            validate.union_get(
+                ("videoDetails", "videoId"),
+                ("videoDetails", "author"),
+                ("microformat", "playerMicroformatRenderer", "category"),
+                ("videoDetails", "title"),
+                ("videoDetails", "isLive")
+            )
         )
         videoDetails = validate.validate(schema, data)
         log.trace(f"videoDetails = {videoDetails!r}")
-        return validate.validate(
-            validate.union_get("videoId", "author", "title", "isLive"),
-            videoDetails)
+        return videoDetails
 
     @classmethod
     def _schema_streamingdata(cls, data):
@@ -206,10 +235,10 @@ class YouTube(Plugin):
     def _get_res(self, url):
         res = self.session.http.get(url)
         if urlparse(res.url).netloc == "consent.youtube.com":
-            c_data = {}
-            for _i in itertags(res.text, "input"):
-                if _i.attributes.get("type") == "hidden":
-                    c_data[_i.attributes.get("name")] = unescape(_i.attributes.get("value"))
+            c_data = {
+                elem.attrib.get("name"): unescape(elem.attrib.get("value"))
+                for elem in self._schema_consent(res.text)
+            }
             log.debug(f"c_data_keys: {', '.join(c_data.keys())}")
             res = self.session.http.post("https://consent.youtube.com/s", data=c_data)
         return res
@@ -225,14 +254,9 @@ class YouTube(Plugin):
     def _get_data_from_api(self, res):
         _i_video_id = self.match.group("video_id")
         if _i_video_id is None:
-            for link in itertags(res.text, "link"):
-                if link.attributes.get("rel") == "canonical":
-                    try:
-                        _i_video_id = self.matcher.match(link.attributes.get("href")).group("video_id")
-                    except AttributeError:
-                        return
-                    break
-            else:
+            try:
+                _i_video_id = self._schema_canonical(res.text)
+            except (PluginError, TypeError):
                 return
 
         try:
@@ -251,11 +275,14 @@ class YouTube(Plugin):
             params={"key": _i_api_key},
             data=json.dumps({
                 "videoId": _i_video_id,
+                "contentCheckOk": True,
+                "racyCheckOk": True,
                 "context": {
                     "client": {
-                        "clientName": "WEB_EMBEDDED_PLAYER",
+                        "clientName": "WEB",
                         "clientVersion": _i_version,
                         "platform": "DESKTOP",
+                        "clientScreen": "EMBED",
                         "clientFormFactor": "UNKNOWN_FORM_FACTOR",
                         "browserName": "Chrome",
                     },
@@ -274,12 +301,13 @@ class YouTube(Plugin):
                 if videoId is not None:
                     return videoId
 
-    def _data_status(self, data):
+    def _data_status(self, data, errorlog=False):
         if not data:
             return False
         status, reason = self._schema_playabilitystatus(data)
         if status != "OK":
-            log.error(f"Could not get video info - {status}: {reason}")
+            if errorlog:
+                log.error(f"Could not get video info - {status}: {reason}")
             return False
         return True
 
@@ -298,11 +326,11 @@ class YouTube(Plugin):
         data = self._get_data_from_regex(res, self._re_ytInitialPlayerResponse, "initial player response")
         if not self._data_status(data):
             data = self._get_data_from_api(res)
-            if not self._data_status(data):
+            if not self._data_status(data, True):
                 return
 
-        video_id, self.author, self.title, is_live = self._schema_videodetails(data)
-        log.debug(f"Using video ID: {video_id}")
+        self.id, self.author, self.category, self.title, is_live = self._schema_videodetails(data)
+        log.debug(f"Using video ID: {self.id}")
 
         if is_live:
             log.debug("This video is live.")

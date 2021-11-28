@@ -3,8 +3,10 @@ import re
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
-from streamlink.stream import DASHStream, HLSStream
-from streamlink.utils import parse_json, search_dict, update_scheme
+from streamlink.stream.dash import DASHStream
+from streamlink.stream.hls import HLSStream
+from streamlink.utils.data import search_dict
+from streamlink.utils.url import update_scheme
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +22,7 @@ class AtresPlayer(Plugin):
             None,
             validate.all(
                 validate.get(1),
-                validate.transform(parse_json),
+                validate.parse_json(),
                 validate.transform(search_dict, key="href"),
             )
         )
@@ -29,13 +31,13 @@ class AtresPlayer(Plugin):
         validate.any(
             None,
             validate.all(
-                validate.transform(parse_json),
+                validate.parse_json(),
                 validate.transform(search_dict, key="urlVideo"),
             )
         )
     )
     stream_schema = validate.Schema(
-        validate.transform(parse_json),
+        validate.parse_json(),
         {"sources": [
             validate.all({
                 "src": validate.url(),

@@ -203,6 +203,7 @@ class Plugin:
     match: Match
 
     # plugin metadata attributes
+    id: Optional[str] = None
     author: Optional[str] = None
     category: Optional[str] = None
     title: Optional[str] = None
@@ -267,7 +268,7 @@ class Plugin:
 
     @classmethod
     def default_stream_types(cls, streams):
-        stream_types = ["rtmp", "hls", "hds", "http"]
+        stream_types = ["hls", "http"]
 
         for name, stream in iterate_streams(streams):
             stream_type = type(stream).shortname()
@@ -432,19 +433,23 @@ class Plugin:
 
     def get_metadata(self) -> Dict[str, Optional[str]]:
         return dict(
+            id=self.get_id(),
             author=self.get_author(),
             category=self.get_category(),
             title=self.get_title()
         )
 
+    def get_id(self) -> Optional[str]:
+        return None if self.id is None else str(self.id).strip()
+
     def get_title(self) -> Optional[str]:
-        return self.title
+        return None if self.title is None else str(self.title).strip()
 
     def get_author(self) -> Optional[str]:
-        return self.author
+        return None if self.author is None else str(self.author).strip()
 
     def get_category(self) -> Optional[str]:
-        return self.category
+        return None if self.category is None else str(self.category).strip()
 
     def save_cookies(self, cookie_filter=None, default_expires=60 * 60 * 24 * 7):
         """

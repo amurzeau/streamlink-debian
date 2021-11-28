@@ -7,14 +7,10 @@ class TestPluginCanHandleUrlTV5Monde(PluginCanHandleUrl):
 
     should_match = [
         "http://live.tv5monde.com/fbs.html",
-        "http://information.tv5monde.com/les-jt/monde",
-        "http://information.tv5monde.com/info/legislatives-en-france-carnet-de-campagne-a-montreal-172631",
-        "http://www.tv5mondeplusafrique.com/video_karim_ben_khelifa_je_ne_suis_pas_votre_negre_oumou_sangare"
-        + "_4658602.html",
-        "http://www.tv5mondeplus.com/toutes-les-videos/information/tv5monde-le-journal-edition-du-02-06-17-11h00",
-        "http://focus.tv5monde.com/prevert/le-roi-et-loiseau/"
-    ]
-
-    should_not_match = [
-        "http://www.tv5.ca/",
+        "https://www.tv5monde.com/emissions/episode/version-francaise-vf-83",
+        "https://revoir.tv5monde.com/toutes-les-videos/cinema/je-ne-reve-que-de-vous",
+        "https://revoir.tv5monde.com/toutes-les-videos/documentaires/des-russes-blancs-des-russes-blancs",
+        "https://information.tv5monde.com/video/la-diplomatie-francaise-est-elle-en-crise",
+        "https://afrique.tv5monde.com/videos/exclusivites-web/les-tutos-de-magloire/season-1/episode-1",
+        "https://www.tivi5mondeplus.com/conte-nous/episode-25",
     ]

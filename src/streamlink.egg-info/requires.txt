@@ -1,8 +1,7 @@
-requests<3.0,>=2.26.0
 isodate
-lxml>=4.6.3
-websocket-client>=0.58.0
-PySocks!=1.5.7,>=1.5.6
+lxml<5.0,>=4.6.4
+pycountry
 pycryptodome<4,>=3.4.3
-iso-639
-iso3166
+PySocks!=1.5.7,>=1.5.6
+requests<3.0,>=2.26.0
+websocket-client<2.0,>=1.2.1

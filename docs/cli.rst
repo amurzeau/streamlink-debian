@@ -306,45 +306,42 @@ Streamlink supports most of them. It's possible to tell Streamlink
 to access a streaming protocol directly instead of relying on a plugin
 to extract the streams from a URL for you.
 
-A protocol can be accessed directly by specifying it in the URL format::
-
-  protocol://path [key=value]
-
-Accessing a stream that requires extra parameters to be passed along
-(e.g. RTMP):
+A streaming protocol can be accessed directly by specifying it in the ``protocol://URL`` format
+with an optional list of parameters, like so:
 
 .. code-block:: console
 
-    $ streamlink "rtmp://streaming.server.net/playpath live=1 swfVfy=http://server.net/flashplayer.swf"
+    $ streamlink "protocol://https://streamingserver/path key1=value1 key2=value2"
 
-When passing parameters to the built-in stream plugins, the values will either
-be treated as plain strings, as is the case in the example above for ``swfVry``,
-or they will be interpreted as Python literals. For example, you can pass a
-Python dict or Python list as one of the parameters.
+Depending on the input URL, the explicit protocol scheme may be omitted.
+The following example shows HLS streams (``.m3u8``) and DASH streams (``.mdp``):
 
 .. code-block:: console
 
-    $ streamlink "rtmp://streaming.server.net/playpath conn=['B:1', 'S:authMe', 'O:1', 'NN:code:1.23', 'NS:flag:ok', 'O:0']"
-    $ streamlink "hls://streaming.server.net/playpath params={'token': 'magicToken'}"
+    $ streamlink "https://streamingserver/playlist.m3u8"
+    $ streamlink "https://streamingserver/manifest.mpd"
 
-In the examples above, ``conn`` will be passed as a Python list:
+When passing parameters to the built-in streaming protocols, the values will either be treated as plain strings
+or they will be interpreted as Python literals:
+
+.. code-block:: console
+
+    $ streamlink "httpstream://https://streamingserver/path method=POST params={'abc':123} json=['foo','bar','baz']"
 
 .. code-block:: python
 
-    ['B:1', 'S:authMe', 'O:1', 'NN:code:1.23', 'NS:flag:ok', 'O:0']
+    method="POST"
+    params={"key": 123}
+    json=["foo", "bar", "baz"]
 
-and ``params`` will be passed as a Python dict:
+The parameters from the example above are used to make an HTTP ``POST`` request with ``abc=123`` added
+to the query string and ``["foo", "bar", "baz"]`` used as the content of the HTTP request's body (the serialized JSON data).
 
-.. code-block:: python
-
-    {'token': 'magicToken'}
-
-Most streaming protocols only require you to pass a simple URL.
-This is an Adobe HDS stream:
+Some parameters allow you to configure the behavior of the streaming protocol implementation directly:
 
 .. code-block:: console
 
-    $ streamlink hds://streaming.server.net/playpath/manifest.f4m
+    $ streamlink "hls://https://streamingserver/path start_offset=123 duration=321 force_restart=True"
 
 Supported streaming protocols
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -352,11 +349,8 @@ Supported streaming protocols
 ============================== =================================================
 Name                           Prefix
 ============================== =================================================
-Adobe HTTP Dynamic Streaming   hds://
-Akamai HD Adaptive Streaming   akamaihd://
 Apple HTTP Live Streaming      hls:// [1]_
 MPEG-DASH [2]_                 dash://
-Real Time Messaging Protocol   rtmp:// rtmpe:// rtmps:// rtmpt:// rtmpte://
 Progressive HTTP, HTTPS, etc   httpstream:// [1]_
 ============================== =================================================
 
@@ -367,10 +361,11 @@ Progressive HTTP, HTTPS, etc   httpstream:// [1]_
 Proxy Support
 -------------
 
-You can use the :option:`--http-proxy` or :option:`--https-proxy` options to
-change the proxy server that Streamlink will use for HTTP and HTTPS requests respectively.
-For convenience reasons, :option:`--http-proxy` will automatically set the
-value of :option:`--https-proxy` as well, if it has not been set by the user.
+You can use the :option:`--http-proxy` option to change the proxy server
+that Streamlink will use for HTTP and HTTPS requests. :option:`--http-proxy` sets
+the proxy for all HTTP and HTTPS requests, including WebSocket connections.
+If separate proxies for each protocol are required, they can be set using
+environment variables - see `Requests Proxies Documentation`_
 
 Both HTTP and SOCKS proxies are supported, as well as authentication in each of them.
 
@@ -381,8 +376,60 @@ Both HTTP and SOCKS proxies are supported, as well as authentication in each of 
 
 .. code-block:: console
 
-    $ streamlink --http-proxy "http://user:pass@10.10.1.10:3128/" --https-proxy "socks5://10.10.1.10:1242"
-    $ streamlink --http-proxy "socks4a://10.10.1.10:1235" --https-proxy "socks5h://10.10.1.10:1234"
+    $ streamlink --http-proxy "http://address:port"
+    $ streamlink --http-proxy "https://address:port"
+    $ streamlink --http-proxy "socks4a://address:port"
+    $ streamlink --http-proxy "socks5h://address:port"
+
+.. _Requests Proxies Documentation: https://2.python-requests.org/en/master/user/advanced/#proxies
+
+
+Metadata variables
+------------------
+
+Streamlink supports a number of metadata variables that can be used in the following CLI arguments:
+
+- :option:`--title`
+- :option:`--output`
+- :option:`--record`
+- :option:`--record-and-pipe`
+
+Metadata variables are surrounded by curly braces and can be escaped by doubling the curly brace characters,
+eg. ``{variable}`` and ``{{not-a-variable}}``.
+
+The availability of each variable depends on the used plugin and whether that plugin supports this kind of metadata.
+If a variable is unsupported or not available, then its substitution will either be a short placeholder text (:option:`--title`)
+or an empty string (:option:`--output`, :option:`--record`, :option:`--record-and-pipe`).
+
+The :option:`--json` argument always lists the standard plugin metadata: ``id``, ``author``, ``category`` and ``title``.
+
+.. rst-class:: table-custom-layout table-custom-layout-platform-locations
+
+============================== =================================================
+Variable                       Description
+============================== =================================================
+``id``                         The unique ID of the stream, eg. an internal numeric ID or randomized string.
+``title``                      The stream's title, usually a short descriptive text.
+``author``                     The stream's author, eg. a channel or broadcaster name.
+``category``                   The stream's category, eg. the name of a game being played, a music genre, etc.
+``game``                       Alias for ``category``.
+``url``                        The resolved URL of the stream.
+``time``                       The current timestamp. Can optionally be formatted via ``{time:format}``.
+
+                               The format parameter string is passed to Python's `datetime.strftime()`_ method,
+                               so all the usual time directives are available.
+
+                               The default format is ``%Y-%m-%d_%H-%M-%S``.
+============================== =================================================
+
+Examples:
+
+.. code-block:: console
+
+    $ streamlink --title "{author} - {category} - {title}" <URL> [STREAM]
+    $ streamlink --output "~/recordings/{author}/{category}/{id}-{time:%Y%m%d%H%M%S}.ts" <URL> [STREAM]
+
+.. _datetime.strftime(): https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
 
 
 Command-line usage

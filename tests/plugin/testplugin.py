@@ -5,7 +5,9 @@ from streamlink import NoStreamsError
 from streamlink.options import Options
 from streamlink.plugin import PluginArgument, PluginArguments, pluginmatcher
 from streamlink.plugins import Plugin
-from streamlink.stream import AkamaiHDStream, HLSStream, HTTPStream, RTMPStream, Stream
+from streamlink.stream.hls import HLSStream
+from streamlink.stream.http import HTTPStream
+from streamlink.stream.stream import Stream
 
 
 class TestStream(Stream):
@@ -35,6 +37,7 @@ class TestPlugin(Plugin):
         "a_option": "default"
     })
 
+    id = "test-id-1234-5678"
     author = "Tѥst Āuƭhǿr"
     category = None
     title = "Test Title"
@@ -55,10 +58,8 @@ class TestPlugin(Plugin):
 
         streams = {}
         streams["test"] = TestStream(self.session)
-        streams["rtmp"] = RTMPStream(self.session, dict(rtmp="rtmp://test.se"))
         streams["hls"] = HLSStream(self.session, "http://test.se/playlist.m3u8")
         streams["http"] = HTTPStream(self.session, "http://test.se/stream")
-        streams["akamaihd"] = AkamaiHDStream(self.session, "http://test.se/stream")
 
         streams["240p"] = HTTPStream(self.session, "http://test.se/stream")
         streams["360p"] = HTTPStream(self.session, "http://test.se/stream")
@@ -69,8 +70,10 @@ class TestPlugin(Plugin):
         streams["1500k"] = HTTPStream(self.session, "http://test.se/stream")
         streams["3000k"] = HTTPStream(self.session, "http://test.se/stream")
 
-        streams["480p"] = [HTTPStream(self.session, "http://test.se/stream"),
-                           RTMPStream(self.session, dict(rtmp="rtmp://test.se"))]
+        streams["480p"] = [
+            HTTPStream(self.session, "http://test.se/stream"),
+            HLSStream(self.session, "http://test.se/playlist.m3u8")
+        ]
 
         return streams
 

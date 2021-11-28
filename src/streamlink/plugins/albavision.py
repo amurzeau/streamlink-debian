@@ -12,8 +12,8 @@ import time
 from urllib.parse import quote, urlencode, urlparse
 
 from streamlink.plugin import Plugin, PluginError, pluginmatcher
-from streamlink.stream import HLSStream
-from streamlink.utils import update_scheme
+from streamlink.stream.hls import HLSStream
+from streamlink.utils.url import update_scheme
 
 log = logging.getLogger(__name__)
 
@@ -86,7 +86,7 @@ class Albavision(Plugin):
 
     def _get_streams(self):
         m = self._live_url_re.search(self.page.text)
-        playlist_url = m and update_scheme(self.url, m.group(1))
+        playlist_url = m and update_scheme("https://", m.group(1), force=False)
         player_url = self.url
         live_channel = None
         p = urlparse(player_url)
@@ -113,7 +113,7 @@ class Albavision(Plugin):
                 if "block access from your country." in page.text:
                     raise PluginError("Content is geo-locked")
                 m = self._playlist_re.search(page.text)
-                playlist_url = m and update_scheme(self.url, m.group(1))
+                playlist_url = m and update_scheme("https://", m.group(1), force=False)
             else:
                 log.error("Could not find the live channel")
 
