@@ -1,8 +1,10 @@
-streamlink (3.0.3-1) UNRELEASED; urgency=medium
+streamlink (3.0.3-1) unstable; urgency=medium
 
   * New upstream version 3.0.3
+  * Update patches
+  * d/rules: remove STREAMLINK_USE_PYCOUNTRY not required anymore
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 28 Nov 2021 17:27:22 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 28 Nov 2021 20:05:24 +0100
 
 streamlink (2.4.0-1) unstable; urgency=medium
 
