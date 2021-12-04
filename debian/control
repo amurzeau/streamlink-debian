@@ -4,7 +4,8 @@ Section: python
 Priority: optional
 Standards-Version: 4.6.0
 Build-Depends: debhelper-compat (= 13),
- dh-python,
+ dh-sequence-python3,
+ dh-sequence-sphinxdoc,
  python3 (>= 3.4),
 # Streamlink dependencies
  python3-isodate,

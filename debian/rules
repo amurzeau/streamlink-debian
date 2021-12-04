@@ -7,7 +7,7 @@ export PYBUILD_INSTALL_ARGS_python3 = --install-scripts usr/share/streamlink/
 include /usr/share/dpkg/pkg-info.mk
 
 %:
-	dh $@ --with python3,sphinxdoc --buildsystem=pybuild
+	dh $@ --buildsystem=pybuild
 
 override_dh_auto_install:
 	PYTHONPATH=src python3 setup.py build_sphinx -b man
