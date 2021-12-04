@@ -3,8 +3,12 @@ streamlink (3.0.3-1) unstable; urgency=medium
   * New upstream version 3.0.3
   * Update patches
   * d/rules: remove STREAMLINK_USE_PYCOUNTRY not required anymore
+  * d/patches: add patch to fix build with requests < 2.26
+  * d/rules: add now required streamlink src to PYTHONPATH
+  * d/streamlink.install: install bash and zsh completion scripts
+  * d/patches: remove shebang from bash completion script
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 28 Nov 2021 20:05:24 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 04 Dec 2021 16:59:07 +0100
 
 streamlink (2.4.0-1) unstable; urgency=medium
 
