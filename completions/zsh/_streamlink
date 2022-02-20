@@ -38,7 +38,7 @@ _shtab_streamlink_cli_options_=(
         Set the log message threshold.
 
         Valid levels are\: none, error, warning, info, debug, trace
-        ]:loglevel:(critical error warning info debug trace none)"
+        ]:loglevel:(none critical error warning info debug trace)"
   "--logfile[
         Append log output to FILE instead of writing to stdout\/stderr.
 
@@ -601,15 +601,6 @@ _shtab_streamlink_cli_options_=(
 
         Default is 20.0.
         ]:http_timeout:"
-  "--abweb-username[
-            The username associated with your ABweb account, required to access any
-            ABweb stream.
-            ]:abweb_username:"
-  "--abweb-password[A ABweb account password to use with --abweb-username.]:abweb_password:"
-  "--abweb-purge-credentials[
-            Purge cached ABweb credentials to initiate a new session and
-            reauthenticate.
-            ]"
   "--afreeca-username[The username used to register with afreecatv.com.]:afreeca_username:"
   "--afreeca-password[A afreecatv.com account password to use with --afreeca-username.]:afreeca_password:"
   "--afreeca-purge-credentials[
