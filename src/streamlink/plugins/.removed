@@ -1,6 +1,7 @@
 # Removed plugin files
 # https://github.com/streamlink/streamlink/pull/2003
 # https://github.com/streamlink/streamlink/issues/1223
+abweb
 afreecatv
 aftonbladet
 akamaihd
@@ -59,9 +60,12 @@ itvplayer
 kanal7
 kingkong
 kralmuzik
+latina
 letontv
+live_russia_tv
 livecodingtv
 liveedu
+liveme
 livestation
 looch
 media_ccc_de

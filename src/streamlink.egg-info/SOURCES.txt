@@ -75,7 +75,6 @@ src/streamlink/plugin/api/websocket.py
 src/streamlink/plugins/.removed
 src/streamlink/plugins/__init__.py
 src/streamlink/plugins/abematv.py
-src/streamlink/plugins/abweb.py
 src/streamlink/plugins/adultswim.py
 src/streamlink/plugins/afreeca.py
 src/streamlink/plugins/albavision.py
@@ -129,10 +128,7 @@ src/streamlink/plugins/huya.py
 src/streamlink/plugins/idf1.py
 src/streamlink/plugins/invintus.py
 src/streamlink/plugins/kugou.py
-src/streamlink/plugins/latina.py
 src/streamlink/plugins/linelive.py
-src/streamlink/plugins/live_russia_tv.py
-src/streamlink/plugins/liveme.py
 src/streamlink/plugins/livestream.py
 src/streamlink/plugins/lrt.py
 src/streamlink/plugins/ltv_lsm_lv.py
@@ -305,7 +301,6 @@ tests/plugin/testplugin_override.py
 tests/plugins/__init__.py
 tests/plugins/conftest.py
 tests/plugins/test_abematv.py
-tests/plugins/test_abweb.py
 tests/plugins/test_adultswim.py
 tests/plugins/test_afreeca.py
 tests/plugins/test_albavision.py
@@ -356,10 +351,7 @@ tests/plugins/test_huya.py
 tests/plugins/test_idf1.py
 tests/plugins/test_invintus.py
 tests/plugins/test_kugou.py
-tests/plugins/test_latina.py
 tests/plugins/test_linelive.py
-tests/plugins/test_live_russia_tv.py
-tests/plugins/test_liveme.py
 tests/plugins/test_livestream.py
 tests/plugins/test_lrt.py
 tests/plugins/test_ltv_lsm_lv.py
