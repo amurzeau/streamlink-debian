@@ -1,8 +1,10 @@
-streamlink (3.1.1-1) UNRELEASED; urgency=medium
+streamlink (3.1.1-1) unstable; urgency=medium
 
   * New upstream version 3.1.1
+  * Update patches
+  * d/source/lintian-overrides: add changelog and XML test payload
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 20 Feb 2022 19:42:49 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 21 Feb 2022 23:16:07 +0100
 
 streamlink (3.0.3-1) unstable; urgency=medium
 
