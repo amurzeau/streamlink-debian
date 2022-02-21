@@ -5,4 +5,3 @@ remove_github_buttons
 0005-Use-sphinx_rtd_theme-theme-as-a-replacement-of-furo-.patch
 0007-Use-font-awesome-4-icons-a-Debian-doesn-t-have-font-.patch
 0007-Backport-requests.utils.DEFAULT_ACCEPT_ENCODING-in-t.patch
-0008-bash-completion-remove-shebang.patch

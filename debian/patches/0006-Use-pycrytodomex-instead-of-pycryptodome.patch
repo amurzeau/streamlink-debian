@@ -93,20 +93,20 @@ index 3ac3c1a..7268900 100644
  from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/steam.py b/src/streamlink/plugins/steam.py
-index 058461e..b0eb8f1 100644
+index e9f5aeb..d0ed56b 100644
 --- a/src/streamlink/plugins/steam.py
 +++ b/src/streamlink/plugins/steam.py
-@@ -4,8 +4,8 @@ import re
+@@ -3,8 +3,8 @@ import logging
+ import re
  import time
- from html import unescape as html_unescape
  
 -from Crypto.Cipher import PKCS1_v1_5
 -from Crypto.PublicKey import RSA
 +from Cryptodome.Cipher import PKCS1_v1_5
 +from Cryptodome.PublicKey import RSA
  
- import streamlink
  from streamlink.exceptions import FatalPluginError
+ from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
 diff --git a/src/streamlink/plugins/ustvnow.py b/src/streamlink/plugins/ustvnow.py
 index 716c0ad..c12d77a 100644
 --- a/src/streamlink/plugins/ustvnow.py
@@ -138,10 +138,10 @@ index ec5b701..c9019d7 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index aa4584c..181c356 100644
+index eab3e2e..3313de6 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
-@@ -8,9 +8,9 @@ from typing import List, NamedTuple, Optional, Union
+@@ -8,9 +8,9 @@ from typing import List, NamedTuple, Optional, Tuple, Union
  from urllib.parse import urlparse
  
  # noinspection PyPackageRequirements
@@ -151,7 +151,7 @@ index aa4584c..181c356 100644
 -from Crypto.Util.Padding import unpad
 +from Cryptodome.Util.Padding import unpad
  from requests import Response
- from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError
+ from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError, StreamConsumedError
  
 diff --git a/src/streamlink/utils/crypto.py b/src/streamlink/utils/crypto.py
 index abc3901..a71203f 100644
@@ -166,7 +166,7 @@ index abc3901..a71203f 100644
  
  def evp_bytestokey(password, salt, key_len, iv_len):
 diff --git a/tests/stream/test_hls.py b/tests/stream/test_hls.py
-index d5c9540..b92f8aa 100644
+index 3372079..e3fbb3e 100644
 --- a/tests/stream/test_hls.py
 +++ b/tests/stream/test_hls.py
 @@ -6,8 +6,8 @@ from unittest.mock import Mock, call, patch
