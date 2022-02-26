@@ -5,7 +5,7 @@ Here are the commands to manage the package:
   - `gbp import-orig --uscan`
 
 - Refresh patches:
-  - `gbp pq import && gbp pq export`
+  - `gbp pq rebase`
 
 - Check for important changes that may need other package changes (copyright, new patch, ...):
   - `https://github.com/streamlink/streamlink/compare/<old_tag>...<new_tag>`
@@ -27,6 +27,48 @@ Here are the commands to manage the package:
   - `lintian -EviIL +pedantic  ./streamlink_<version>_amd64.changes`
 
 - Don't forget to push `master` and `upstream` branches along with new tags (`debian/<version>`, `upstream/<version>`)
+
+## For unstable
+
+```sh
+# Switch to master branch
+git checkout master
+
+# Import latest upstream release
+gbp import-orig --uscan
+
+# Update debian/patches
+gbp pq rebase
+
+# Update debian/changelog
+gbp dch -Ra --commit
+
+# Do test build with sbuild
+gbp buildpackage "--git-builder=sbuild -v -As -d unstable --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'"
+
+# Tag commit
+gbp tag --git-tag --git-sign-tags
+
+```
+
+## For backports
+
+```sh
+# Switch to backport branch
+git checkout <backport-branch>
+
+# Merge master branch
+git merge master
+
+# Update debian/changelog
+gbp dch -Ra --bpo --commit
+
+# Do test build with sbuild
+gbp buildpackage "--git-builder=sbuild -v -As -d bullseye-backports --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
+
+# Tag commit
+gbp tag --git-tag --git-sign-tags
+```
 
 # Changes checks
 
