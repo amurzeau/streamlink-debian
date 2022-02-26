@@ -47,7 +47,10 @@ gbp dch -Ra --commit
 gbp buildpackage "--git-builder=sbuild -v -As -d unstable --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'"
 
 # Tag commit
-gbp tag --git-tag --git-sign-tags
+gbp tag --sign-tags
+
+# Push to git repository
+git push origin experimental master upstream pristine-tar bullseye-backports --tags
 
 ```
 
@@ -67,7 +70,11 @@ gbp dch -Ra --bpo --commit
 gbp buildpackage "--git-builder=sbuild -v -As -d bullseye-backports --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
 
 # Tag commit
-gbp tag --git-tag --git-sign-tags
+gbp tag --sign-tags
+
+# Push to git repository
+git push origin experimental master upstream pristine-tar bullseye-backports --tags
+
 ```
 
 # Changes checks
