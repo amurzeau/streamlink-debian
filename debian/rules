@@ -9,9 +9,10 @@ include /usr/share/dpkg/pkg-info.mk
 %:
 	dh $@ --buildsystem=pybuild
 
+# Add LC_ALL=C.UTF-8 LANGUAGE=C.UTF-8 to have reproducible builds (See #998059)
 override_dh_auto_install:
-	PYTHONPATH=src python3 setup.py build_sphinx -b man
-	PYTHONPATH=src python3 setup.py build_sphinx -b html
+	LC_ALL=C.UTF-8 LANGUAGE=C.UTF-8 PYTHONPATH=src python3 setup.py build_sphinx -b man
+	LC_ALL=C.UTF-8 LANGUAGE=C.UTF-8 PYTHONPATH=src python3 setup.py build_sphinx -b html
 	dh_auto_install
 
 # Explicitly uses CHANGELOG.md instead of docs/changelog.md (the default
