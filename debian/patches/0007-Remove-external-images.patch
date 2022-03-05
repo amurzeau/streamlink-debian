@@ -20,14 +20,14 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  3 files changed, 5 insertions(+), 19 deletions(-)
 
 diff --git a/docs/applications.rst b/docs/applications.rst
-index 598d719..9082606 100644
+index 477031e..0d78e54 100644
 --- a/docs/applications.rst
 +++ b/docs/applications.rst
 @@ -8,14 +8,12 @@ Streamlink Applications
  Streamlink Twitch GUI
  ---------------------
  
--.. image:: https://user-images.githubusercontent.com/467294/28097570-3415020e-66b1-11e7-928d-4b9da35daf13.jpg
+-.. image:: https://user-images.githubusercontent.com/467294/151660267-97a8c0a3-62b3-4aa5-b960-c307da1b4fb2.png
 -    :alt: Streamlink Twitch GUI
 -
  :Description: A multi platform Twitch.tv browser for Streamlink
@@ -35,10 +35,10 @@ index 598d719..9082606 100644
  :OS: |Windows| |MacOS| |Linux|
  :Author: `Sebastian Meyer <https://github.com/bastimeyer>`_
  :Website: https://streamlink.github.io/streamlink-twitch-gui
-+:Screenshot: https://user-images.githubusercontent.com/467294/28097570-3415020e-66b1-11e7-928d-4b9da35daf13.jpg
++:Screenshot: https://user-images.githubusercontent.com/467294/151660267-97a8c0a3-62b3-4aa5-b960-c307da1b4fb2.png
  :Source code: https://github.com/streamlink/streamlink-twitch-gui
- :Info: A NW.js based desktop web application, formerly known as *Livestreamer Twitch GUI*. Browse Twitch.tv and watch
-     multiple streams at once. Filter streams by language, receive desktop notifications when followed channels start
+ :Info: An NW.js based desktop web application. Browse Twitch.tv and watch multiple streams at once.
+     Filter streams by language, receive desktop notifications when followed channels start
 diff --git a/docs/donate.rst b/docs/donate.rst
 index 326a4ad..389b8d1 100644
 --- a/docs/donate.rst

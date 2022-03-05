@@ -52,10 +52,10 @@ index 898d658..48b8742 100644
  requests<3.0,>=2.26.0
  websocket-client<2.0,>=1.2.1
 diff --git a/src/streamlink/plugins/abematv.py b/src/streamlink/plugins/abematv.py
-index 7dbbc24..a694889 100644
+index a9a34ed..287ee8d 100644
 --- a/src/streamlink/plugins/abematv.py
 +++ b/src/streamlink/plugins/abematv.py
-@@ -8,7 +8,7 @@ import uuid
+@@ -14,7 +14,7 @@ import uuid
  from base64 import urlsafe_b64encode
  from binascii import unhexlify
  
@@ -65,10 +65,10 @@ index 7dbbc24..a694889 100644
  from requests.adapters import BaseAdapter
  
 diff --git a/src/streamlink/plugins/mjunoon.py b/src/streamlink/plugins/mjunoon.py
-index fbc05c3..9d513ab 100644
+index 22d5a20..99494b3 100644
 --- a/src/streamlink/plugins/mjunoon.py
 +++ b/src/streamlink/plugins/mjunoon.py
-@@ -3,8 +3,8 @@ import logging
+@@ -9,8 +9,8 @@ import logging
  import re
  from urllib.parse import urljoin
  
@@ -80,10 +80,10 @@ index fbc05c3..9d513ab 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/rtve.py b/src/streamlink/plugins/rtve.py
-index 3ac3c1a..7268900 100644
+index ab2399e..7ac3c42 100644
 --- a/src/streamlink/plugins/rtve.py
 +++ b/src/streamlink/plugins/rtve.py
-@@ -3,7 +3,7 @@ import logging
+@@ -9,7 +9,7 @@ import logging
  import re
  from urllib.parse import urlparse
  
@@ -93,10 +93,10 @@ index 3ac3c1a..7268900 100644
  from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/steam.py b/src/streamlink/plugins/steam.py
-index e9f5aeb..d0ed56b 100644
+index 911a64e..e883938 100644
 --- a/src/streamlink/plugins/steam.py
 +++ b/src/streamlink/plugins/steam.py
-@@ -3,8 +3,8 @@ import logging
+@@ -10,8 +10,8 @@ import logging
  import re
  import time
  
@@ -108,10 +108,10 @@ index e9f5aeb..d0ed56b 100644
  from streamlink.exceptions import FatalPluginError
  from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
 diff --git a/src/streamlink/plugins/ustvnow.py b/src/streamlink/plugins/ustvnow.py
-index 716c0ad..c12d77a 100644
+index b75e2fe..19d85af 100644
 --- a/src/streamlink/plugins/ustvnow.py
 +++ b/src/streamlink/plugins/ustvnow.py
-@@ -5,9 +5,9 @@ import re
+@@ -11,9 +11,9 @@ import re
  from urllib.parse import urljoin, urlparse
  from uuid import uuid4
  
@@ -125,10 +125,10 @@ index 716c0ad..c12d77a 100644
  from streamlink.plugin import Plugin, PluginArgument, PluginArguments, PluginError, pluginmatcher
  from streamlink.stream.hls import HLSStream
 diff --git a/src/streamlink/plugins/webtv.py b/src/streamlink/plugins/webtv.py
-index ec5b701..c9019d7 100644
+index a04e075..889ddec 100644
 --- a/src/streamlink/plugins/webtv.py
 +++ b/src/streamlink/plugins/webtv.py
-@@ -3,7 +3,7 @@ import binascii
+@@ -8,7 +8,7 @@ import binascii
  import logging
  import re
  
