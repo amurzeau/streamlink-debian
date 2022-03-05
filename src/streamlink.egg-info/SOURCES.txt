@@ -25,12 +25,13 @@ docs/docutils.conf
 docs/donate.rst
 docs/ext_argparse.py
 docs/ext_github.py
+docs/ext_plugins.py
 docs/ext_releaseref.py
 docs/index.rst
 docs/install.rst
 docs/issues.rst
 docs/players.rst
-docs/plugin_matrix.rst
+docs/plugins.rst
 docs/thirdparty.rst
 docs/_build/man/streamlink.1
 docs/_static/apple-touch-icon.png
@@ -130,6 +131,7 @@ src/streamlink/plugins/invintus.py
 src/streamlink/plugins/kugou.py
 src/streamlink/plugins/linelive.py
 src/streamlink/plugins/livestream.py
+src/streamlink/plugins/lnk.py
 src/streamlink/plugins/lrt.py
 src/streamlink/plugins/ltv_lsm_lv.py
 src/streamlink/plugins/mediaklikk.py
@@ -168,6 +170,7 @@ src/streamlink/plugins/raiplay.py
 src/streamlink/plugins/reuters.py
 src/streamlink/plugins/rotana.py
 src/streamlink/plugins/rtbf.py
+src/streamlink/plugins/rtpa.py
 src/streamlink/plugins/rtpplay.py
 src/streamlink/plugins/rtve.py
 src/streamlink/plugins/rtvs.py
@@ -287,7 +290,6 @@ tests/test_plugin.py
 tests/test_plugin_utils.py
 tests/test_plugins.py
 tests/test_plugins_input.py
-tests/test_plugins_meta.py
 tests/test_session.py
 tests/test_stream_file.py
 tests/test_stream_json.py
@@ -353,6 +355,7 @@ tests/plugins/test_invintus.py
 tests/plugins/test_kugou.py
 tests/plugins/test_linelive.py
 tests/plugins/test_livestream.py
+tests/plugins/test_lnk.py
 tests/plugins/test_lrt.py
 tests/plugins/test_ltv_lsm_lv.py
 tests/plugins/test_mediaklikk.py
@@ -391,6 +394,7 @@ tests/plugins/test_raiplay.py
 tests/plugins/test_reuters.py
 tests/plugins/test_rotana.py
 tests/plugins/test_rtbf.py
+tests/plugins/test_rtpa.py
 tests/plugins/test_rtpplay.py
 tests/plugins/test_rtve.py
 tests/plugins/test_rtvs.py
