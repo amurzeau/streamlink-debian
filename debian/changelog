@@ -5,8 +5,9 @@ streamlink (3.2.0-1) unstable; urgency=medium
   * d/rules: add LANG var to have reproducible builds (See #998059)
   * New upstream version 3.2.0
   * d/patches: update patches
+  * lintian-overrides: adjust filter for changelogs
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 05 Mar 2022 22:47:37 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 05 Mar 2022 22:55:24 +0100
 
 streamlink (3.1.1-1) unstable; urgency=medium
 
