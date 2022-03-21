@@ -1,3 +1,10 @@
+streamlink (3.2.0-1~bpo11+1) bullseye-backports; urgency=medium
+
+  * Rebuild for bullseye-backports.
+  * Update changelog for 3.1.1-1~bpo11+1 release
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 21 Mar 2022 16:18:02 +0100
+
 streamlink (3.2.0-1) unstable; urgency=medium
 
   * d/README.source: update with basic instructions
