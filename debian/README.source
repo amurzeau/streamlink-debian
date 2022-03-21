@@ -46,9 +46,22 @@ gbp dch -Ra --commit
 # Do test build with sbuild
 gbp buildpackage "--git-builder=sbuild -v -As -d unstable --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'"
 
-# Tag commit
-gbp tag --git-tag --git-sign-tags
+# Check for build warnings or errors
+grep -Pi 'error|warn' ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.build
 
+# Diff with previous package version
+diffoscope ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version -c1 -o1)_all.deb ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_all.deb --text-color=always | less -r -s
+diffoscope ../build-area/python3-streamlink_$(dpkg-parsechangelog --show-field Version -c1 -o1)_all.deb ../build-area/python3-streamlink_$(dpkg-parsechangelog --show-field Version)_all.deb --text-color=always | less -r -s
+diffoscope ../build-area/python3-streamlink-doc_$(dpkg-parsechangelog --show-field Version -c1 -o1)_all.deb ../build-area/python3-streamlink-doc_$(dpkg-parsechangelog --show-field Version)_all.deb --text-color=always | less -r -s
+
+# Tag commit
+gbp tag --sign-tags
+
+# Push to git repository
+git push origin experimental master upstream pristine-tar bullseye-backports --tags
+
+# Push to mentors FTP
+dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 ```
 
 ## For backports
@@ -66,8 +79,23 @@ gbp dch -Ra --bpo --commit
 # Do test build with sbuild
 gbp buildpackage "--git-builder=sbuild -v -As -d bullseye-backports --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
 
+# Check for build warnings or errors
+grep -Pi 'error|warn' ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.build
+
+# Diff with previous package version
+diffoscope ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version -c1 -o1)_all.deb ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_all.deb --text-color=always | less -r -s
+diffoscope ../build-area/python3-streamlink_$(dpkg-parsechangelog --show-field Version -c1 -o1)_all.deb ../build-area/python3-streamlink_$(dpkg-parsechangelog --show-field Version)_all.deb --text-color=always | less -r -s
+diffoscope ../build-area/python3-streamlink-doc_$(dpkg-parsechangelog --show-field Version -c1 -o1)_all.deb ../build-area/python3-streamlink-doc_$(dpkg-parsechangelog --show-field Version)_all.deb --text-color=always | less -r -s
+
 # Tag commit
-gbp tag --git-tag --git-sign-tags
+gbp tag --sign-tags
+
+# Push to git repository
+git push origin experimental master upstream pristine-tar bullseye-backports --tags
+
+# Push to mentors FTP
+dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
+
 ```
 
 # Changes checks

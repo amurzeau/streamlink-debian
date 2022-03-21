@@ -24,10 +24,10 @@ index f6b553f..26265e3 100644
          Default is "no".
          """
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index ae94269..d5dc003 100644
+index 47285e7..6fddd37 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -1032,7 +1032,7 @@ def main():
+@@ -1033,7 +1033,7 @@ def main():
  
      setup_signals()
  

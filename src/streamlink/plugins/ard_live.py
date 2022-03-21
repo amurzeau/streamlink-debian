@@ -1,3 +1,9 @@
+"""
+$url daserste.de
+$type live, vod
+$region Germany
+"""
+
 import logging
 import re
 from urllib.parse import urljoin
@@ -14,6 +20,7 @@ log = logging.getLogger(__name__)
     r"https?://((www|live)\.)?daserste\.de/"
 ))
 class ARDLive(Plugin):
+    _URL_DATA_BASE = "https://www.daserste.de/"
     _QUALITY_MAP = {
         4: "1080p",
         3: "720p",
@@ -36,7 +43,7 @@ class ARDLive(Plugin):
         except PluginError:
             return
 
-        data_url = urljoin(self.url, data_url)
+        data_url = urljoin(self._URL_DATA_BASE, data_url)
         log.debug(f"Player URL: '{data_url}'")
 
         self.title, media = self.session.http.get(data_url, schema=validate.Schema(
