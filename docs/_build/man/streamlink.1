@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Mar 05, 2022" "3.2.0" "Streamlink"
+.TH "STREAMLINK" "1" "May 01, 2022" "4.0.1" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -59,7 +59,7 @@ A URL to attempt to extract streams from.
 Usually, the protocol of http(s) URLs can be omitted ("\fI\%https://\fP"),
 depending on the implementation of the plugin being used.
 .sp
-Alternatively, the URL can also be specified by using the \fB\-\-url\fP option.
+Alternatively, the URL can also be specified by using the \fI\%\-\-url\fP option.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -81,7 +81,7 @@ Fallback streams can be specified by using a comma\-separated list:
 .UNINDENT
 .UNINDENT
 .sp
-If no stream is specified and \fB\-\-default\-stream\fP is not used, then a list
+If no stream is specified and \fI\%\-\-default\-stream\fP is not used, then a list
 of available streams will be printed.
 .UNINDENT
 .SH GENERAL OPTIONS
@@ -123,7 +123,7 @@ Useful for external scripting.
 .INDENT 0.0
 .TP
 .B \-\-can\-handle\-url\-no\-redirect URL
-Same as \fB\-\-can\-handle\-url\fP but without following redirects when looking up
+Same as \fI\%\-\-can\-handle\-url\fP but without following redirects when looking up
 the URL.
 .UNINDENT
 .INDENT 0.0
@@ -240,14 +240,14 @@ Set the network interface.
 .B \-4
 .TP
 .B \-\-ipv4
-Resolve address names to IPv4 only. This option overrides \fB\-6\fP\&.
+Resolve address names to IPv4 only. This option overrides \fI\%\-6\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-6
 .TP
 .B \-\-ipv6
-Resolve address names to IPv6 only. This option overrides \fB\-4\fP\&.
+Resolve address names to IPv6 only. This option overrides \fI\%\-4\fP\&.
 .UNINDENT
 .SH PLAYER OPTIONS
 .INDENT 0.0
@@ -310,7 +310,7 @@ streamlink \-\-player "vlc \-\-file\-caching=5000" <url> [stream]
 .UNINDENT
 .UNINDENT
 .sp
-As an alternative to this, see the \fB\-\-player\-args\fP parameter, which does
+As an alternative to this, see the \fI\%\-\-player\-args\fP parameter, which does
 not log any custom player arguments.
 .UNINDENT
 .INDENT 0.0
@@ -319,9 +319,9 @@ not log any custom player arguments.
 .TP
 .B \-\-player\-args ARGUMENTS
 This option allows you to customize the default arguments which are put
-together with the value of \fB\-\-player\fP to create a command to execute.
+together with the value of \fI\%\-\-player\fP to create a command to execute.
 .sp
-It\(aqs usually enough to only use \fB\-\-player\fP instead of this unless you need
+It\(aqs usually enough to only use \fI\%\-\-player\fP instead of this unless you need
 to add arguments after the player\(aqs input argument or if you don\(aqt want
 any of the player arguments to be logged.
 .sp
@@ -386,7 +386,7 @@ Make the player read the stream through HTTP instead of the stdin pipe.
 .INDENT 0.0
 .TP
 .B \-\-player\-continuous\-http
-Make the player read the stream through HTTP, but unlike \fB\-\-player\-http\fP
+Make the player read the stream through HTTP, but unlike \fI\%\-\-player\-http\fP
 it will continuously try to open the stream if the player requests it.
 .sp
 This makes it possible to handle stream disconnects if your player is
@@ -482,7 +482,10 @@ streamlink \-p mpv \-\-title "{author} \- {category} \- {title}" <URL> [STREAM]
 .B \-o FILENAME
 .TP
 .B \-\-output FILENAME
-Write stream data to FILENAME instead of playing it.
+Write stream data to FILENAME instead of playing it. If FILENAME is set to \- (dash), then the stream data will be
+written to stdout, similar to the \fI\%\-\-stdout\fP argument.
+.sp
+Non\-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 .sp
 You will be prompted if the file already exists.
 .sp
@@ -507,7 +510,7 @@ streamlink \-\-output "~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S
 .B \-f
 .TP
 .B \-\-force
-When using \-o or \-r, always write to file even if it already exists.
+When using \-o or \-r, always write to file even if it already exists (overwrite).
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -527,7 +530,10 @@ Write stream data to stdout instead of playing it.
 .B \-r FILENAME
 .TP
 .B \-\-record FILENAME
-Open the stream in the player, while at the same time writing it to FILENAME.
+Open the stream in the player, while at the same time writing it to FILENAME. If FILENAME is set to \- (dash), then the
+stream data will be written to stdout, similar to the \fI\%\-\-stdout\fP argument, while still opening the player.
+.sp
+Non\-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 .sp
 You will be prompted if the file already exists.
 .sp
@@ -553,6 +559,8 @@ streamlink \-\-record "~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S
 .TP
 .B \-\-record\-and\-pipe FILENAME
 Write stream data to stdout, while at the same time writing it to FILENAME.
+.sp
+Non\-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 .sp
 You will be prompted if the file already exists.
 .sp
@@ -643,15 +651,15 @@ Retry fetching the list of available streams until streams are found
 while waiting DELAY second(s) between each attempt. If unset, only one
 attempt will be made to fetch the list of streams available.
 .sp
-The number of fetch retry attempts can be capped with \fB\-\-retry\-max\fP\&.
+The number of fetch retry attempts can be capped with \fI\%\-\-retry\-max\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-retry\-max COUNT
-When using \fB\-\-retry\-streams\fP, stop retrying the fetch after COUNT retry
+When using \fI\%\-\-retry\-streams\fP, stop retrying the fetch after COUNT retry
 attempt(s). Fetch will retry infinitely if COUNT is zero or unset.
 .sp
-If \fB\-\-retry\-max\fP is set without setting \fB\-\-retry\-streams\fP, the delay between
+If \fI\%\-\-retry\-max\fP is set without setting \fI\%\-\-retry\-streams\fP, the delay between
 retries will default to 1 second.
 .UNINDENT
 .INDENT 0.0
@@ -806,8 +814,8 @@ The size or length of each segment is determined by the streaming provider.
 .sp
 Lower values will decrease the latency, but will also increase the chance of buffering, as there is less time for
 Streamlink to download segments and write their data to the output buffer. The number of parallel segment downloads
-can be set with \fB\-\-stream\-segment\-threads\fP and the HLS playlist reload time to fetch and queue new segments can be
-overridden with \fB\-\-hls\-playlist\-reload\-time\fP\&.
+can be set with \fI\%\-\-stream\-segment\-threads\fP and the HLS playlist reload time to fetch and queue new segments can be
+overridden with \fI\%\-\-hls\-playlist\-reload\-time\fP\&.
 .sp
 Default is: \fB3\fP\&.
 .sp
@@ -816,7 +824,7 @@ Default is: \fB3\fP\&.
 .INDENT 3.5
 During live playback, the caching/buffering settings of the used player will add additional latency. To adjust
 this, please refer to the player\(aqs own documentation for the required configuration. Player parameters can be set via
-\fB\-\-player\-args\fP\&.
+\fI\%\-\-player\-args\fP\&.
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -1088,7 +1096,7 @@ The username used to register with afreecatv.com.
 .INDENT 0.0
 .TP
 .B \-\-afreeca\-password PASSWORD
-A afreecatv.com account password to use with \fB\-\-afreeca\-username\fP\&.
+A afreecatv.com account password to use with \fI\%\-\-afreeca\-username\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1105,7 +1113,7 @@ The username used to register with bbc.co.uk.
 .INDENT 0.0
 .TP
 .B \-\-bbciplayer\-password PASSWORD
-A bbc.co.uk account password to use with \fB\-\-bbciplayer\-username\fP\&.
+A bbc.co.uk account password to use with \fI\%\-\-bbciplayer\-username\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1122,7 +1130,7 @@ The username used to register with Clubbing TV.
 .INDENT 0.0
 .TP
 .B \-\-clubbingtv\-password
-A Clubbing TV account password to use with \fB\-\-clubbingtv\-username\fP\&.
+A Clubbing TV account password to use with \fI\%\-\-clubbingtv\-username\fP\&.
 .UNINDENT
 .SS Crunchyroll
 .INDENT 0.0
@@ -1133,7 +1141,7 @@ A Crunchyroll username to allow access to restricted streams.
 .INDENT 0.0
 .TP
 .B \-\-crunchyroll\-password [PASSWORD]
-A Crunchyroll password for use with \fB\-\-crunchyroll\-username\fP\&.
+A Crunchyroll password for use with \fI\%\-\-crunchyroll\-username\fP\&.
 .sp
 If left blank you will be prompted.
 .UNINDENT
@@ -1214,7 +1222,7 @@ required to access any openrectv stream.
 .INDENT 0.0
 .TP
 .B \-\-openrectv\-password PASSWORD
-An openrectv account password to use with \fB\-\-openrectv\-email\fP\&.
+An openrectv account password to use with \fI\%\-\-openrectv\-email\fP\&.
 .UNINDENT
 .SS Pixiv
 .INDENT 0.0
@@ -1268,7 +1276,7 @@ required to access any Schoolism stream.
 .INDENT 0.0
 .TP
 .B \-\-schoolism\-password PASSWORD
-A Schoolism account password to use with \fB\-\-schoolism\-email\fP\&.
+A Schoolism account password to use with \fI\%\-\-schoolism\-email\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1286,7 +1294,7 @@ A Steam account email address to access friends/private streams
 .INDENT 0.0
 .TP
 .B \-\-steam\-password PASSWORD
-A Steam account password to use with \fB\-\-steam\-email\fP\&.
+A Steam account password to use with \fI\%\-\-steam\-email\fP\&.
 .UNINDENT
 .SS Streann
 .INDENT 0.0
@@ -1322,19 +1330,19 @@ Do not open the stream if the target channel is currently broadcasting a rerun.
 .TP
 .B \-\-twitch\-low\-latency
 Enables low latency streaming by prefetching HLS segments.
-Sets \fB\-\-hls\-segment\-stream\-data\fP to true and \fB\-\-hls\-live\-edge\fP to 2, if it is higher.
-Reducing \fB\-\-hls\-live\-edge\fP to 1 will result in the lowest latency possible, but will most likely cause buffering.
+Sets \fI\%\-\-hls\-segment\-stream\-data\fP to true and \fI\%\-\-hls\-live\-edge\fP to 2, if it is higher.
+Reducing \fI\%\-\-hls\-live\-edge\fP to 1 will result in the lowest latency possible, but will most likely cause buffering.
 .sp
 In order to achieve true low latency streaming during playback, the player\(aqs caching/buffering settings will
 need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
 This depends on the stream\(aqs bitrate and the quality of the connection to Twitch\(aqs servers. Please refer to the
-player\(aqs own documentation for the required configuration. Player parameters can be set via \fB\-\-player\-args\fP\&.
+player\(aqs own documentation for the required configuration. Player parameters can be set via \fI\%\-\-player\-args\fP\&.
 .sp
 \fBNOTE:\fP
 .INDENT 7.0
 .INDENT 3.5
 Low latency streams have to be enabled by the broadcasters on Twitch themselves.
-Regular streams can cause buffering issues with this option enabled due to the reduced \fB\-\-hls\-live\-edge\fP value.
+Regular streams can cause buffering issues with this option enabled due to the reduced \fI\%\-\-hls\-live\-edge\fP value.
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -1372,7 +1380,7 @@ required to access any WWE Network stream.
 .INDENT 0.0
 .TP
 .B \-\-wwenetwork\-password PASSWORD
-A WWE Network account password to use with \fB\-\-wwenetwork\-email\fP\&.
+A WWE Network account password to use with \fI\%\-\-wwenetwork\-email\fP\&.
 .UNINDENT
 .SS Yupptv
 .INDENT 0.0
@@ -1403,7 +1411,7 @@ required to access any zattoo stream.
 .INDENT 0.0
 .TP
 .B \-\-zattoo\-password PASSWORD
-A zattoo account password to use with \fB\-\-zattoo\-email\fP\&.
+A zattoo account password to use with \fI\%\-\-zattoo\-email\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP

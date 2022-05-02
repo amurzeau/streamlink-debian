@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: streamlink
-Version: 3.2.0
+Version: 4.0.1
 Summary: Streamlink is a command-line utility that extracts streams from various services and pipes them into a video player of choice.
 Home-page: https://github.com/streamlink/streamlink
 Author: Streamlink
@@ -20,7 +20,6 @@ Classifier: Operating System :: MacOS
 Classifier: Operating System :: Microsoft :: Windows
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3 :: Only
-Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: 3.8
 Classifier: Programming Language :: Python :: 3.9
@@ -117,7 +116,7 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 
 
   [streamlink-website]: https://streamlink.github.io
-  [streamlink-plugins]: https://streamlink.github.io/plugin_matrix.html
+  [streamlink-plugins]: https://streamlink.github.io/plugins.html
   [streamlink-documentation]: https://streamlink.github.io/cli.html
   [streamlink-installation]: https://streamlink.github.io/install.html
   [streamlink-installation-windows]: https://streamlink.github.io/install.html#windows
