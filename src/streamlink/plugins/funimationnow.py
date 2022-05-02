@@ -1,8 +1,9 @@
 """
+$description Anime video on-demand service.
 $url funimation.com
 $url funimationnow.uk
 $type vod
-$notes :ref:`Requires session cookies <cli:Authenticating with FunimationNow>`
+$notes :ref:`Requires session cookies <cli/plugins/funimationnow:Authentication>`
 """
 
 import logging
@@ -11,7 +12,6 @@ import re
 
 from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
 from streamlink.plugin.api import useragents, validate
-from streamlink.plugin.api.utils import itertags
 from streamlink.stream.ffmpegmux import MuxedStream
 from streamlink.stream.hls import HLSStream
 from streamlink.stream.http import HTTPStream
@@ -144,10 +144,10 @@ class Experience:
         return self.session.http.json(res)
 
     def login_csrf(self):
-        r = self.session.http.get(self.login_url)
-        for input in itertags(r.text, "input"):
-            if input.attributes.get("name") == self.CSRF_NAME:
-                return input.attributes.get("value")
+        return self.session.http.get(self.login_url, schema=validate.Schema(
+            validate.parse_html(),
+            validate.xml_xpath_string(f".//input[@name='{self.CSRF_NAME}'][1]/@value")
+        ))
 
     def login(self, email, password):
         log.debug("Attempting to login as {0}".format(email))

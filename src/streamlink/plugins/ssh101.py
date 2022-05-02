@@ -1,4 +1,5 @@
 """
+$description Global live streaming platform.
 $url ssh101.com
 $type live
 """
@@ -8,7 +9,7 @@ import re
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
-from streamlink.stream import HLSStream
+from streamlink.stream.hls import HLSStream
 
 log = logging.getLogger(__name__)
 

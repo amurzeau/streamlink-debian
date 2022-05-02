@@ -19,6 +19,7 @@ needs_sphinx = '3.0'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosectionlabel',
+    'sphinx.ext.intersphinx',
     'ext_argparse',
     'ext_github',
     'ext_plugins',
@@ -86,6 +87,29 @@ exclude_patterns = ['_build', '_applications.rst']
 #modindex_common_prefix = []
 
 github_project = 'streamlink/streamlink'
+
+
+# -- Options for autodoc ---------------------------------------------------
+
+autodoc_default_options = {
+    "show-inheritance": True,
+    "members": True,
+    "member-order": "groupwise",  # autodoc_member_order
+    "class-doc-from": "both",  # autoclass_content
+}
+autodoc_inherit_docstrings = False
+autodoc_typehints = "description"
+
+
+# -- Options for intersphinx ---------------------------------------------------
+
+intersphinx_mapping = {
+    # "python": ("https://docs.python.org/3", None),
+    "requests": ("https://docs.python-requests.org/en/stable/", None),
+}
+
+intersphinx_timeout = 60
+
 
 # -- Options for HTML output ---------------------------------------------------
 

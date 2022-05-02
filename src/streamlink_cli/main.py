@@ -5,7 +5,6 @@ import os
 import platform
 import signal
 import sys
-from collections import OrderedDict
 from contextlib import closing
 from distutils.version import StrictVersion
 from functools import partial
@@ -55,6 +54,7 @@ def get_formatter(plugin: Plugin):
     return Formatter(
         {
             "url": lambda: args.url,
+            "plugin": lambda: plugin.module,
             "id": lambda: plugin.get_id(),
             "author": lambda: plugin.get_author(),
             "category": lambda: plugin.get_category(),
@@ -131,7 +131,10 @@ def create_output(formatter: Formatter):
             http = create_http_server()
 
         if args.record:
-            record = check_file_output(formatter.path(args.record, args.fs_safe_rules), args.force)
+            if args.record == "-":
+                record = FileOutput(fd=stdout)
+            else:
+                record = check_file_output(formatter.path(args.record, args.fs_safe_rules), args.force)
 
         log.info(f"Starting player: {args.player}")
 
@@ -857,7 +860,7 @@ def setup_plugin_args(session, parser):
 def setup_plugin_options(session: Streamlink, plugin: Type[Plugin]):
     """Sets Streamlink plugin options."""
     pname = plugin.module
-    required = OrderedDict({})
+    required = {}
 
     for parg in plugin.arguments:
         if parg.options.get("help") == argparse.SUPPRESS:
@@ -1002,7 +1005,7 @@ def main():
 
     # Console output should be on stderr if we are outputting
     # a stream to stdout.
-    if args.stdout or args.output == "-" or args.record_and_pipe:
+    if args.stdout or args.output == "-" or args.record == "-" or args.record_and_pipe:
         console_out = sys.stderr
     else:
         console_out = sys.stdout
