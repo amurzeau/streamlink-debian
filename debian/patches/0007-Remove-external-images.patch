@@ -15,9 +15,9 @@ Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  docs/applications.rst |  4 +---
- docs/donate.rst       | 15 +++------------
+ docs/donate.rst       | 17 ++++-------------
  docs/thirdparty.rst   |  5 +----
- 3 files changed, 5 insertions(+), 19 deletions(-)
+ 3 files changed, 6 insertions(+), 20 deletions(-)
 
 diff --git a/docs/applications.rst b/docs/applications.rst
 index 477031e..0d78e54 100644
@@ -40,10 +40,19 @@ index 477031e..0d78e54 100644
  :Info: An NW.js based desktop web application. Browse Twitch.tv and watch multiple streams at once.
      Filter streams by language, receive desktop notifications when followed channels start
 diff --git a/docs/donate.rst b/docs/donate.rst
-index 326a4ad..389b8d1 100644
+index 4e66afd..99dba49 100644
 --- a/docs/donate.rst
 +++ b/docs/donate.rst
-@@ -23,10 +23,7 @@ as payment for future work.
+@@ -19,7 +19,7 @@ as payment for future work.
+ .. raw:: html
+ 
+    <a href="https://opencollective.com/streamlink" target="_blank" class="no-external-link-icon">
+-     <img alt="Donate to our collective" src="https://opencollective.com/streamlink/donate/button@2x.png?color=white" width="300" height="50">
++     Donate to our collective
+    </a>
+ 
+ 
+@@ -30,10 +30,7 @@ as payment for future work.
  Bastimeyer
  ^^^^^^^^^^
  
@@ -55,7 +64,7 @@ index 326a4ad..389b8d1 100644
  
     .. container::
  
-@@ -38,10 +35,7 @@ Bastimeyer
+@@ -45,10 +42,7 @@ Bastimeyer
  Beardypig
  ^^^^^^^^^
  
@@ -67,7 +76,7 @@ index 326a4ad..389b8d1 100644
  
     .. container::
  
-@@ -51,10 +45,7 @@ Beardypig
+@@ -58,10 +52,7 @@ Beardypig
  Gravyboat
  ^^^^^^^^^
  

@@ -26,10 +26,10 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  11 files changed, 17 insertions(+), 17 deletions(-)
 
 diff --git a/setup.cfg b/setup.cfg
-index 8dc740b..d343c56 100644
+index afef663..3a162ba 100644
 --- a/setup.cfg
 +++ b/setup.cfg
-@@ -42,7 +42,7 @@ install_requires =
+@@ -41,7 +41,7 @@ install_requires =
  	isodate
  	lxml >=4.6.4,<5.0
  	pycountry
@@ -52,10 +52,10 @@ index 898d658..48b8742 100644
  requests<3.0,>=2.26.0
  websocket-client<2.0,>=1.2.1
 diff --git a/src/streamlink/plugins/abematv.py b/src/streamlink/plugins/abematv.py
-index a9a34ed..287ee8d 100644
+index ad8b153..428e24a 100644
 --- a/src/streamlink/plugins/abematv.py
 +++ b/src/streamlink/plugins/abematv.py
-@@ -14,7 +14,7 @@ import uuid
+@@ -15,7 +15,7 @@ import uuid
  from base64 import urlsafe_b64encode
  from binascii import unhexlify
  
@@ -65,10 +65,10 @@ index a9a34ed..287ee8d 100644
  from requests.adapters import BaseAdapter
  
 diff --git a/src/streamlink/plugins/mjunoon.py b/src/streamlink/plugins/mjunoon.py
-index 22d5a20..99494b3 100644
+index 5fceafa..318bfa1 100644
 --- a/src/streamlink/plugins/mjunoon.py
 +++ b/src/streamlink/plugins/mjunoon.py
-@@ -9,8 +9,8 @@ import logging
+@@ -10,8 +10,8 @@ import logging
  import re
  from urllib.parse import urljoin
  
@@ -80,10 +80,10 @@ index 22d5a20..99494b3 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/rtve.py b/src/streamlink/plugins/rtve.py
-index ab2399e..7ac3c42 100644
+index 145594b..5b0d70c 100644
 --- a/src/streamlink/plugins/rtve.py
 +++ b/src/streamlink/plugins/rtve.py
-@@ -9,7 +9,7 @@ import logging
+@@ -10,7 +10,7 @@ import logging
  import re
  from urllib.parse import urlparse
  
@@ -93,10 +93,10 @@ index ab2399e..7ac3c42 100644
  from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/steam.py b/src/streamlink/plugins/steam.py
-index 911a64e..e883938 100644
+index 2133fe5..71f842d 100644
 --- a/src/streamlink/plugins/steam.py
 +++ b/src/streamlink/plugins/steam.py
-@@ -10,8 +10,8 @@ import logging
+@@ -11,8 +11,8 @@ import logging
  import re
  import time
  
@@ -108,10 +108,10 @@ index 911a64e..e883938 100644
  from streamlink.exceptions import FatalPluginError
  from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
 diff --git a/src/streamlink/plugins/ustvnow.py b/src/streamlink/plugins/ustvnow.py
-index b75e2fe..19d85af 100644
+index 6d34aa7..f95c8df 100644
 --- a/src/streamlink/plugins/ustvnow.py
 +++ b/src/streamlink/plugins/ustvnow.py
-@@ -11,9 +11,9 @@ import re
+@@ -12,9 +12,9 @@ import re
  from urllib.parse import urljoin, urlparse
  from uuid import uuid4
  
@@ -125,10 +125,10 @@ index b75e2fe..19d85af 100644
  from streamlink.plugin import Plugin, PluginArgument, PluginArguments, PluginError, pluginmatcher
  from streamlink.stream.hls import HLSStream
 diff --git a/src/streamlink/plugins/webtv.py b/src/streamlink/plugins/webtv.py
-index a04e075..889ddec 100644
+index c8cf2b2..712e447 100644
 --- a/src/streamlink/plugins/webtv.py
 +++ b/src/streamlink/plugins/webtv.py
-@@ -8,7 +8,7 @@ import binascii
+@@ -9,7 +9,7 @@ import binascii
  import logging
  import re
  
@@ -138,10 +138,10 @@ index a04e075..889ddec 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index eab3e2e..3313de6 100644
+index 0b9dd40..c1466a0 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
-@@ -8,9 +8,9 @@ from typing import List, NamedTuple, Optional, Tuple, Union
+@@ -7,9 +7,9 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
  from urllib.parse import urlparse
  
  # noinspection PyPackageRequirements
