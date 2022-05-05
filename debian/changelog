@@ -1,11 +1,11 @@
-streamlink (4.0.1-1) UNRELEASED; urgency=medium
+streamlink (4.0.1-1) unstable; urgency=medium
 
-  * d/README.source: add commands to compare generated packages
-  * d/README.source: add command to push to mentors
-  * debian: add vscode workspace
   * New upstream version 4.0.1
+  * d/patches: update patches
+  * switch to pyproject build
+  * d/patches: remove dependency on versioningit
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 02 May 2022 17:25:42 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 05 May 2022 23:02:52 +0200
 
 streamlink (3.2.0-1) unstable; urgency=medium
 
