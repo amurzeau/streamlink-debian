@@ -1,2 +1,2 @@
-usr/lib/python3*/*-packages/streamlink/*
-usr/lib/python3*/*-packages/streamlink-*.egg-info
+usr/lib/python3*/*-packages/streamlink/
+usr/lib/python3*/*-packages/streamlink-*-info/
