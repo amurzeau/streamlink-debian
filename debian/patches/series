@@ -6,3 +6,4 @@ remove_github_buttons
 0007-Use-font-awesome-4-icons-a-Debian-doesn-t-have-font-.patch
 0007-Backport-requests.utils.DEFAULT_ACCEPT_ENCODING-in-t.patch
 0008-Remove-dependency-on-versioningit.patch
+0009-Remove-intersphinx.patch
