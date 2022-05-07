@@ -1,0 +1,70 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Sun, 8 May 2022 00:03:20 +0200
+Subject: Mock user euid to be able to run tests as root
+
+When running test as root, there is an additional log done to warn the
+user that it is running streamlink as root. This causes some logging
+tests to fail.
+
+For these logging test, ensure we run with a mocked user euid when not
+testing for the root euid.
+
+Forwarded: https://github.com/streamlink/streamlink/pull/4519
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ tests/test_cli_main.py | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/tests/test_cli_main.py b/tests/test_cli_main.py
+index d72945f..6be850d 100644
+--- a/tests/test_cli_main.py
++++ b/tests/test_cli_main.py
+@@ -30,6 +30,8 @@ from streamlink_cli.main import (
+ from streamlink_cli.output import FileOutput, PlayerOutput
+ from tests.plugin.testplugin import TestPlugin as _TestPlugin
+ 
++DEFAULT_USER_EUID = 10000
++
+ 
+ class FakePlugin(_TestPlugin):
+     module = "fake"
+@@ -564,7 +566,7 @@ class TestCLIMainSetupConfigArgs(unittest.TestCase):
+ 
+ class _TestCLIMainLogging(unittest.TestCase):
+     @classmethod
+-    def subject(cls, argv, **kwargs):
++    def subject(cls, argv, user_euid=DEFAULT_USER_EUID, **kwargs):
+         session = Streamlink()
+         session.load_plugins(os.path.join(os.path.dirname(__file__), "plugin"))
+ 
+@@ -572,7 +574,8 @@ class _TestCLIMainLogging(unittest.TestCase):
+         class StopTest(Exception):
+             pass
+ 
+-        with patch("streamlink_cli.main.streamlink", session), \
++        with patch("streamlink_cli.main.os.geteuid", Mock(return_value=user_euid)), \
++             patch("streamlink_cli.main.streamlink", session), \
+              patch("streamlink_cli.main.setup_signals", side_effect=StopTest), \
+              patch("streamlink_cli.main.CONFIG_FILES", []), \
+              patch("streamlink_cli.main.setup_streamlink"), \
+@@ -694,9 +697,8 @@ class TestCLIMainLoggingStreams(_TestCLIMainLogging):
+ class TestCLIMainLoggingInfos(_TestCLIMainLogging):
+     @unittest.skipIf(is_win32, "test only applicable on a POSIX OS")
+     @patch("streamlink_cli.main.log")
+-    @patch("streamlink_cli.main.os.geteuid", Mock(return_value=0))
+     def test_log_root_warning(self, mock_log):
+-        self.subject(["streamlink"])
++        self.subject(["streamlink"], user_euid=0)
+         self.assertEqual(mock_log.info.mock_calls, [call("streamlink is running as root! Be careful!")])
+ 
+     @patch("streamlink_cli.main.log")
+@@ -902,7 +904,8 @@ class TestCLIMainPrint(unittest.TestCase):
+              patch.object(Streamlink, "resolve_url_no_redirect") as mock_resolve_url_no_redirect:
+             session = Streamlink()
+             session.load_plugins(os.path.join(os.path.dirname(__file__), "plugin"))
+-            with patch("streamlink_cli.main.streamlink", session), \
++            with patch("streamlink_cli.main.os.geteuid", Mock(return_value=DEFAULT_USER_EUID)), \
++                 patch("streamlink_cli.main.streamlink", session), \
+                  patch("streamlink_cli.main.CONFIG_FILES", []), \
+                  patch("streamlink_cli.main.setup_streamlink"), \
+                  patch("streamlink_cli.main.setup_plugins"), \
