@@ -4,6 +4,10 @@ streamlink (4.0.1-1) unstable; urgency=medium
   * d/patches: update patches
   * switch to pyproject build
   * d/patches: remove dependency on versioningit
+  * d/patches: remove intersphinx which requires internet
+  * d/patches: add patch to fix build with root
+  * d/control: remove ancient version requirements
+  * d/control: avoid lxml crashes with some LC_ALL values
 
  -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 05 May 2022 23:02:52 +0200
 
