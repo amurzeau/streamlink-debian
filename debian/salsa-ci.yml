@@ -1,0 +1,13 @@
+---
+include:
+  - https://salsa.debian.org/salsa-ci-team/pipeline/raw/master/recipes/debian.yml
+
+variables:
+  # variations disabled:
+  #  - kernel: pycryptodomex call load_lib to load gmp, where load_lib calls
+  #    ldconfig -p. ldconfig will crash with "FATAL: Kernel too old" when the
+  #    kernel version is faked to 2.6.
+  SALSA_CI_REPROTEST_ARGS: --variations=+all,-kernel
+  # python3.10 hangs when faketime changes monotonic clock
+  # (see https://github.com/wolfcw/libfaketime/issues/390)
+  FAKETIME_DONT_FAKE_MONOTONIC: 1
