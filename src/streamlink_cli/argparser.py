@@ -538,7 +538,10 @@ def build_parser():
         "-o", "--output",
         metavar="FILENAME",
         help="""
-        Write stream data to FILENAME instead of playing it.
+        Write stream data to FILENAME instead of playing it. If FILENAME is set to - (dash), then the stream data will be
+        written to stdout, similar to the --stdout argument.
+
+        Non-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 
         You will be prompted if the file already exists.
 
@@ -555,7 +558,7 @@ def build_parser():
         "-f", "--force",
         action="store_true",
         help="""
-        When using -o or -r, always write to file even if it already exists.
+        When using -o or -r, always write to file even if it already exists (overwrite).
         """
     )
     output.add_argument(
@@ -577,7 +580,10 @@ def build_parser():
         "-r", "--record",
         metavar="FILENAME",
         help="""
-        Open the stream in the player, while at the same time writing it to FILENAME.
+        Open the stream in the player, while at the same time writing it to FILENAME. If FILENAME is set to - (dash), then the
+        stream data will be written to stdout, similar to the --stdout argument, while still opening the player.
+
+        Non-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 
         You will be prompted if the file already exists.
 
@@ -595,6 +601,8 @@ def build_parser():
         metavar="FILENAME",
         help="""
         Write stream data to stdout, while at the same time writing it to FILENAME.
+
+        Non-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 
         You will be prompted if the file already exists.
 

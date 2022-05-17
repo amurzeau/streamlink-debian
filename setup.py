@@ -3,17 +3,13 @@ from os import path
 from sys import argv, exit, version_info
 from textwrap import dedent
 
-from setuptools import setup
-
-import versioneer
-
 
 def format_msg(text, *args, **kwargs):
     return dedent(text).strip(" \n").format(*args, **kwargs)
 
 
 CURRENT_PYTHON = version_info[:2]
-REQUIRED_PYTHON = (3, 6)
+REQUIRED_PYTHON = (3, 7)
 
 # This check and everything above must remain compatible with older Python versions
 if CURRENT_PYTHON < REQUIRED_PYTHON:
@@ -76,9 +72,12 @@ data_files = [
 ]
 
 
-setup(
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
-    entry_points=entry_points,
-    data_files=data_files,
-)
+if __name__ == "__main__":
+    from setuptools import setup
+    from versioningit import get_cmdclasses
+
+    setup(
+        cmdclass=get_cmdclasses(),
+        entry_points=entry_points,
+        data_files=data_files,
+    )

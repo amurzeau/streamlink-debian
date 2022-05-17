@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+    ],
+    "settings": {
+        "files.associations": {
+            "README.source": "markdown",
+            "*.doc-base": "debian-control"
+        }
+    }
+}

@@ -1,4 +1,5 @@
 """
+$description Japanese live streaming and video hosting social platform.
 $url live.nicovideo.jp
 $type live, vod
 $account Required by some streams
@@ -195,7 +196,7 @@ class NicoLive(Plugin):
 
         offset = self.get_option("timeshift-offset")
         if offset and "timeshift" in wss_api_url:
-            hls_stream_url = update_qsd(self.hls_stream_url, {"start": offset})
+            hls_stream_url = update_qsd(hls_stream_url, {"start": offset})
 
         for quality, stream in NicoLiveHLSStream.parse_variant_playlist(self.session, hls_stream_url).items():
             stream.set_wsclient(self.wsclient)

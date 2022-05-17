@@ -5,3 +5,6 @@ remove_github_buttons
 0005-Use-sphinx_rtd_theme-theme-as-a-replacement-of-furo-.patch
 0007-Use-font-awesome-4-icons-a-Debian-doesn-t-have-font-.patch
 0007-Backport-requests.utils.DEFAULT_ACCEPT_ENCODING-in-t.patch
+0008-Remove-dependency-on-versioningit.patch
+0009-Remove-intersphinx.patch
+0010-Mock-user-euid-to-be-able-to-run-tests-as-root.patch
