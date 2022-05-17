@@ -3,6 +3,7 @@ include:
   - https://salsa.debian.org/salsa-ci-team/pipeline/raw/master/recipes/debian.yml
 
 variables:
+  RELEASE: 'bullseye-backports'
   # variations disabled:
   #  - kernel: pycryptodomex call load_lib to load gmp, where load_lib calls
   #    ldconfig -p. ldconfig will crash with "FATAL: Kernel too old" when the
