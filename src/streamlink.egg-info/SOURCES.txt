@@ -80,8 +80,12 @@ src/streamlink/plugin/plugin.py
 src/streamlink/plugin/api/__init__.py
 src/streamlink/plugin/api/http_session.py
 src/streamlink/plugin/api/useragents.py
-src/streamlink/plugin/api/validate.py
 src/streamlink/plugin/api/websocket.py
+src/streamlink/plugin/api/validate/__init__.py
+src/streamlink/plugin/api/validate/_exception.py
+src/streamlink/plugin/api/validate/_schemas.py
+src/streamlink/plugin/api/validate/_validate.py
+src/streamlink/plugin/api/validate/_validators.py
 src/streamlink/plugins/__init__.py
 src/streamlink/plugins/abematv.py
 src/streamlink/plugins/adultswim.py
@@ -96,6 +100,7 @@ src/streamlink/plugins/bbciplayer.py
 src/streamlink/plugins/bfmtv.py
 src/streamlink/plugins/bigo.py
 src/streamlink/plugins/bilibili.py
+src/streamlink/plugins/blazetv.py
 src/streamlink/plugins/bloomberg.py
 src/streamlink/plugins/booyah.py
 src/streamlink/plugins/brightcove.py
@@ -130,6 +135,7 @@ src/streamlink/plugins/goltelevision.py
 src/streamlink/plugins/goodgame.py
 src/streamlink/plugins/googledrive.py
 src/streamlink/plugins/gulli.py
+src/streamlink/plugins/hiplayer.py
 src/streamlink/plugins/hls.py
 src/streamlink/plugins/http.py
 src/streamlink/plugins/htv.py
@@ -178,7 +184,6 @@ src/streamlink/plugins/radiko.py
 src/streamlink/plugins/radionet.py
 src/streamlink/plugins/raiplay.py
 src/streamlink/plugins/reuters.py
-src/streamlink/plugins/rotana.py
 src/streamlink/plugins/rtbf.py
 src/streamlink/plugins/rtpa.py
 src/streamlink/plugins/rtpplay.py
@@ -217,6 +222,7 @@ src/streamlink/plugins/tvrplus.py
 src/streamlink/plugins/tvtoya.py
 src/streamlink/plugins/twitcasting.py
 src/streamlink/plugins/twitch.py
+src/streamlink/plugins/useetv.py
 src/streamlink/plugins/ustreamtv.py
 src/streamlink/plugins/ustvnow.py
 src/streamlink/plugins/vidio.py
@@ -273,7 +279,6 @@ src/streamlink_cli/utils/http_server.py
 src/streamlink_cli/utils/path.py
 src/streamlink_cli/utils/player.py
 src/streamlink_cli/utils/progress.py
-src/streamlink_cli/utils/stream.py
 tests/__init__.py
 tests/test_api_http_session.py
 tests/test_api_validate.py
@@ -298,11 +303,10 @@ tests/test_plugin.py
 tests/test_plugins.py
 tests/test_plugins_input.py
 tests/test_session.py
-tests/test_stream_file.py
-tests/test_stream_json.py
 tests/test_streamlink_api.py
 tests/mixins/__init__.py
 tests/mixins/stream_hls.py
+tests/plugin/__init__.py
 tests/plugin/testplugin.py
 tests/plugin/testplugin_invalid.py
 tests/plugin/testplugin_missing.py
@@ -322,6 +326,7 @@ tests/plugins/test_bbciplayer.py
 tests/plugins/test_bfmtv.py
 tests/plugins/test_bigo.py
 tests/plugins/test_bilibili.py
+tests/plugins/test_blazetv.py
 tests/plugins/test_bloomberg.py
 tests/plugins/test_booyah.py
 tests/plugins/test_brightcove.py
@@ -355,6 +360,7 @@ tests/plugins/test_goltelevision.py
 tests/plugins/test_goodgame.py
 tests/plugins/test_googledrive.py
 tests/plugins/test_gulli.py
+tests/plugins/test_hiplayer.py
 tests/plugins/test_htv.py
 tests/plugins/test_huajiao.py
 tests/plugins/test_huya.py
@@ -401,7 +407,6 @@ tests/plugins/test_radiko.py
 tests/plugins/test_radionet.py
 tests/plugins/test_raiplay.py
 tests/plugins/test_reuters.py
-tests/plugins/test_rotana.py
 tests/plugins/test_rtbf.py
 tests/plugins/test_rtpa.py
 tests/plugins/test_rtpplay.py
@@ -441,6 +446,7 @@ tests/plugins/test_tvrplus.py
 tests/plugins/test_tvtoya.py
 tests/plugins/test_twitcasting.py
 tests/plugins/test_twitch.py
+tests/plugins/test_useetv.py
 tests/plugins/test_ustreamtv.py
 tests/plugins/test_ustvnow.py
 tests/plugins/test_vidio.py
@@ -486,9 +492,11 @@ tests/stream/__init__.py
 tests/stream/test_dash.py
 tests/stream/test_dash_parser.py
 tests/stream/test_ffmpegmux.py
+tests/stream/test_file.py
 tests/stream/test_hls.py
 tests/stream/test_hls_filtered.py
 tests/stream/test_hls_playlist.py
+tests/stream/test_stream_json.py
 tests/stream/test_stream_to_url.py
 tests/stream/test_stream_wrappers.py
 tests/utils/__init__.py
