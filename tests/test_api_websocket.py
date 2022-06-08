@@ -2,7 +2,7 @@ import unittest
 from threading import Event
 from unittest.mock import Mock, call, patch
 
-from websocket import ABNF, STATUS_NORMAL
+from websocket import ABNF, STATUS_NORMAL  # type: ignore[import]
 
 from streamlink.logger import DEBUG, TRACE
 from streamlink.plugin.api.websocket import WebsocketClient
@@ -35,6 +35,11 @@ class TestWebsocketClient(unittest.TestCase):
         client = WebsocketClient(self.session, "wss://localhost:0", header=["User-Agent: foo"])
         self.assertEqual(client.ws.header, [
             "User-Agent: foo"
+        ])
+
+        client = WebsocketClient(self.session, "wss://localhost:0", header={"User-Agent": "bar"})
+        self.assertEqual(client.ws.header, [
+            "User-Agent: bar"
         ])
 
     def test_args_and_proxy(self):
