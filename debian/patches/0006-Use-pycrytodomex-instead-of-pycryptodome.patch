@@ -26,7 +26,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  11 files changed, 17 insertions(+), 17 deletions(-)
 
 diff --git a/setup.cfg b/setup.cfg
-index afef663..3a162ba 100644
+index 51df2ba..da89da4 100644
 --- a/setup.cfg
 +++ b/setup.cfg
 @@ -41,7 +41,7 @@ install_requires =
@@ -138,7 +138,7 @@ index c8cf2b2..712e447 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index 0b9dd40..c1466a0 100644
+index bf7a1e7..d271b55 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -7,9 +7,9 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
@@ -151,7 +151,7 @@ index 0b9dd40..c1466a0 100644
 -from Crypto.Util.Padding import unpad
 +from Cryptodome.Util.Padding import unpad
  from requests import Response
- from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError, StreamConsumedError
+ from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError
  
 diff --git a/src/streamlink/utils/crypto.py b/src/streamlink/utils/crypto.py
 index abc3901..a71203f 100644
@@ -166,7 +166,7 @@ index abc3901..a71203f 100644
  
  def evp_bytestokey(password, salt, key_len, iv_len):
 diff --git a/tests/stream/test_hls.py b/tests/stream/test_hls.py
-index 3372079..e3fbb3e 100644
+index 0ceb82a..c0f835d 100644
 --- a/tests/stream/test_hls.py
 +++ b/tests/stream/test_hls.py
 @@ -6,8 +6,8 @@ from unittest.mock import Mock, call, patch
