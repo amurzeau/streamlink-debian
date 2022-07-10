@@ -8,11 +8,11 @@ theme.
 Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
- docs/conf.py | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+ docs/conf.py | 19 +++++--------------
+ 1 file changed, 5 insertions(+), 14 deletions(-)
 
 diff --git a/docs/conf.py b/docs/conf.py
-index 29aa568..b99f183 100644
+index 88a3fd0..1a909cf 100644
 --- a/docs/conf.py
 +++ b/docs/conf.py
 @@ -1,6 +1,7 @@
@@ -23,17 +23,15 @@ index 29aa568..b99f183 100644
  
  from streamlink import __version__ as streamlink_version
  
-@@ -24,7 +25,8 @@ extensions = [
-     'ext_github',
+@@ -25,6 +26,7 @@ extensions = [
      'ext_plugins',
      'ext_releaseref',
--    'recommonmark'
-+    'recommonmark',
-+    'sphinx_rtd_theme'
+     'myst_parser',
++    'sphinx_rtd_theme',
  ]
  
  autosectionlabel_prefix_document = True
-@@ -115,7 +117,7 @@ intersphinx_timeout = 60
+@@ -115,16 +117,12 @@ intersphinx_timeout = 60
  
  # The theme to use for HTML and HTML Help pages.  See the documentation for
  # a list of builtin themes.
@@ -42,7 +40,17 @@ index 29aa568..b99f183 100644
  
  # Theme options are theme-specific and customize the look and feel of a theme
  # further.  For a list of options available for each theme, see the
-@@ -134,7 +136,7 @@ html_theme_options = {}
+ # documentation.
+-html_theme_options = {
+-    "source_repository": "https://github.com/streamlink/streamlink/",
+-    "source_branch": "master",
+-    "source_directory": "docs/",
+-}
++html_theme_options = {}
+ 
+ # Add any paths that contain custom themes here, relative to this directory.
+ #html_theme_path = []
+@@ -138,7 +136,7 @@ html_theme_options = {
  
  # The name of an image file (relative to this directory) to place at the top
  # of the sidebar.
@@ -51,7 +59,7 @@ index 29aa568..b99f183 100644
  
  # The name of an image file (within the static path) to use as favicon of the
  # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
-@@ -148,9 +150,6 @@ html_static_path = ['_static']
+@@ -152,9 +150,6 @@ html_static_path = ['_static']
  
  html_css_files = [
      'styles/custom.css',
@@ -61,7 +69,7 @@ index 29aa568..b99f183 100644
  ]
  
  # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
-@@ -160,12 +159,8 @@ html_css_files = [
+@@ -164,12 +159,8 @@ html_css_files = [
  # Custom sidebar templates, maps document names to template names.
  html_sidebars = {
      '**': [

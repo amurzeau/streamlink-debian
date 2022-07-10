@@ -16,20 +16,19 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  src/streamlink.egg-info/requires.txt | 2 +-
  src/streamlink/plugins/abematv.py    | 2 +-
  src/streamlink/plugins/mjunoon.py    | 4 ++--
- src/streamlink/plugins/rtve.py       | 2 +-
  src/streamlink/plugins/steam.py      | 4 ++--
  src/streamlink/plugins/ustvnow.py    | 6 +++---
  src/streamlink/plugins/webtv.py      | 2 +-
  src/streamlink/stream/hls.py         | 4 ++--
  src/streamlink/utils/crypto.py       | 2 +-
  tests/stream/test_hls.py             | 4 ++--
- 11 files changed, 17 insertions(+), 17 deletions(-)
+ 10 files changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/setup.cfg b/setup.cfg
-index 51df2ba..da89da4 100644
+index ed9bb5c..0a1a2cc 100644
 --- a/setup.cfg
 +++ b/setup.cfg
-@@ -41,7 +41,7 @@ install_requires =
+@@ -42,7 +42,7 @@ install_requires =
  	isodate
  	lxml >=4.6.4,<5.0
  	pycountry
@@ -39,7 +38,7 @@ index 51df2ba..da89da4 100644
  	requests >=2.26.0,<3.0
  	websocket-client >=1.2.1,<2.0
 diff --git a/src/streamlink.egg-info/requires.txt b/src/streamlink.egg-info/requires.txt
-index 898d658..48b8742 100644
+index ba66416..406d94c 100644
 --- a/src/streamlink.egg-info/requires.txt
 +++ b/src/streamlink.egg-info/requires.txt
 @@ -1,7 +1,7 @@
@@ -78,19 +77,6 @@ index 5fceafa..318bfa1 100644
 +from Cryptodome.Util.Padding import unpad
  
  from streamlink.plugin import Plugin, pluginmatcher
- from streamlink.plugin.api import validate
-diff --git a/src/streamlink/plugins/rtve.py b/src/streamlink/plugins/rtve.py
-index 145594b..5b0d70c 100644
---- a/src/streamlink/plugins/rtve.py
-+++ b/src/streamlink/plugins/rtve.py
-@@ -10,7 +10,7 @@ import logging
- import re
- from urllib.parse import urlparse
- 
--from Crypto.Cipher import Blowfish
-+from Cryptodome.Cipher import Blowfish
- 
- from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/steam.py b/src/streamlink/plugins/steam.py
 index 2133fe5..71f842d 100644
@@ -138,7 +124,7 @@ index c8cf2b2..712e447 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index bf7a1e7..d271b55 100644
+index 22e9b91..6842b10 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -7,9 +7,9 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
@@ -166,7 +152,7 @@ index abc3901..a71203f 100644
  
  def evp_bytestokey(password, salt, key_len, iv_len):
 diff --git a/tests/stream/test_hls.py b/tests/stream/test_hls.py
-index 0ceb82a..c0f835d 100644
+index c58792a..4e429c6 100644
 --- a/tests/stream/test_hls.py
 +++ b/tests/stream/test_hls.py
 @@ -6,8 +6,8 @@ from unittest.mock import Mock, call, patch
