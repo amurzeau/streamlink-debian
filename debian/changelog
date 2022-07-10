@@ -1,8 +1,13 @@
-streamlink (4.2.0-1) UNRELEASED; urgency=medium
+streamlink (4.2.0-1) unstable; urgency=medium
 
   * New upstream version 4.2.0
+  * d/patches: update and rename to default names
+  * d/control: update dependencies
+  * d/README.source: update build command
+  * d/s/lintian-overrides: update with new format
+  * Bump Standards-Version to 4.6.1 (no changes)
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 10 Jul 2022 11:44:32 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 10 Jul 2022 16:20:13 +0200
 
 streamlink (4.1.0-1) unstable; urgency=medium
 
