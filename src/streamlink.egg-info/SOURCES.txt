@@ -91,6 +91,7 @@ src/streamlink/plugins/abematv.py
 src/streamlink/plugins/adultswim.py
 src/streamlink/plugins/afreeca.py
 src/streamlink/plugins/albavision.py
+src/streamlink/plugins/aloula.py
 src/streamlink/plugins/app17.py
 src/streamlink/plugins/ard_live.py
 src/streamlink/plugins/ard_mediathek.py
@@ -124,7 +125,6 @@ src/streamlink/plugins/dogus.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
 src/streamlink/plugins/egame.py
-src/streamlink/plugins/eltrecetv.py
 src/streamlink/plugins/euronews.py
 src/streamlink/plugins/facebook.py
 src/streamlink/plugins/filmon.py
@@ -317,6 +317,7 @@ tests/plugins/test_abematv.py
 tests/plugins/test_adultswim.py
 tests/plugins/test_afreeca.py
 tests/plugins/test_albavision.py
+tests/plugins/test_aloula.py
 tests/plugins/test_app17.py
 tests/plugins/test_ard_live.py
 tests/plugins/test_ard_mediathek.py
@@ -349,7 +350,6 @@ tests/plugins/test_dogus.py
 tests/plugins/test_drdk.py
 tests/plugins/test_earthcam.py
 tests/plugins/test_egame.py
-tests/plugins/test_eltrecetv.py
 tests/plugins/test_euronews.py
 tests/plugins/test_facebook.py
 tests/plugins/test_filmon.py
@@ -488,6 +488,7 @@ tests/resources/hls/test_1.m3u8
 tests/resources/hls/test_2.m3u8
 tests/resources/hls/test_date.m3u8
 tests/resources/hls/test_master.m3u8
+tests/resources/hls/test_master_twitch_vod.m3u8
 tests/stream/__init__.py
 tests/stream/test_dash.py
 tests/stream/test_dash_parser.py

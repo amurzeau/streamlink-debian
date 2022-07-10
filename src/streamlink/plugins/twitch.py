@@ -8,6 +8,7 @@ $notes :ref:`Low latency streaming <cli/plugins/twitch:Low latency streaming>` i
 import json
 import logging
 import re
+import sys
 from datetime import datetime
 from random import random
 from typing import List, NamedTuple, Optional
@@ -51,8 +52,8 @@ class TwitchSequence(NamedTuple):
 class TwitchM3U8(M3U8):
     segments: List[TwitchSegment]  # type: ignore[assignment]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.dateranges_ads = []
 
 
@@ -527,6 +528,12 @@ class Twitch(Plugin):
             """
         )
     )
+
+    @classmethod
+    def stream_weight(cls, stream):
+        if stream == "source":
+            return sys.maxsize, stream
+        return super().stream_weight(stream)
 
     def __init__(self, url):
         super().__init__(url)

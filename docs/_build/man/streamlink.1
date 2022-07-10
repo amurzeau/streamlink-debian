@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "May 30, 2022" "4.1.0" "Streamlink"
+.TH "STREAMLINK" "1" "Jul 09, 2022" "4.2.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -56,7 +56,7 @@ streamlink \-\-twitch\-low\-latency \-p mpv \-a \(aq\-\-cache=yes \-\-demuxer\-m
 .B URL
 A URL to attempt to extract streams from.
 .sp
-Usually, the protocol of http(s) URLs can be omitted ("\fI\%https://\fP"),
+Usually, the protocol of http(s) URLs can be omitted (\(dq\fI\%https://\fP\(dq),
 depending on the implementation of the plugin being used.
 .sp
 Alternatively, the URL can also be specified by using the \fI\%\-\-url\fP option.
@@ -75,7 +75,7 @@ Fallback streams can be specified by using a comma\-separated list:
 .sp
 .nf
 .ft C
-"720p,480p,best"
+\(dq720p,480p,best\(dq
 .ft P
 .fi
 .UNINDENT
@@ -196,7 +196,7 @@ ${XDG_STATE_HOME:\-${HOME}/.local/state}/streamlink/logs
 .B \-\-quiet
 Hide all log output.
 .sp
-Alias for "\-\-loglevel none".
+Alias for \(dq\-\-loglevel none\(dq.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -212,7 +212,7 @@ Useful for external scripting.
 .B \-\-auto\-version\-check {yes,true,1,on,no,false,0,off}
 Enable or disable the automatic check for a new version of Streamlink.
 .sp
-Default is: \fB"no"\fP\&.
+Default is: \fB\(dqno\(dq\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -291,8 +291,8 @@ parameter or its value:
 .sp
 .nf
 .ft C
-streamlink "\-\-player=/path/with spaces/vlc" <url> [stream]
-streamlink \-\-player "C:\epath\ewith spaces\empc\-hc64.exe" <url> [stream]
+streamlink \(dq\-\-player=/path/with spaces/vlc\(dq <url> [stream]
+streamlink \-\-player \(dqC:\epath\ewith spaces\empc\-hc64.exe\(dq <url> [stream]
 .ft P
 .fi
 .UNINDENT
@@ -304,7 +304,7 @@ Options may also be passed to the player. For example:
 .sp
 .nf
 .ft C
-streamlink \-\-player "vlc \-\-file\-caching=5000" <url> [stream]
+streamlink \-\-player \(dqvlc \-\-file\-caching=5000\(dq <url> [stream]
 .ft P
 .fi
 .UNINDENT
@@ -346,7 +346,7 @@ Example:
 .sp
 .nf
 .ft C
-streamlink \-p vlc \-a "\-\-play\-and\-exit {playerinput}" <url> [stream]
+streamlink \-p vlc \-a \(dq\-\-play\-and\-exit {playerinput}\(dq <url> [stream]
 .ft P
 .fi
 .UNINDENT
@@ -391,7 +391,7 @@ it will continuously try to open the stream if the player requests it.
 .sp
 This makes it possible to handle stream disconnects if your player is
 capable of reconnecting to a HTTP stream. This is usually done by
-setting your player to a "repeat mode".
+setting your player to a \(dqrepeat mode\(dq.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -433,7 +433,7 @@ Make sure your player can handle the stream type when using this.
 .TP
 .B \-\-player\-no\-close
 By default Streamlink will close the player when the stream
-ends. This is to avoid "dead" GUI players lingering after a
+ends. This is to avoid \(dqdead\(dq GUI players lingering after a
 stream ends.
 .sp
 It does however have the side\-effect of sometimes closing a
@@ -448,7 +448,7 @@ This option will instead let the player decide when to exit.
 .B \-\-title TITLE
 Change the title of the video player\(aqs window.
 .sp
-Please see the "Metadata variables" section of Streamlink\(aqs CLI documentation for all available metadata variables.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables.
 .sp
 This option is only supported for the following players: mpv, potplayer, vlc
 .INDENT 7.0
@@ -461,7 +461,7 @@ These variables are accessible in the \-\-title option by adding a backslash
 in front of the dollar sign which VLC uses as its formatting character.
 .sp
 For example, to put the current date in your VLC window title,
-the string "\e$A" could be inserted inside the \-\-title string.
+the string \(dq\e$A\(dq could be inserted inside the \-\-title string.
 .UNINDENT
 .sp
 Example:
@@ -470,7 +470,7 @@ Example:
 .sp
 .nf
 .ft C
-streamlink \-p mpv \-\-title "{author} \- {category} \- {title}" <URL> [STREAM]
+streamlink \-p mpv \-\-title \(dq{author} \- {category} \- {title}\(dq <URL> [STREAM]
 .ft P
 .fi
 .UNINDENT
@@ -489,7 +489,7 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the "Metadata variables" section of Streamlink\(aqs CLI documentation for all available metadata variables.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -499,7 +499,7 @@ Example:
 .sp
 .nf
 .ft C
-streamlink \-\-output "~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts" <URL> [STREAM]
+streamlink \-\-output \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts\(dq <URL> [STREAM]
 .ft P
 .fi
 .UNINDENT
@@ -510,12 +510,12 @@ streamlink \-\-output "~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S
 .B \-f
 .TP
 .B \-\-force
-When using \-o or \-r, always write to file even if it already exists (overwrite).
+When using \fI\%\-\-output\fP or \fI\%\-\-record\fP, always write to file even if it already exists (overwrite).
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-force\-progress
-When using \-o or \-r,
+When using \fI\%\-\-output\fP or \fI\%\-\-record\fP,
 show the download progress bar even if there is no terminal.
 .UNINDENT
 .INDENT 0.0
@@ -537,7 +537,7 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the "Metadata variables" section of Streamlink\(aqs CLI documentation for all available metadata variables.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -547,7 +547,7 @@ Example:
 .sp
 .nf
 .ft C
-streamlink \-\-record "~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts" <URL> [STREAM]
+streamlink \-\-record \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts\(dq <URL> [STREAM]
 .ft P
 .fi
 .UNINDENT
@@ -564,7 +564,7 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the "Metadata variables" section of Streamlink\(aqs CLI documentation for all available metadata variables.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -574,7 +574,7 @@ Example:
 .sp
 .nf
 .ft C
-streamlink \-\-record\-and\-pipe "~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts" <URL> [STREAM]
+streamlink \-\-record\-and\-pipe \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts\(dq <URL> [STREAM]
 .ft P
 .fi
 .UNINDENT
@@ -598,7 +598,7 @@ These characters are replaced with an underscore for the rules in use:
 .nf
 .ft C
 POSIX  : \ex00\-\ex1F /
-Windows: \ex00\-\ex1F \ex7F " * / : < > ? \e |
+Windows: \ex00\-\ex1F \ex7F \(dq * / : < > ? \e |
 .ft P
 .fi
 .UNINDENT
@@ -630,7 +630,7 @@ Fallback streams can be specified by using a comma\-separated list:
 .sp
 .nf
 .ft C
-"720p,480p,best"
+\(dq720p,480p,best\(dq
 .ft P
 .fi
 .UNINDENT
@@ -682,7 +682,7 @@ streams with the same name but different stream types. Any stream type
 not listed will be omitted from the available streams list.  A \fB*\fP can
 be used as a wildcard to match any other type of stream, eg. muxed\-stream.
 .sp
-Default is: \fB"hls,http,*"\fP\&.
+Default is: \fB\(dqhls,http,*\(dq\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -708,13 +708,13 @@ Uses a filter expression in the format:
 Valid operators are \fB>\fP, \fB>=\fP, \fB<\fP and \fB<=\fP\&. If no operator is specified then
 equality is tested.
 .sp
-For example this will exclude streams ranked higher than "480p":
+For example this will exclude streams ranked higher than \(dq480p\(dq:
 .INDENT 7.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
-">480p"
+\(dq>480p\(dq
 .ft P
 .fi
 .UNINDENT
@@ -728,7 +728,7 @@ For example this will exclude streams from two quality types:
 .sp
 .nf
 .ft C
-">480p,>medium"
+\(dq>480p,>medium\(dq
 .ft P
 .fi
 .UNINDENT
@@ -750,7 +750,7 @@ Most players have their own additional cache and will read the ringbuffer\(aqs c
 If the player stops reading data while playback is paused, Streamlink will continue to download the stream in the
 background as long as the ringbuffer doesn\(aqt get full.
 .sp
-Default is: \fB"16M"\fP\&.
+Default is: \fB\(dq16M\(dq\fP\&.
 .sp
 \fBNOTE:\fP
 .INDENT 7.0
@@ -895,9 +895,9 @@ Examples:
 .sp
 .nf
 .ft C
-\-\-hls\-segment\-key\-uri "https://example.com/hls/encryption_key"
-\-\-hls\-segment\-key\-uri "{scheme}://1.2.3.4{path}{query}"
-\-\-hls\-segment\-key\-uri "{scheme}://{netloc}/custom/path/to/key"
+\-\-hls\-segment\-key\-uri \(dqhttps://example.com/hls/encryption_key\(dq
+\-\-hls\-segment\-key\-uri \(dq{scheme}://1.2.3.4{path}{query}\(dq
+\-\-hls\-segment\-key\-uri \(dq{scheme}://{netloc}/custom/path/to/key\(dq
 .ft P
 .fi
 .UNINDENT
@@ -918,9 +918,9 @@ Examples:
 .sp
 .nf
 .ft C
-\-\-hls\-audio\-select "English,German"
-\-\-hls\-audio\-select "en,de"
-\-\-hls\-audio\-select "*"
+\-\-hls\-audio\-select \(dqEnglish,German\(dq
+\-\-hls\-audio\-select \(dqen,de\(dq
+\-\-hls\-audio\-select \(dq*\(dq
 .ft P
 .fi
 .UNINDENT
@@ -965,7 +965,7 @@ FFMPEG is used to access or mux separate video and audio streams. You
 can specify the location of the ffmpeg executable if it is not in your
 PATH.
 .sp
-Example: "/usr/local/bin/ffmpeg"
+Example: \(dq/usr/local/bin/ffmpeg\(dq
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -982,27 +982,27 @@ Path to write the output from the ffmpeg console.
 .B \-\-ffmpeg\-fout OUTFORMAT
 When muxing streams, set the output format to OUTFORMAT.
 .sp
-Default is: \fB"matroska"\fP\&.
+Default is: \fB\(dqmatroska\(dq\fP\&.
 .sp
-Example: "mpegts"
+Example: \(dqmpegts\(dq
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-ffmpeg\-video\-transcode CODEC
 When muxing streams, transcode the video to CODEC.
 .sp
-Default is: \fB"copy"\fP\&.
+Default is: \fB\(dqcopy\(dq\fP\&.
 .sp
-Example: "h264"
+Example: \(dqh264\(dq
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-ffmpeg\-audio\-transcode CODEC
 When muxing streams, transcode the audio to CODEC.
 .sp
-Default is: \fB"copy"\fP\&.
+Default is: \fB\(dqcopy\(dq\fP\&.
 .sp
-Example: "aac"
+Example: \(dqaac\(dq
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1021,7 +1021,7 @@ Enable the \-start_at_zero ffmpeg option when using copyts.
 .B \-\-http\-proxy HTTP_PROXY
 A HTTP proxy to use for all HTTP and HTTPS requests, including WebSocket connections.
 .sp
-Example: "\fI\%http://hostname:port/\fP"
+Example: \(dq\fI\%http://hostname:port/\fP\(dq
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1183,7 +1183,7 @@ Password for your Funimation account.
 .B \-\-funimation\-language
 The audio language to use for the stream; japanese or english.
 .sp
-Default is: \fB"english"\fP\&.
+Default is: \fB\(dqenglish\(dq\fP\&.
 .UNINDENT
 .SS Nicolive
 .INDENT 0.0
@@ -1283,7 +1283,7 @@ A Schoolism account password to use with \fI\%\-\-schoolism\-email\fP\&.
 .B \-\-schoolism\-part PART
 Play part number PART of the lesson, or assignment feedback video.
 .sp
-Defaults is 1.
+Default is: \fB1\fP\&.
 .UNINDENT
 .SS Steam
 .INDENT 0.0
@@ -1431,7 +1431,7 @@ dash
 hls7
 .UNINDENT
 .sp
-Default is: \fB"dash"\fP\&.
+Default is: \fB\(dqdash\(dq\fP\&.
 .UNINDENT
 .SH AUTHOR
 Streamlink Contributors
