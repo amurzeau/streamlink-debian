@@ -6,3 +6,6 @@
 0006-Use-font-awesome-4-icons-a-Debian-doesn-t-have-font-.patch
 0007-Remove-dependency-on-versioningit.patch
 0008-Remove-intersphinx.patch
+0009-docs-use-recommonmark-instead-of-myst-parser.patch
+0010-test_dash.py-fix-importing-MonkeyPatch-on-old-pytest.patch
+0011-Backport-requests.utils.DEFAULT_ACCEPT_ENCODING-in-t.patch

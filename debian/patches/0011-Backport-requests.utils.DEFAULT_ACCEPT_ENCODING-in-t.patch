@@ -1,0 +1,40 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Sat, 16 Jul 2022 17:00:22 +0200
+Subject: Backport requests.utils.DEFAULT_ACCEPT_ENCODING in
+ test_stream_json.py
+
+DEFAULT_ACCEPT_ENCODING is not available in requests < 2.26.
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ tests/stream/test_stream_json.py | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/tests/stream/test_stream_json.py b/tests/stream/test_stream_json.py
+index c5b9a90..a0e3a25 100644
+--- a/tests/stream/test_stream_json.py
++++ b/tests/stream/test_stream_json.py
+@@ -1,8 +1,8 @@
+ from unittest.mock import Mock
+ 
+ import pytest
+-# noinspection PyUnresolvedReferences
+-from requests.utils import DEFAULT_ACCEPT_ENCODING  # type: ignore[attr-defined]
++import re
++from urllib3.util import make_headers
+ 
+ from streamlink import Streamlink
+ from streamlink.stream.dash import DASHStream
+@@ -11,6 +11,11 @@ from streamlink.stream.hls import HLSStream
+ from streamlink.stream.http import HTTPStream
+ from streamlink.stream.stream import Stream
+ 
++# Ensure that ', ' is used to preserve previous delimiter behavior.
++DEFAULT_ACCEPT_ENCODING = ", ".join(
++    re.split(r",\s*", make_headers(accept_encoding=True)["accept-encoding"])
++)
++
+ 
+ @pytest.fixture(scope="module")
+ def session():
