@@ -1,8 +1,9 @@
 streamlink (4.2.0-1~bpo11+1) bullseye-backports; urgency=medium
 
   * Rebuild for bullseye-backports.
+  * d/patches,d/control: fix build with older dependencies
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 16 Jul 2022 16:07:11 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 16 Jul 2022 17:12:12 +0200
 
 streamlink (4.2.0-1) unstable; urgency=medium
 
