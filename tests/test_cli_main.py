@@ -8,10 +8,11 @@ from textwrap import dedent
 from unittest.mock import Mock, call, patch
 
 import freezegun
+import pytest
 
 import streamlink_cli.main
 import tests.resources
-from streamlink.exceptions import StreamError
+from streamlink.exceptions import PluginError, StreamError
 from streamlink.session import Streamlink
 from streamlink.stream.stream import Stream
 from streamlink_cli.compat import DeprecatedPath, is_win32, stdout
@@ -33,8 +34,8 @@ from tests.plugin.testplugin import TestPlugin as _TestPlugin
 
 class FakePlugin(_TestPlugin):
     module = "fake"
-    arguments = []
-    _streams = {}
+    arguments = []  # type: ignore
+    _streams = {}  # type: ignore
 
     def streams(self, *args, **kwargs):
         return self._streams
@@ -109,6 +110,20 @@ class TestCLIMain(unittest.TestCase):
                 "1080p (best-unfiltered)"
             ])
         )
+
+
+class TestCLIMainHandleUrl:
+    @pytest.mark.parametrize("side_effect,expected", [
+        (NoPluginError("foo"), "No plugin can handle URL: fakeurl"),
+        (PluginError("bar"), "bar"),
+    ])
+    def test_error(self, side_effect, expected):
+        with patch("streamlink_cli.main.args", Mock(url="fakeurl")), \
+             patch("streamlink_cli.main.streamlink", resolve_url=Mock(side_effect=side_effect)), \
+             patch("streamlink_cli.main.console", exit=Mock(side_effect=SystemExit)) as mock_console:
+            with pytest.raises(SystemExit):
+                handle_url()
+            assert mock_console.exit.mock_calls == [call(expected)]
 
 
 class TestCLIMainJsonAndStreamUrl(unittest.TestCase):
@@ -237,6 +252,17 @@ class TestCLIMainCheckFileOutput(unittest.TestCase):
 
     @patch("streamlink_cli.main.console")
     @patch("streamlink_cli.main.sys")
+    def test_check_file_output_exists_ask_error(self, mock_sys: Mock, mock_console: Mock):
+        mock_sys.stdin.isatty.return_value = True
+        mock_sys.exit.side_effect = SystemExit
+        mock_console.ask = Mock(return_value=None)
+        path = self.mock_path("foo", is_file=True)
+        with self.assertRaises(SystemExit):
+            check_file_output(path, False)
+        self.assertEqual(mock_console.ask.call_args_list, [call("File foo already exists! Overwrite it? [y/N] ")])
+
+    @patch("streamlink_cli.main.console")
+    @patch("streamlink_cli.main.sys")
     def test_check_file_output_exists_notty(self, mock_sys: Mock, mock_console: Mock):
         mock_sys.stdin.isatty.return_value = False
         mock_sys.exit.side_effect = SystemExit
@@ -265,13 +291,13 @@ class TestCLIMainCreateOutput(unittest.TestCase):
         args.player_args = ""
 
         output = create_output(formatter)
-        self.assertIsInstance(output, PlayerOutput)
-        self.assertEqual(output.title, "URL")
+        assert type(output) is PlayerOutput
+        assert output.title == "URL"
 
         args.title = "{author} - {title}"
         output = create_output(formatter)
-        self.assertIsInstance(output, PlayerOutput)
-        self.assertEqual(output.title, "foo - bar")
+        assert type(output) is PlayerOutput
+        assert output.title == "foo - bar"
 
     @patch("streamlink_cli.main.args")
     @patch("streamlink_cli.main.check_file_output")
@@ -286,11 +312,11 @@ class TestCLIMainCreateOutput(unittest.TestCase):
         args.fs_safe_rules = None
 
         output = create_output(formatter)
-        self.assertEqual(mock_check_file_output.call_args_list, [call(Path("foo"), False)])
-        self.assertIsInstance(output, FileOutput)
-        self.assertEqual(output.filename, Path("foo"))
-        self.assertIsNone(output.fd)
-        self.assertIsNone(output.record)
+        assert mock_check_file_output.call_args_list == [call(Path("foo"), False)]
+        assert type(output) is FileOutput
+        assert output.filename == Path("foo")
+        assert output.fd is None
+        assert output.record is None
 
     @patch("streamlink_cli.main.args")
     def test_create_output_stdout(self, args: Mock):
@@ -301,18 +327,18 @@ class TestCLIMainCreateOutput(unittest.TestCase):
         args.record_and_pipe = None
 
         output = create_output(formatter)
-        self.assertIsInstance(output, FileOutput)
-        self.assertIsNone(output.filename)
-        self.assertIs(output.fd, stdout)
-        self.assertIsNone(output.record)
+        assert type(output) is FileOutput
+        assert output.filename is None
+        assert output.fd is stdout
+        assert output.record is None
 
         args.output = "-"
         args.stdout = False
         output = create_output(formatter)
-        self.assertIsInstance(output, FileOutput)
-        self.assertIsNone(output.filename)
-        self.assertIs(output.fd, stdout)
-        self.assertIsNone(output.record)
+        assert type(output) is FileOutput
+        assert output.filename is None
+        assert output.fd is stdout
+        assert output.record is None
 
     @patch("streamlink_cli.main.args")
     @patch("streamlink_cli.main.check_file_output")
@@ -326,14 +352,14 @@ class TestCLIMainCreateOutput(unittest.TestCase):
         args.fs_safe_rules = None
 
         output = create_output(formatter)
-        self.assertEqual(mock_check_file_output.call_args_list, [call(Path("foo"), False)])
-        self.assertIsInstance(output, FileOutput)
-        self.assertIsNone(output.filename)
-        self.assertIs(output.fd, stdout)
-        self.assertIsInstance(output.record, FileOutput)
-        self.assertEqual(output.record.filename, Path("foo"))
-        self.assertIsNone(output.record.fd)
-        self.assertIsNone(output.record.record)
+        assert mock_check_file_output.call_args_list == [call(Path("foo"), False)]
+        assert type(output) is FileOutput
+        assert output.filename is None
+        assert output.fd is stdout
+        assert type(output.record) is FileOutput
+        assert output.record.filename == Path("foo")
+        assert output.record.fd is None
+        assert output.record.record is None
 
     @patch("streamlink_cli.main.args")
     @patch("streamlink_cli.main.check_file_output")
@@ -357,21 +383,21 @@ class TestCLIMainCreateOutput(unittest.TestCase):
         args.player_http = None
 
         output = create_output(formatter)
-        self.assertIsInstance(output, PlayerOutput)
-        self.assertEqual(output.title, "URL")
-        self.assertIsInstance(output.record, FileOutput)
-        self.assertEqual(output.record.filename, Path("foo"))
-        self.assertIsNone(output.record.fd)
-        self.assertIsNone(output.record.record)
+        assert type(output) is PlayerOutput
+        assert output.title == "URL"
+        assert type(output.record) is FileOutput
+        assert output.record.filename == Path("foo")
+        assert output.record.fd is None
+        assert output.record.record is None
 
         args.title = "{author} - {title}"
         output = create_output(formatter)
-        self.assertIsInstance(output, PlayerOutput)
-        self.assertEqual(output.title, "foo - bar")
-        self.assertIsInstance(output.record, FileOutput)
-        self.assertEqual(output.record.filename, Path("foo"))
-        self.assertIsNone(output.record.fd)
-        self.assertIsNone(output.record.record)
+        assert type(output) is PlayerOutput
+        assert output.title == "foo - bar"
+        assert type(output.record) is FileOutput
+        assert output.record.filename == Path("foo")
+        assert output.record.fd is None
+        assert output.record.record is None
 
     @patch("streamlink_cli.main.args")
     @patch("streamlink_cli.main.DEFAULT_STREAM_METADATA", {"title": "bar"})
@@ -393,12 +419,12 @@ class TestCLIMainCreateOutput(unittest.TestCase):
         args.player_http = None
 
         output = create_output(formatter)
-        self.assertIsInstance(output, PlayerOutput)
-        self.assertEqual(output.title, "foo - bar")
-        self.assertIsInstance(output.record, FileOutput)
-        self.assertIsNone(output.record.filename)
-        self.assertEqual(output.record.fd, stdout)
-        self.assertIsNone(output.record.record)
+        assert type(output) is PlayerOutput
+        assert output.title == "foo - bar"
+        assert type(output.record) is FileOutput
+        assert output.record.filename is None
+        assert output.record.fd is stdout
+        assert output.record.record is None
 
     @patch("streamlink_cli.main.args")
     @patch("streamlink_cli.main.console")
@@ -563,17 +589,18 @@ class TestCLIMainSetupConfigArgs(unittest.TestCase):
 
 
 class _TestCLIMainLogging(unittest.TestCase):
+    # stop test execution at the setup_signals() call, as we're not interested in what comes afterwards
+    class StopTest(Exception):
+        pass
+
     @classmethod
     def subject(cls, argv, **kwargs):
         session = Streamlink()
         session.load_plugins(os.path.join(os.path.dirname(__file__), "plugin"))
 
-        # stop test execution at the setup_signals() call, as we're not interested in what comes afterwards
-        class StopTest(Exception):
-            pass
-
-        with patch("streamlink_cli.main.streamlink", session), \
-             patch("streamlink_cli.main.setup_signals", side_effect=StopTest), \
+        with patch("streamlink_cli.main.os.geteuid", create=True, new=Mock(return_value=kwargs.get("euid", 1000))), \
+             patch("streamlink_cli.main.streamlink", session), \
+             patch("streamlink_cli.main.setup_signals", side_effect=cls.StopTest), \
              patch("streamlink_cli.main.CONFIG_FILES", []), \
              patch("streamlink_cli.main.setup_streamlink"), \
              patch("streamlink_cli.main.setup_plugins"), \
@@ -583,7 +610,7 @@ class _TestCLIMainLogging(unittest.TestCase):
             mock_argv.__getitem__.side_effect = lambda x: argv[x]
             try:
                 streamlink_cli.main.main()
-            except StopTest:
+            except cls.StopTest:
                 pass
 
     def tearDown(self):
@@ -694,62 +721,77 @@ class TestCLIMainLoggingStreams(_TestCLIMainLogging):
 class TestCLIMainLoggingInfos(_TestCLIMainLogging):
     @unittest.skipIf(is_win32, "test only applicable on a POSIX OS")
     @patch("streamlink_cli.main.log")
-    @patch("streamlink_cli.main.os.geteuid", Mock(return_value=0))
     def test_log_root_warning(self, mock_log):
-        self.subject(["streamlink"])
+        self.subject(["streamlink"], euid=0)
         self.assertEqual(mock_log.info.mock_calls, [call("streamlink is running as root! Be careful!")])
 
     @patch("streamlink_cli.main.log")
     @patch("streamlink_cli.main.streamlink_version", "streamlink")
-    @patch("streamlink_cli.main.requests.__version__", "requests")
-    @patch("streamlink_cli.main.socks_version", "socks")
-    @patch("streamlink_cli.main.websocket_version", "websocket")
+    @patch("streamlink_cli.main.importlib_metadata")
+    @patch("streamlink_cli.main.log_current_arguments", Mock(side_effect=_TestCLIMainLogging.StopTest))
     @patch("platform.python_version", Mock(return_value="python"))
-    def test_log_current_versions(self, mock_log):
+    def test_log_current_versions(self, mock_importlib_metadata: Mock, mock_log: Mock):
+        class FakePackageNotFoundError(Exception):
+            pass
+
+        def version(dist):
+            if dist == "foo":
+                return "1.2.3"
+            if dist == "bar-baz":
+                return "2.0.0"
+            raise FakePackageNotFoundError()
+
+        mock_importlib_metadata.PackageNotFoundError = FakePackageNotFoundError
+        mock_importlib_metadata.requires.return_value = ["foo>1", "bar-baz==2", "qux~=3"]
+        mock_importlib_metadata.version.side_effect = version
+
         self.subject(["streamlink", "--loglevel", "info"])
         self.assertEqual(mock_log.debug.mock_calls, [], "Doesn't log anything if not debug logging")
 
         with patch("sys.platform", "linux"), \
              patch("platform.platform", Mock(return_value="linux")):
             self.subject(["streamlink", "--loglevel", "debug"])
-            self.assertEqual(
-                mock_log.debug.mock_calls[:4],
-                [
-                    call("OS:         linux"),
-                    call("Python:     python"),
-                    call("Streamlink: streamlink"),
-                    call("Requests(requests), Socks(socks), Websocket(websocket)")
-                ]
-            )
+            assert mock_importlib_metadata.requires.mock_calls == [call("streamlink")]
+            assert mock_log.debug.mock_calls == [
+                call("OS:         linux"),
+                call("Python:     python"),
+                call("Streamlink: streamlink"),
+                call("Dependencies:"),
+                call(" foo: 1.2.3"),
+                call(" bar-baz: 2.0.0"),
+            ]
+            mock_importlib_metadata.requires.reset_mock()
             mock_log.debug.reset_mock()
 
         with patch("sys.platform", "darwin"), \
              patch("platform.mac_ver", Mock(return_value=["0.0.0"])):
             self.subject(["streamlink", "--loglevel", "debug"])
-            self.assertEqual(
-                mock_log.debug.mock_calls[:4],
-                [
-                    call("OS:         macOS 0.0.0"),
-                    call("Python:     python"),
-                    call("Streamlink: streamlink"),
-                    call("Requests(requests), Socks(socks), Websocket(websocket)")
-                ]
-            )
+            assert mock_importlib_metadata.requires.mock_calls == [call("streamlink")]
+            assert mock_log.debug.mock_calls == [
+                call("OS:         macOS 0.0.0"),
+                call("Python:     python"),
+                call("Streamlink: streamlink"),
+                call("Dependencies:"),
+                call(" foo: 1.2.3"),
+                call(" bar-baz: 2.0.0"),
+            ]
+            mock_importlib_metadata.requires.reset_mock()
             mock_log.debug.reset_mock()
 
         with patch("sys.platform", "win32"), \
              patch("platform.system", Mock(return_value="Windows")), \
              patch("platform.release", Mock(return_value="0.0.0")):
             self.subject(["streamlink", "--loglevel", "debug"])
-            self.assertEqual(
-                mock_log.debug.mock_calls[:4],
-                [
-                    call("OS:         Windows 0.0.0"),
-                    call("Python:     python"),
-                    call("Streamlink: streamlink"),
-                    call("Requests(requests), Socks(socks), Websocket(websocket)")
-                ]
-            )
+            assert mock_importlib_metadata.requires.mock_calls == [call("streamlink")]
+            assert mock_log.debug.mock_calls == [
+                call("OS:         Windows 0.0.0"),
+                call("Python:     python"),
+                call("Streamlink: streamlink"),
+                call("Dependencies:"),
+                call(" foo: 1.2.3"),
+                call(" bar-baz: 2.0.0"),
+            ]
+            mock_importlib_metadata.requires.reset_mock()
             mock_log.debug.reset_mock()
 
     @patch("streamlink_cli.main.log")
@@ -902,7 +944,8 @@ class TestCLIMainPrint(unittest.TestCase):
              patch.object(Streamlink, "resolve_url_no_redirect") as mock_resolve_url_no_redirect:
             session = Streamlink()
             session.load_plugins(os.path.join(os.path.dirname(__file__), "plugin"))
-            with patch("streamlink_cli.main.streamlink", session), \
+            with patch("streamlink_cli.main.os.geteuid", create=True, new=Mock(return_value=1000)), \
+                 patch("streamlink_cli.main.streamlink", session), \
                  patch("streamlink_cli.main.CONFIG_FILES", []), \
                  patch("streamlink_cli.main.setup_streamlink"), \
                  patch("streamlink_cli.main.setup_plugins"), \

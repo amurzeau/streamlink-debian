@@ -11,7 +11,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  1 file changed, 1 deletion(-)
 
 diff --git a/docs/conf.py b/docs/conf.py
-index ab673cb..3d31a2a 100644
+index 1a909cf..0a0c3d6 100644
 --- a/docs/conf.py
 +++ b/docs/conf.py
 @@ -20,7 +20,6 @@ needs_sphinx = '3.0'

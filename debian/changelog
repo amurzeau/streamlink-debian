@@ -1,3 +1,22 @@
+streamlink (4.2.0-1) unstable; urgency=medium
+
+  * New upstream version 4.2.0
+  * d/patches: update and rename to default names
+  * d/control: update dependencies
+  * d/README.source: update build command
+  * d/s/lintian-overrides: update with new format
+  * Bump Standards-Version to 4.6.1 (no changes)
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 10 Jul 2022 16:20:13 +0200
+
+streamlink (4.1.0-1) unstable; urgency=medium
+
+  * d/salsa-ci.yml: adjust config to disable non working ones
+  * New upstream version 4.1.0
+  * Update patches
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 08 Jun 2022 23:38:11 +0200
+
 streamlink (4.0.1-1~bpo11+1) bullseye-backports; urgency=medium
 
   * Rebuild for bullseye-backports.

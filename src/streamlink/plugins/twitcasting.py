@@ -102,7 +102,10 @@ class TwitCastingWsClient(WebsocketClient):
         super().on_close(*args, **kwargs)
         self.buffer.close()
 
-    def on_message(self, wsapp, data: str) -> None:
+    def on_data(self, wsapp, data, data_type, cont):
+        if data_type == self.OPCODE_TEXT:
+            return
+
         try:
             self.buffer.write(data)
         except Exception as err:
@@ -147,8 +150,8 @@ class TwitCastingStream(Stream):
         super().__init__(session)
         self.url = url
 
-    def __repr__(self):
-        return f"<TwitCastingStream({self.url!r})>"
+    def to_url(self):
+        return self.url
 
     def open(self):
         reader = TwitCastingReader(self)

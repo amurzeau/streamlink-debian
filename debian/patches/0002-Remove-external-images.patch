@@ -40,7 +40,7 @@ index 477031e..0d78e54 100644
  :Info: An NW.js based desktop web application. Browse Twitch.tv and watch multiple streams at once.
      Filter streams by language, receive desktop notifications when followed channels start
 diff --git a/docs/donate.rst b/docs/donate.rst
-index 4e66afd..99dba49 100644
+index 0474375..f6ca474 100644
 --- a/docs/donate.rst
 +++ b/docs/donate.rst
 @@ -19,7 +19,7 @@ as payment for future work.

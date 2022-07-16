@@ -21,7 +21,7 @@ Here are the commands to manage the package:
 
 - Build package using sbuild:
   - `sbuild -As ../streamlink_<version>.dsc -d unstable`
-  - `gbp buildpackage "--git-builder=sbuild -v -As -d unstable --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\""`
+  - `gbp buildpackage "--git-builder=sbuild -v -As -d unstable --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'"`
 
 - Run lintian:
   - `lintian -EviIL +pedantic  ./streamlink_<version>_amd64.changes`

@@ -6,10 +6,10 @@ _shtab_streamlink_cli_option_strings=('-h' '--help' '-V' '--version' '--plugins'
 
 
 
-_shtab_streamlink_cli__l_choices='none critical error warning info debug trace'
-_shtab_streamlink_cli___loglevel_choices='none critical error warning info debug trace'
-_shtab_streamlink_cli___fs_safe_rules_choices='POSIX Windows'
-_shtab_streamlink_cli___funimation_language_choices='en ja english japanese'
+_shtab_streamlink_cli__l_choices=('none' 'critical' 'error' 'warning' 'info' 'debug' 'trace')
+_shtab_streamlink_cli___loglevel_choices=('none' 'critical' 'error' 'warning' 'info' 'debug' 'trace')
+_shtab_streamlink_cli___fs_safe_rules_choices=('POSIX' 'Windows')
+_shtab_streamlink_cli___funimation_language_choices=('en' 'ja' 'english' 'japanese')
 
 _shtab_streamlink_cli__h_nargs=0
 _shtab_streamlink_cli___help_nargs=0
@@ -169,8 +169,9 @@ _shtab_streamlink_cli() {
     COMPREPLY=( $(compgen -W "${current_option_strings[*]}" -- "${completing_word}") )
   else
     # use choices & compgen
-    COMPREPLY=( $(compgen -W "${current_action_choices}" -- "${completing_word}"; \
-                  [ -n "${current_action_compgen}" ] \
+    local IFS=$'\n'
+    COMPREPLY=( $(compgen -W "${current_action_choices}" -- "${completing_word}") \
+                $([ -n "${current_action_compgen}" ] \
                   && "${current_action_compgen}" "${completing_word}") )
   fi
 

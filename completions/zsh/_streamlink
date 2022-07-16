@@ -252,10 +252,10 @@ _shtab_streamlink_cli_options=(
             \%(prog)s --output \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%\%Y\%\%m\%\%d\%\%H\%\%M\%\%S\}.ts\" \<URL\> \[STREAM\]
         ]:output:"
   {-f,--force}"[
-        When using -o or -r, always write to file even if it already exists (overwrite).
+        When using --output or --record, always write to file even if it already exists (overwrite).
         ]"
   "--force-progress[
-        When using -o or -r,
+        When using --output or --record,
         show the download progress bar even if there is no terminal.
         ]"
   {-O,--stdout}"[
@@ -701,7 +701,7 @@ _shtab_streamlink_cli_options=(
   "--schoolism-part[
         Play part number PART of the lesson, or assignment feedback video.
 
-        Defaults is 1.
+        Default is 1.
         ]:schoolism_part:"
   "--steam-email[
             A Steam account email address to access friends\/private streams

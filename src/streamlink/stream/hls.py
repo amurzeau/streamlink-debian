@@ -11,11 +11,11 @@ from Crypto.Cipher import AES
 # noinspection PyPackageRequirements
 from Crypto.Util.Padding import unpad
 from requests import Response
-from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError, StreamConsumedError
+from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError
 
 from streamlink.exceptions import StreamError
 from streamlink.stream.ffmpegmux import FFMPEGMuxer, MuxedStream
-from streamlink.stream.hls_playlist import ByteRange, Key, M3U8, Map, Segment, load as load_hls_playlist
+from streamlink.stream.hls_playlist import ByteRange, Key, M3U8, Map, Media, Segment, load as load_hls_playlist
 from streamlink.stream.http import HTTPStream
 from streamlink.stream.segmented import SegmentedStreamReader, SegmentedStreamWorker, SegmentedStreamWriter
 from streamlink.utils.cache import LRUCache
@@ -30,14 +30,14 @@ class Sequence(NamedTuple):
 
 
 class ByteRangeOffset:
-    sequence: Sequence.num = None
-    offset: int = None
+    sequence: Optional[int] = None
+    offset: Optional[int] = None
 
     @staticmethod
-    def _calc_end(start: int, size: ByteRange.range):
+    def _calc_end(start: int, size: int) -> int:
         return start + max(size - 1, 0)
 
-    def cached(self, sequence: Sequence.num, byterange: ByteRange) -> Tuple[int, int]:
+    def cached(self, sequence: int, byterange: ByteRange) -> Tuple[int, int]:
         if byterange.offset is not None:
             bytes_start = byterange.offset
         elif self.offset is not None and self.sequence == sequence - 1:
@@ -68,7 +68,7 @@ class HLSStreamWriter(SegmentedStreamWriter):
         options = self.session.options
 
         self.byterange: ByteRangeOffset = ByteRangeOffset()
-        self.map_cache: LRUCache[Sequence.segment.map.uri, Future] = LRUCache(self.threads)
+        self.map_cache: LRUCache[str, Future] = LRUCache(self.threads)
         self.key_data = None
         self.key_uri = None
         self.key_uri_override = options.get("hls-segment-key-uri")
@@ -78,20 +78,23 @@ class HLSStreamWriter(SegmentedStreamWriter):
         ignore_names = {*options.get("hls-segment-ignore-names")}
         if ignore_names:
             segments = "|".join(map(re.escape, ignore_names))
+            # noinspection RegExpUnnecessaryNonCapturingGroup
             self.ignore_names = re.compile(rf"(?:{segments})\.ts", re.IGNORECASE)
 
     @staticmethod
     def num_to_iv(n: int) -> bytes:
         return struct.pack(">8xq", n)
 
-    def create_decryptor(self, key: Key, num: int) -> AES:
+    def create_decryptor(self, key: Key, num: int):
         if key.method != "AES-128":
             raise StreamError(f"Unable to decrypt cipher {key.method}")
 
         if not self.key_uri_override and not key.uri:
-            raise StreamError("Missing URI to decryption key")
+            raise StreamError("Missing URI for decryption key")
 
-        if self.key_uri_override:
+        if not self.key_uri_override:
+            key_uri = key.uri
+        else:
             p = urlparse(key.uri)
             formatter = Formatter({
                 "url": lambda: key.uri,
@@ -101,13 +104,14 @@ class HLSStreamWriter(SegmentedStreamWriter):
                 "query": lambda: p.query,
             })
             key_uri = formatter.format(self.key_uri_override)
-        else:
-            key_uri = key.uri
 
-        if self.key_uri != key_uri:
-            res = self.session.http.get(key_uri, exception=StreamError,
-                                        retries=self.retries,
-                                        **self.reader.request_params)
+        if key_uri and self.key_uri != key_uri:
+            res = self.session.http.get(
+                key_uri,
+                exception=StreamError,
+                retries=self.retries,
+                **self.reader.request_params
+            )
             res.encoding = "binary/octet-stream"
             self.key_data = res.content
             self.key_uri = key_uri
@@ -119,7 +123,7 @@ class HLSStreamWriter(SegmentedStreamWriter):
 
         return AES.new(self.key_data, AES.MODE_CBC, iv)
 
-    def create_request_params(self, num: Sequence.num, segment: Union[Segment, Map], is_map: bool):
+    def create_request_params(self, num: int, segment: Union[Segment, Map], is_map: bool):
         request_params = dict(self.reader.request_params)
         headers = request_params.pop("headers", {})
 
@@ -140,107 +144,111 @@ class HLSStreamWriter(SegmentedStreamWriter):
 
         if sequence is None:
             self.queue(None, None)
-        else:
-            # always queue the segment's map first if it exists
-            if sequence.segment.map is not None:
-                future = self.map_cache.get(sequence.segment.map.uri)
-                # use cached map request if not a stream discontinuity
-                # don't fetch multiple times when map request of previous segment is still pending
-                if future is None or sequence.segment.discontinuity:
-                    future = self.executor.submit(self.fetch_map, sequence)
-                    self.map_cache.set(sequence.segment.map.uri, future)
-                self.queue(sequence, future, True)
+            return
 
-            # regular segment request
-            future = self.executor.submit(self.fetch, sequence)
-            self.queue(sequence, future, False)
+        # always queue the segment's map first if it exists
+        if sequence.segment.map is not None:
+            cached_map_future = self.map_cache.get(sequence.segment.map.uri)
+            # use cached map request if not a stream discontinuity
+            # don't fetch multiple times when map request of previous segment is still pending
+            if cached_map_future is not None and not sequence.segment.discontinuity:
+                future = cached_map_future
+            else:
+                future = self.executor.submit(self.fetch_map, sequence)
+                self.map_cache.set(sequence.segment.map.uri, future)
+            self.queue(sequence, future, True)
+
+        # regular segment request
+        future = self.executor.submit(self.fetch, sequence)
+        self.queue(sequence, future, False)
 
     def fetch(self, sequence: Sequence) -> Optional[Response]:
         try:
             return self._fetch(
                 sequence.segment.uri,
-                stream=self.stream_data and not sequence.segment.key,
-                **self.create_request_params(sequence.num, sequence.segment, False)
+                stream=self.stream_data,
+                **self.create_request_params(sequence.num, sequence.segment, False),
             )
         except StreamError as err:
             log.error(f"Failed to fetch segment {sequence.num}: {err}")
 
     def fetch_map(self, sequence: Sequence) -> Optional[Response]:
+        _map: Map = sequence.segment.map  # type: ignore[assignment]  # map is not None
         try:
             return self._fetch(
-                sequence.segment.map.uri,
+                _map.uri,
                 stream=False,
-                **self.create_request_params(sequence.num, sequence.segment.map, True)
+                **self.create_request_params(sequence.num, _map, True),
             )
         except StreamError as err:
             log.error(f"Failed to fetch map for segment {sequence.num}: {err}")
 
     def _fetch(self, url: str, **request_params) -> Optional[Response]:
         if self.closed or not self.retries:  # pragma: no cover
-            return
+            return None
 
         return self.session.http.get(
             url,
             timeout=self.timeout,
             retries=self.retries,
             exception=StreamError,
-            **request_params
+            **request_params,
         )
 
     def should_filter_sequence(self, sequence: Sequence) -> bool:
         return self.ignore_names and self.ignore_names.search(sequence.segment.uri) is not None
 
-    def write(self, sequence: Sequence, *args, **kwargs):
+    def write(self, sequence: Sequence, result: Response, *data):
         if not self.should_filter_sequence(sequence):
             try:
-                return self._write(sequence, *args, **kwargs)
+                return self._write(sequence, result, *data)
             finally:
                 # unblock reader thread after writing data to the buffer
                 if not self.reader.filter_event.is_set():
                     log.info("Resuming stream output")
                     self.reader.filter_event.set()
+
         else:
-            self._write_discard(sequence, *args, **kwargs)
+            # Read and discard any remaining HTTP response data in the response connection.
+            # Unread data in the HTTPResponse connection blocks the connection from being released back to the pool.
+            result.raw.drain_conn()
+
             # block reader thread if filtering out segments
             if self.reader.filter_event.is_set():
                 log.info("Filtering out segments and pausing stream output")
                 self.reader.filter_event.clear()
 
-    def _write_discard(self, sequence: Sequence, res: Response, is_map: bool):
-        # The full response needs to actually be read from the socket
-        # even if there isn't any intention of using the payload
-        try:
-            for _ in res.iter_content(self.WRITE_CHUNK_SIZE):
-                pass
-        except (ChunkedEncodingError, ContentDecodingError, ConnectionError, StreamConsumedError):
-            pass
-
-    def _write(self, sequence: Sequence, res: Response, is_map: bool):
+    def _write(self, sequence: Sequence, result: Response, is_map: bool):
         if sequence.segment.key and sequence.segment.key.method != "NONE":
             try:
                 decryptor = self.create_decryptor(sequence.segment.key, sequence.num)
-            except StreamError as err:
+            except (StreamError, ValueError) as err:
                 log.error(f"Failed to create decryptor: {err}")
                 self.close()
                 return
 
-            data = res.content
-            # If the input data is not a multiple of 16, cut off any garbage
-            garbage_len = len(data) % AES.block_size
-            if garbage_len:
-                log.debug(f"Cutting off {garbage_len} bytes of garbage before decrypting")
-                decrypted_chunk = decryptor.decrypt(data[:-garbage_len])
-            else:
-                decrypted_chunk = decryptor.decrypt(data)
+            try:
+                # Unlike plaintext segments, encrypted segments can't be written to the buffer in small chunks
+                # because of the byte padding at the end of the decrypted data, which means that decrypting in
+                # smaller chunks is unnecessary if the entire segment needs to be kept in memory anyway, unless
+                # we defer the buffer writes by one read call and apply the unpad call only to the last read call.
+                encrypted_chunk = result.content
+                decrypted_chunk = decryptor.decrypt(encrypted_chunk)
+                chunk = unpad(decrypted_chunk, AES.block_size, style="pkcs7")
+                self.reader.buffer.write(chunk)
+            except (ChunkedEncodingError, ContentDecodingError, ConnectionError) as err:
+                log.error(f"Download of segment {sequence.num} failed: {err}")
+                return
+            except ValueError as err:
+                log.error(f"Error while decrypting segment {sequence.num}: {err}")
+                return
 
-            chunk = unpad(decrypted_chunk, AES.block_size, style="pkcs7")
-            self.reader.buffer.write(chunk)
         else:
             try:
-                for chunk in res.iter_content(self.WRITE_CHUNK_SIZE):
+                for chunk in result.iter_content(self.WRITE_CHUNK_SIZE):
                     self.reader.buffer.write(chunk)
             except (ChunkedEncodingError, ContentDecodingError, ConnectionError) as err:
-                log.error(f"Download of segment {sequence.num} failed ({err})")
+                log.error(f"Download of segment {sequence.num} failed: {err}")
                 return
 
         if is_map:
@@ -255,7 +263,7 @@ class HLSStreamWorker(SegmentedStreamWorker):
         self.stream = self.reader.stream
 
         self.playlist_changed = False
-        self.playlist_end: Optional[Sequence.num] = None
+        self.playlist_end: Optional[int] = None
         self.playlist_sequence: int = -1
         self.playlist_sequences: List[Sequence] = []
         self.playlist_reload_time: float = 6
@@ -272,21 +280,32 @@ class HLSStreamWorker(SegmentedStreamWorker):
         elif self.playlist_reload_time_override not in ["segment", "live-edge"]:
             self.playlist_reload_time_override = 0
 
-    def _reload_playlist(self, text, url):
-        return load_hls_playlist(text, url)
+    def _fetch_playlist(self) -> Response:
+        res = self.session.http.get(
+            self.stream.url,
+            exception=StreamError,
+            retries=self.playlist_reload_retries,
+            **self.reader.request_params,
+        )
+        res.encoding = "utf-8"
+
+        return res
+
+    # TODO: rename to _parse_playlist
+    def _reload_playlist(self, *args, **kwargs):
+        return load_hls_playlist(*args, **kwargs)
 
     def reload_playlist(self):
         if self.closed:  # pragma: no cover
             return
 
         self.reader.buffer.wait_free()
+
         log.debug("Reloading playlist")
-        res = self.session.http.get(self.stream.url,
-                                    exception=StreamError,
-                                    retries=self.playlist_reload_retries,
-                                    **self.reader.request_params)
+        res = self._fetch_playlist()
+
         try:
-            playlist = self._reload_playlist(res.text, res.url)
+            playlist = self._reload_playlist(res)
         except ValueError as err:
             raise StreamError(err)
 
@@ -346,8 +365,8 @@ class HLSStreamWorker(SegmentedStreamWorker):
         return sequence.num >= self.playlist_sequence
 
     @staticmethod
-    def duration_to_sequence(duration: int, sequences: List[Sequence]) -> int:
-        d = 0
+    def duration_to_sequence(duration: float, sequences: List[Sequence]) -> int:
+        d = 0.0
         default = -1
 
         sequences_order = sequences if duration >= 0 else reversed(sequences)
@@ -460,6 +479,7 @@ class MuxedHLSStream(MuxedStream):
         video: str,
         audio: Union[str, List[str]],
         url_master: Optional[str] = None,
+        multivariant: Optional[M3U8] = None,
         force_restart: bool = False,
         ffmpeg_options: Optional[Dict[str, Any]] = None,
         **args
@@ -468,7 +488,8 @@ class MuxedHLSStream(MuxedStream):
         :param streamlink.Streamlink session: Streamlink session instance
         :param video: Video stream URL
         :param audio: Audio stream URL or list of URLs
-        :param url_master: The URL of the HLS playlist's master/variant playlist
+        :param url_master: The URL of the HLS playlist's multivariant playlist (deprecated)
+        :param multivariant: The parsed multivariant playlist
         :param force_restart: Start from the beginning after reaching the playlist's end
         :param ffmpeg_options: Additional keyword arguments passed to :class:`ffmpegmux.FFMPEGMuxer`
         :param args: Additional keyword arguments passed to :class:`HLSStream`
@@ -487,10 +508,21 @@ class MuxedHLSStream(MuxedStream):
         ffmpeg_options = ffmpeg_options or {}
 
         super().__init__(session, *substreams, format="mpegts", maps=maps, **ffmpeg_options)
-        self.url_master = url_master
+        self._url_master = url_master
+        self.multivariant = multivariant if multivariant and multivariant.is_master else None
+
+    @property
+    def url_master(self):
+        """Deprecated"""
+        return self.multivariant.uri if self.multivariant and self.multivariant.uri else self._url_master
 
     def to_manifest_url(self):
-        return self.url_master
+        url = self.multivariant.uri if self.multivariant and self.multivariant.uri else self.url_master
+
+        if url is None:
+            return super().to_manifest_url()
+
+        return url
 
 
 class HLSStream(HTTPStream):
@@ -506,6 +538,7 @@ class HLSStream(HTTPStream):
         session_,
         url: str,
         url_master: Optional[str] = None,
+        multivariant: Optional[M3U8] = None,
         force_restart: bool = False,
         start_offset: float = 0,
         duration: Optional[float] = None,
@@ -514,7 +547,8 @@ class HLSStream(HTTPStream):
         """
         :param streamlink.Streamlink session_: Streamlink session instance
         :param url: The URL of the HLS playlist
-        :param url_master: The URL of the HLS playlist's master/variant playlist
+        :param url_master: The URL of the HLS playlist's multivariant playlist (deprecated)
+        :param multivariant: The parsed multivariant playlist
         :param force_restart: Start from the beginning after reaching the playlist's end
         :param start_offset: Number of seconds to be skipped from the beginning
         :param duration: Number of seconds until ending the stream
@@ -522,28 +556,40 @@ class HLSStream(HTTPStream):
         """
 
         super().__init__(session_, url, **args)
-        self.url_master = url_master
+        self._url_master = url_master
+        self.multivariant = multivariant if multivariant and multivariant.is_master else None
         self.force_restart = force_restart
         self.start_offset = start_offset
         self.duration = duration
 
-    def __repr__(self):
-        return f"<HLSStream({self.url!r}, {self.url_master!r})>"
-
     def __json__(self):
         json = super().__json__()
 
-        if self.url_master:
-            json["master"] = self.url_master
+        try:
+            json["master"] = self.to_manifest_url()
+        except TypeError:
+            pass
 
-        # Pretty sure HLS is GET only.
         del json["method"]
         del json["body"]
 
         return json
 
+    @property
+    def url_master(self):
+        """Deprecated"""
+        return self.multivariant.uri if self.multivariant and self.multivariant.uri else self._url_master
+
     def to_manifest_url(self):
-        return self.url_master
+        url = self.multivariant.uri if self.multivariant and self.multivariant.uri else self.url_master
+
+        if url is None:
+            return super().to_manifest_url()
+
+        args = self.args.copy()
+        args.update(url=url)
+
+        return self.session.http.prepare_new_request(**args).url
 
     def open(self):
         reader = self.__reader__(self)
@@ -552,8 +598,16 @@ class HLSStream(HTTPStream):
         return reader
 
     @classmethod
-    def _get_variant_playlist(cls, res):
-        return load_hls_playlist(res.text, base_uri=res.url)
+    def _fetch_variant_playlist(cls, session, url: str, **request_params) -> Response:
+        res = session.http.get(url, exception=OSError, **request_params)
+        res.encoding = "utf-8"
+
+        return res
+
+    # TODO: rename to _parse_variant_playlist
+    @classmethod
+    def _get_variant_playlist(cls, *args, **kwargs):
+        return load_hls_playlist(*args, **kwargs)
 
     @classmethod
     def parse_variant_playlist(
@@ -588,58 +642,72 @@ class HLSStream(HTTPStream):
         locale = session_.localization
         audio_select = session_.options.get("hls-audio-select") or []
 
-        res = session_.http.get(url, exception=IOError, **request_params)
+        res = cls._fetch_variant_playlist(session_, url, **request_params)
 
         try:
-            parser = cls._get_variant_playlist(res)
+            multivariant = cls._get_variant_playlist(res)
         except ValueError as err:
-            raise OSError("Failed to parse playlist: {0}".format(err))
+            raise OSError(f"Failed to parse playlist: {err}")
 
-        streams = {}
-        for playlist in filter(lambda p: not p.is_iframe, parser.playlists):
-            names = dict(name=None, pixels=None, bitrate=None)
+        stream_name: Optional[str]
+        stream: Union["HLSStream", "MuxedHLSStream"]
+        streams: Dict[str, Union["HLSStream", "MuxedHLSStream"]] = {}
+
+        for playlist in filter(lambda p: not p.is_iframe, multivariant.playlists):
+            names: Dict[str, Optional[str]] = dict(name=None, pixels=None, bitrate=None)
             audio_streams = []
-            fallback_audio = []
-            default_audio = []
-            preferred_audio = []
+            fallback_audio: List[Media] = []
+            default_audio: List[Media] = []
+            preferred_audio: List[Media] = []
+
             for media in playlist.media:
                 if media.type == "VIDEO" and media.name:
                     names["name"] = media.name
                 elif media.type == "AUDIO":
                     audio_streams.append(media)
+
             for media in audio_streams:
-                # Media without a uri is not relevant as external audio
+                # Media without a URI is not relevant as external audio
                 if not media.uri:
                     continue
 
                 if not fallback_audio and media.default:
                     fallback_audio = [media]
 
-                # if the media is "audoselect" and it better matches the users preferences, use that
+                # if the media is "autoselect" and it better matches the users preferences, use that
                 # instead of default
                 if not default_audio and (media.autoselect and locale.equivalent(language=media.language)):
                     default_audio = [media]
 
-                # select the first audio stream that matches the users explict language selection
-                if (('*' in audio_select or media.language in audio_select or media.name in audio_select)
-                        or ((not preferred_audio or media.default) and locale.explicit and locale.equivalent(
-                            language=media.language))):
+                # select the first audio stream that matches the user's explict language selection
+                if (
+                    (
+                        "*" in audio_select
+                        or media.language in audio_select
+                        or media.name in audio_select
+                    )
+                    or (
+                        (not preferred_audio or media.default)
+                        and locale.explicit
+                        and locale.equivalent(language=media.language)
+                    )
+                ):
                     preferred_audio.append(media)
 
             # final fallback on the first audio stream listed
-            fallback_audio = fallback_audio or (len(audio_streams) and audio_streams[0].uri and [audio_streams[0]])
+            if not fallback_audio and len(audio_streams) and audio_streams[0].uri:
+                fallback_audio = [audio_streams[0]]
 
-            if playlist.stream_info.resolution:
-                width, height = playlist.stream_info.resolution
-                names["pixels"] = "{0}p".format(height)
+            if playlist.stream_info.resolution and playlist.stream_info.resolution.height:
+                names["pixels"] = f"{playlist.stream_info.resolution.height}p"
 
             if playlist.stream_info.bandwidth:
                 bw = playlist.stream_info.bandwidth
 
                 if bw >= 1000:
-                    names["bitrate"] = "{0}k".format(int(bw / 1000.0))
+                    names["bitrate"] = f"{int(bw / 1000.0)}k"
                 else:
-                    names["bitrate"] = "{0}k".format(bw / 1000.0)
+                    names["bitrate"] = f"{bw / 1000.0}k"
 
             if name_fmt:
                 stream_name = name_fmt.format(**names)
@@ -654,19 +722,20 @@ class HLSStream(HTTPStream):
             if not stream_name:
                 continue
             if name_prefix:
-                stream_name = "{0}{1}".format(name_prefix, stream_name)
+                stream_name = f"{name_prefix}{stream_name}"
 
             if stream_name in streams:  # rename duplicate streams
-                stream_name = "{0}_alt".format(stream_name)
-                num_alts = len(list(filter(lambda n: n.startswith(stream_name), streams.keys())))
+                stream_name = f"{stream_name}_alt"
+                num_alts = len([k for k in streams.keys() if k.startswith(stream_name)])
 
                 # We shouldn't need more than 2 alt streams
                 if num_alts >= 2:
                     continue
                 elif num_alts > 0:
-                    stream_name = "{0}{1}".format(stream_name, num_alts + 1)
+                    stream_name = f"{stream_name}{num_alts + 1}"
 
             if check_streams:
+                # noinspection PyBroadException
                 try:
                     session_.http.get(playlist.uri, **request_params)
                 except KeyboardInterrupt:
@@ -683,22 +752,27 @@ class HLSStream(HTTPStream):
                 ])
                 log.debug(f"Using external audio tracks for stream {stream_name} {external_audio_msg}")
 
-                stream = MuxedHLSStream(session_,
-                                        video=playlist.uri,
-                                        audio=[x.uri for x in external_audio if x.uri],
-                                        url_master=url,
-                                        force_restart=force_restart,
-                                        start_offset=start_offset,
-                                        duration=duration,
-                                        **request_params)
+                stream = MuxedHLSStream(
+                    session_,
+                    video=playlist.uri,
+                    audio=[x.uri for x in external_audio if x.uri],
+                    multivariant=multivariant,
+                    force_restart=force_restart,
+                    start_offset=start_offset,
+                    duration=duration,
+                    **request_params
+                )
             else:
-                stream = cls(session_,
-                             playlist.uri,
-                             url_master=url,
-                             force_restart=force_restart,
-                             start_offset=start_offset,
-                             duration=duration,
-                             **request_params)
+                stream = cls(
+                    session_,
+                    playlist.uri,
+                    multivariant=multivariant,
+                    force_restart=force_restart,
+                    start_offset=start_offset,
+                    duration=duration,
+                    **request_params
+                )
+
             streams[stream_name] = stream
 
         return streams
