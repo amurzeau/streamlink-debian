@@ -25,6 +25,7 @@ docs/docutils.conf
 docs/donate.rst
 docs/ext_argparse.py
 docs/ext_github.py
+docs/ext_html_template_vars.py
 docs/ext_plugins.py
 docs/ext_releaseref.py
 docs/index.rst
@@ -39,6 +40,7 @@ docs/_static/favicon-16x16.png
 docs/_static/favicon-32x32.png
 docs/_static/favicon.ico
 docs/_static/icon.svg
+docs/_static/opengraph-image.png
 docs/_static/site.webmanifest
 docs/_static/styles/custom.css
 docs/_templates/base.html
@@ -96,6 +98,7 @@ src/streamlink/plugins/app17.py
 src/streamlink/plugins/ard_live.py
 src/streamlink/plugins/ard_mediathek.py
 src/streamlink/plugins/artetv.py
+src/streamlink/plugins/atpchallenger.py
 src/streamlink/plugins/atresplayer.py
 src/streamlink/plugins/bbciplayer.py
 src/streamlink/plugins/bfmtv.py
@@ -113,7 +116,6 @@ src/streamlink/plugins/cinergroup.py
 src/streamlink/plugins/clubbingtv.py
 src/streamlink/plugins/cmmedia.py
 src/streamlink/plugins/cnews.py
-src/streamlink/plugins/common_jwplayer.py
 src/streamlink/plugins/crunchyroll.py
 src/streamlink/plugins/dailymotion.py
 src/streamlink/plugins/dash.py
@@ -157,9 +159,7 @@ src/streamlink/plugins/mitele.py
 src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mrtmk.py
 src/streamlink/plugins/n13tv.py
-src/streamlink/plugins/nbc.py
 src/streamlink/plugins/nbcnews.py
-src/streamlink/plugins/nbcsports.py
 src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nicolive.py
 src/streamlink/plugins/nimotv.py
@@ -205,7 +205,6 @@ src/streamlink/plugins/svtplay.py
 src/streamlink/plugins/swisstxt.py
 src/streamlink/plugins/telefe.py
 src/streamlink/plugins/tf1.py
-src/streamlink/plugins/theplatform.py
 src/streamlink/plugins/trovo.py
 src/streamlink/plugins/turkuvaz.py
 src/streamlink/plugins/tv360.py
@@ -279,6 +278,7 @@ src/streamlink_cli/utils/http_server.py
 src/streamlink_cli/utils/path.py
 src/streamlink_cli/utils/player.py
 src/streamlink_cli/utils/progress.py
+src/streamlink_cli/utils/terminal.py
 tests/__init__.py
 tests/test_api_http_session.py
 tests/test_api_validate.py
@@ -288,7 +288,6 @@ tests/test_cache.py
 tests/test_cli_main.py
 tests/test_cli_main_formatter.py
 tests/test_cli_playerout.py
-tests/test_cli_util_progress.py
 tests/test_cli_utils_formatter.py
 tests/test_cli_utils_path.py
 tests/test_cmdline.py
@@ -304,6 +303,10 @@ tests/test_plugins.py
 tests/test_plugins_input.py
 tests/test_session.py
 tests/test_streamlink_api.py
+tests/cli/__init__.py
+tests/cli/utils/__init__.py
+tests/cli/utils/test_progress.py
+tests/cli/utils/test_terminal.py
 tests/mixins/__init__.py
 tests/mixins/stream_hls.py
 tests/plugin/__init__.py
@@ -322,6 +325,7 @@ tests/plugins/test_app17.py
 tests/plugins/test_ard_live.py
 tests/plugins/test_ard_mediathek.py
 tests/plugins/test_artetv.py
+tests/plugins/test_atpchallenger.py
 tests/plugins/test_atresplayer.py
 tests/plugins/test_bbciplayer.py
 tests/plugins/test_bfmtv.py
@@ -380,9 +384,7 @@ tests/plugins/test_mitele.py
 tests/plugins/test_mjunoon.py
 tests/plugins/test_mrtmk.py
 tests/plugins/test_n13tv.py
-tests/plugins/test_nbc.py
 tests/plugins/test_nbcnews.py
-tests/plugins/test_nbcsports.py
 tests/plugins/test_nhkworld.py
 tests/plugins/test_nicolive.py
 tests/plugins/test_nimotv.py
@@ -429,7 +431,6 @@ tests/plugins/test_svtplay.py
 tests/plugins/test_swisstxt.py
 tests/plugins/test_telefe.py
 tests/plugins/test_tf1.py
-tests/plugins/test_theplatform.py
 tests/plugins/test_trovo.py
 tests/plugins/test_turkuvaz.py
 tests/plugins/test_tv360.py

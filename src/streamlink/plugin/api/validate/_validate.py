@@ -1,7 +1,7 @@
 from collections import abc
 from copy import copy, deepcopy
 from functools import singledispatch
-from re import Match
+from re import Match, Pattern
 
 from lxml.etree import Element, iselement
 
@@ -12,7 +12,10 @@ from streamlink.plugin.api.validate._schemas import (
     AnySchema,
     AttrSchema,
     GetItemSchema,
+    ListSchema,
+    NoneOrAllSchema,
     OptionalSchema,
+    RegexSchema,
     TransformSchema,
     UnionGetSchema,
     UnionSchema,
@@ -134,6 +137,24 @@ def _validate_callable(schema: abc.Callable, value):
 
 
 @validate.register
+def _validate_pattern(schema: Pattern, value):
+    if not isinstance(value, (str, bytes)):
+        raise ValidationError(
+            "Type of {value} should be str or bytes, but is {actual}",
+            value=repr(value),
+            actual=type(value).__name__,
+            schema=Pattern,
+        )
+
+    try:
+        result = schema.search(value)
+    except TypeError as err:
+        raise ValidationError(err, schema=Pattern)
+
+    return result
+
+
+@validate.register
 def _validate_allschema(schema: AllSchema, value):
     for schema in schema.schema:
         value = validate(schema, value)
@@ -151,6 +172,75 @@ def _validate_anyschema(schema: AnySchema, value):
             errors.append(err)
 
     raise ValidationError(*errors, schema=AnySchema)
+
+
+@validate.register
+def _validate_noneorallschema(schema: NoneOrAllSchema, value):
+    if value is not None:
+        try:
+            for schema in schema.schema:
+                value = validate(schema, value)
+        except ValidationError as err:
+            raise ValidationError(err, schema=NoneOrAllSchema)
+
+    return value
+
+
+@validate.register
+def _validate_listschema(schema: ListSchema, value):
+    if type(value) is not list:
+        raise ValidationError(
+            "Type of {value} should be list, but is {actual}",
+            value=repr(value),
+            actual=type(value).__name__,
+            schema=ListSchema,
+        )
+    if len(value) != len(schema.schema):
+        raise ValidationError(
+            "Length of list ({length}) does not match expectation ({expected})",
+            length=len(value),
+            expected=len(schema.schema),
+            schema=ListSchema,
+        )
+
+    new = []
+    errors = []
+    for k, v in enumerate(schema.schema):
+        try:
+            new.append(validate(v, value[k]))
+        except ValidationError as err:
+            errors.append(err)
+
+    if errors:
+        raise ValidationError(*errors, schema=ListSchema)
+
+    return new
+
+
+@validate.register
+def _validate_regexschema(schema: RegexSchema, value):
+    if not isinstance(value, (str, bytes)):
+        raise ValidationError(
+            "Type of {value} should be str or bytes, but is {actual}",
+            value=repr(value),
+            actual=type(value).__name__,
+            schema=RegexSchema,
+        )
+
+    try:
+        result = getattr(schema.pattern, schema.method)(value)
+    except TypeError as err:
+        raise ValidationError(err, schema=RegexSchema)
+
+    if result is None:
+        raise ValidationError(
+            "Pattern {pattern} did not match {value}",
+            pattern=repr(schema.pattern.pattern),
+            value=repr(value),
+            schema=RegexSchema,
+        )
+
+    return result
 
 
 @validate.register
