@@ -376,13 +376,13 @@ class TwitchAPI:
             vodID=channel_or_vod if not is_live else "",
             playerType="embed"
         )
-        subschema = validate.any(None, validate.all(
+        subschema = validate.none_or_all(
             {
                 "value": str,
-                "signature": str
+                "signature": str,
             },
-            validate.union_get("signature", "value")
-        ))
+            validate.union_get("signature", "value"),
+        )
 
         return self.call(query, schema=validate.Schema(
             {"data": validate.any(
@@ -504,8 +504,8 @@ class Twitch(Plugin):
             action="store_true",
             help=f"""
             Enables low latency streaming by prefetching HLS segments.
-            Sets --hls-segment-stream-data to true and --hls-live-edge to {LOW_LATENCY_MAX_LIVE_EDGE}, if it is higher.
-            Reducing --hls-live-edge to 1 will result in the lowest latency possible, but will most likely cause buffering.
+            Sets --hls-segment-stream-data to true and --hls-live-edge to `{LOW_LATENCY_MAX_LIVE_EDGE}`, if it is higher.
+            Reducing --hls-live-edge to `1` will result in the lowest latency possible, but will most likely cause buffering.
 
             In order to achieve true low latency streaming during playback, the player's caching/buffering settings will
             need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
