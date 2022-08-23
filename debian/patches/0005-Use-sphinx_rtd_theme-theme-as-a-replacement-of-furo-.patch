@@ -12,7 +12,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  1 file changed, 5 insertions(+), 14 deletions(-)
 
 diff --git a/docs/conf.py b/docs/conf.py
-index 88a3fd0..1a909cf 100644
+index 0da1597..519e4cd 100644
 --- a/docs/conf.py
 +++ b/docs/conf.py
 @@ -1,6 +1,7 @@
@@ -23,7 +23,7 @@ index 88a3fd0..1a909cf 100644
  
  from streamlink import __version__ as streamlink_version
  
-@@ -25,6 +26,7 @@ extensions = [
+@@ -26,6 +27,7 @@ extensions = [
      'ext_plugins',
      'ext_releaseref',
      'myst_parser',
@@ -31,7 +31,7 @@ index 88a3fd0..1a909cf 100644
  ]
  
  autosectionlabel_prefix_document = True
-@@ -115,16 +117,12 @@ intersphinx_timeout = 60
+@@ -116,16 +118,12 @@ intersphinx_timeout = 60
  
  # The theme to use for HTML and HTML Help pages.  See the documentation for
  # a list of builtin themes.
@@ -50,7 +50,7 @@ index 88a3fd0..1a909cf 100644
  
  # Add any paths that contain custom themes here, relative to this directory.
  #html_theme_path = []
-@@ -138,7 +136,7 @@ html_theme_options = {
+@@ -146,7 +144,7 @@ html_template_vars = {
  
  # The name of an image file (relative to this directory) to place at the top
  # of the sidebar.
@@ -59,7 +59,7 @@ index 88a3fd0..1a909cf 100644
  
  # The name of an image file (within the static path) to use as favicon of the
  # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
-@@ -152,9 +150,6 @@ html_static_path = ['_static']
+@@ -160,9 +158,6 @@ html_static_path = ['_static']
  
  html_css_files = [
      'styles/custom.css',
@@ -69,7 +69,7 @@ index 88a3fd0..1a909cf 100644
  ]
  
  # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
-@@ -164,12 +159,8 @@ html_css_files = [
+@@ -172,12 +167,8 @@ html_css_files = [
  # Custom sidebar templates, maps document names to template names.
  html_sidebars = {
      '**': [

@@ -79,7 +79,7 @@ index 5fceafa..318bfa1 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/steam.py b/src/streamlink/plugins/steam.py
-index 2133fe5..71f842d 100644
+index 9b2cd12..7041c8e 100644
 --- a/src/streamlink/plugins/steam.py
 +++ b/src/streamlink/plugins/steam.py
 @@ -11,8 +11,8 @@ import logging
