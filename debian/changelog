@@ -1,3 +1,10 @@
+streamlink (5.0.0-1) UNRELEASED; urgency=medium
+
+  * d/watch: fix uscan with github
+  * New upstream version 5.0.0
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 18 Sep 2022 12:58:00 +0200
+
 streamlink (4.3.0-1) unstable; urgency=medium
 
   * New upstream version 4.3.0
