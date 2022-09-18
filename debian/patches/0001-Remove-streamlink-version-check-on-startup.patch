@@ -11,10 +11,10 @@ Bug-Debian: https://bugs.debian.org/750502
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/streamlink_cli/argparser.py b/src/streamlink_cli/argparser.py
-index 9512f95..a8d2336 100644
+index ea6d139..c70aa75 100644
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
-@@ -324,7 +324,7 @@ def build_parser():
+@@ -327,7 +327,7 @@ def build_parser():
          metavar="{yes,true,1,on,no,false,0,off}",
          default=False,
          help="""
@@ -24,15 +24,15 @@ index 9512f95..a8d2336 100644
          Default is "no".
          """
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index 03b3caf..9ec1211 100644
+index cb2ae3b..eedd613 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -1072,7 +1072,7 @@ def main():
+@@ -944,7 +944,7 @@ def main():
  
      setup_signals()
  
 -    if args.version_check or args.auto_version_check:
 +    if args.version_check:
-         with ignored(Exception):
+         try:
              check_version(force=args.version_check)
- 
+         except KeyboardInterrupt:

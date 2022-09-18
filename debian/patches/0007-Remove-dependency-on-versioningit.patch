@@ -16,12 +16,12 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  5 files changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/dev-requirements.txt b/dev-requirements.txt
-index 81e8e82..1f5e3a9 100644
+index 9f4dcd0..444c6d6 100644
 --- a/dev-requirements.txt
 +++ b/dev-requirements.txt
-@@ -7,7 +7,6 @@ freezegun>=1.0.0
- flake8
+@@ -8,7 +8,6 @@ flake8
  flake8-import-order
+ flake8-pyi
  shtab
 -versioningit >=2.0.0, <3
  
@@ -52,7 +52,7 @@ index af631f9..e0a99d7 100644
  
  
 diff --git a/setup.cfg b/setup.cfg
-index 0a1a2cc..6e14247 100644
+index 6864633..d6c3c60 100644
 --- a/setup.cfg
 +++ b/setup.cfg
 @@ -1,5 +1,6 @@
