@@ -3,6 +3,10 @@
 # Place streamlink executable in the correct place right away.
 export PYBUILD_INSTALL_ARGS_python3 = --install-scripts usr/share/streamlink/
 
+# Disable internet access
+export http_proxy=127.0.0.1:9
+export https_proxy=127.0.0.1:9
+
 # Provides DEB_VERSION
 include /usr/share/dpkg/pkg-info.mk
 
