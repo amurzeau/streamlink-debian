@@ -9,7 +9,7 @@ import logging
 import re
 from uuid import uuid4
 
-from streamlink.plugin import Plugin, PluginArgument, PluginArguments, PluginError, pluginmatcher
+from streamlink.plugin import Plugin, PluginError, pluginargument, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 
@@ -33,7 +33,7 @@ def parse_timestamp(ts):
     return (
         datetime.datetime.strptime(ts[:-7], "%Y-%m-%dT%H:%M:%S")
         + datetime.timedelta(hours=int(ts[-5:-3]), minutes=int(ts[-2:]))
-        * int(ts[-6:-5] + "1")
+        * int(f"{ts[-6:-5]}1")
     )
 
 
@@ -244,52 +244,45 @@ class CrunchyrollAPI:
         /watch/(?P<beta_id>\w+)/[\w-]+
     )
 """, re.VERBOSE))
+@pluginargument(
+    "username",
+    requires=["password"],
+    metavar="USERNAME",
+    help="A Crunchyroll username to allow access to restricted streams.",
+)
+@pluginargument(
+    "password",
+    sensitive=True,
+    metavar="PASSWORD",
+    nargs="?",
+    const=None,
+    default=None,
+    help="""
+        A Crunchyroll password for use with --crunchyroll-username.
+
+        If left blank you will be prompted.
+    """,
+)
+@pluginargument(
+    "purge-credentials",
+    action="store_true",
+    help="Purge cached Crunchyroll credentials to initiate a new session and reauthenticate.",
+)
+@pluginargument(
+    "session-id",
+    sensitive=True,
+    metavar="SESSION_ID",
+    help="""
+        Set a specific session ID for crunchyroll, can be used to bypass
+        region restrictions. If using an authenticated session ID, it is
+        recommended that the authentication parameters be omitted as the
+        session ID is account specific.
+
+        Note: The session ID will be overwritten if authentication is used
+        and the session ID does not match the account.
+    """,
+)
 class Crunchyroll(Plugin):
-
-    arguments = PluginArguments(
-        PluginArgument(
-            "username",
-            metavar="USERNAME",
-            requires=["password"],
-            help="A Crunchyroll username to allow access to restricted streams."
-        ),
-        PluginArgument(
-            "password",
-            sensitive=True,
-            metavar="PASSWORD",
-            nargs="?",
-            const=None,
-            default=None,
-            help="""
-            A Crunchyroll password for use with --crunchyroll-username.
-
-            If left blank you will be prompted.
-            """
-        ),
-        PluginArgument(
-            "purge-credentials",
-            action="store_true",
-            help="""
-            Purge cached Crunchyroll credentials to initiate a new session
-            and reauthenticate.
-            """
-        ),
-        PluginArgument(
-            "session-id",
-            sensitive=True,
-            metavar="SESSION_ID",
-            help="""
-            Set a specific session ID for crunchyroll, can be used to bypass
-            region restrictions. If using an authenticated session ID, it is
-            recommended that the authentication parameters be omitted as the
-            session ID is account specific.
-
-            Note: The session ID will be overwritten if authentication is used
-            and the session ID does not match the account.
-            """
-        )
-    )
-
     @classmethod
     def stream_weight(cls, key):
         weight = STREAM_WEIGHTS.get(key)
@@ -345,7 +338,7 @@ class Crunchyroll(Plugin):
         info = info["stream_data"]
 
         # The adaptive quality stream sometimes a subset of all the other streams listed, ultra is no included
-        has_adaptive = any([s["quality"] == "adaptive" for s in info["streams"]])
+        has_adaptive = any(s["quality"] == "adaptive" for s in info["streams"])
         if has_adaptive:
             log.debug("Loading streams from adaptive playlist")
             for stream in filter(lambda x: x["quality"] == "adaptive", info["streams"]):

@@ -1,5 +1,5 @@
 """
-$description Global live streaming platform for the creative community.
+$description Global live-streaming platform for the creative community.
 $url sketch.pixiv.net
 $type live
 """
@@ -8,7 +8,7 @@ import logging
 import re
 
 from streamlink.exceptions import FatalPluginError, NoStreamsError, PluginError
-from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
+from streamlink.plugin import Plugin, pluginargument, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 
@@ -18,6 +18,29 @@ log = logging.getLogger(__name__)
 @pluginmatcher(re.compile(
     r"https?://sketch\.pixiv\.net/@?(?P<user>[^/]+)"
 ))
+@pluginargument(
+    "sessionid",
+    requires=["devicetoken"],
+    sensitive=True,
+    metavar="SESSIONID",
+    help="The pixiv.net sessionid that's used in pixiv's PHPSESSID cookie.",
+)
+@pluginargument(
+    "devicetoken",
+    sensitive=True,
+    metavar="DEVICETOKEN",
+    help="The pixiv.net device token that's used in pixiv's device_token cookie.",
+)
+@pluginargument(
+    "purge-credentials",
+    action="store_true",
+    help="Purge cached Pixiv credentials to initiate a new session and reauthenticate.",
+)
+@pluginargument(
+    "performer",
+    metavar="USER",
+    help="Select a co-host stream instead of the owner stream.",
+)
 class Pixiv(Plugin):
     _post_key_re = re.compile(
         r"""name=["']post_key["']\svalue=["'](?P<data>[^"']+)["']""")
@@ -57,43 +80,8 @@ class Pixiv(Plugin):
     login_url_get = "https://accounts.pixiv.net/login"
     login_url_post = "https://accounts.pixiv.net/api/login"
 
-    arguments = PluginArguments(
-        PluginArgument(
-            "sessionid",
-            requires=["devicetoken"],
-            sensitive=True,
-            metavar="SESSIONID",
-            help="""
-        The pixiv.net sessionid that's used in pixivs PHPSESSID cookie.
-        can be used instead of the username/password login process.
-        """
-        ),
-        PluginArgument(
-            "devicetoken",
-            sensitive=True,
-            metavar="DEVICETOKEN",
-            help="""
-        The pixiv.net device token that's used in pixivs device_token cookie.
-        can be used instead of the username/password login process.
-        """
-        ),
-        PluginArgument(
-            "purge-credentials",
-            action="store_true",
-            help="""
-        Purge cached Pixiv credentials to initiate a new session
-        and reauthenticate.
-        """),
-        PluginArgument(
-            "performer",
-            metavar="USER",
-            help="""
-        Select a co-host stream instead of the owner stream.
-        """)
-    )
-
-    def __init__(self, url):
-        super().__init__(url)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._authed = (self.session.http.cookies.get("PHPSESSID")
                         and self.session.http.cookies.get("device_token"))
         self.session.http.headers.update({"Referer": self.url})
@@ -136,25 +124,20 @@ class Pixiv(Plugin):
 
         if self._authed:
             log.debug("Attempting to authenticate using cached cookies")
-        elif not self._authed and login_session_id and login_device_token:
+        elif login_session_id and login_device_token:
             self._login_using_session_id_and_device_token(login_session_id, login_device_token)
 
         streamer_data = self.get_streamer_data()
         performers = streamer_data.get("performers")
         log.trace("{0!r}".format(streamer_data))
         if performers:
-            co_hosts = []
-            # create a list of all available performers
-            for p in performers:
-                co_hosts += [(p["user"]["unique_name"], p["user"]["name"])]
-
+            co_hosts = [(p["user"]["unique_name"], p["user"]["name"]) for p in performers]
             log.info("Available hosts: {0}".format(", ".join(
                 ["{0} ({1})".format(k, v) for k, v in co_hosts])))
 
             # control if the host from --pixiv-performer is valid,
             # if not let the User select a different host
-            if (self.get_option("performer")
-                    and not self.get_option("performer") in [v[0] for v in co_hosts]):
+            if self.get_option("performer") and self.get_option("performer") not in [v[0] for v in co_hosts]:
 
                 # print the owner as 0
                 log.info("0 - {0} ({1})".format(

@@ -69,8 +69,8 @@ log = logging.getLogger(__name__)
     (?:/|\#)?$
 """, re.VERBOSE))
 class Albavision(Plugin):
-    def __init__(self, url):
-        super().__init__(url)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._page = None
 
     @property
@@ -93,9 +93,9 @@ class Albavision(Plugin):
         schema = validate.Schema(
             validate.xml_xpath_string(".//script[contains(text(), 'LIVE_URL')]/text()"),
             validate.none_or_all(
-                re.compile(r"""LIVE_URL\s*=\s*(?P<q>['"])(.+?)(?P=q)"""),
+                re.compile(r"""LIVE_URL\s*=\s*(?P<q>['"])(?P<url>.+?)(?P=q)"""),
                 validate.none_or_all(
-                    validate.get(1),
+                    validate.get("url"),
                     validate.url(),
                 ),
             ),
@@ -108,9 +108,9 @@ class Albavision(Plugin):
         schema = validate.Schema(
             validate.xml_xpath_string(".//script[contains(text(), 'LIVE_URL')]/text()"),
             validate.none_or_all(
-                re.compile(r"""jQuery\.get\s*\((?P<q>['"])(.+?)(?P=q)"""),
+                re.compile(r"""jQuery\.get\s*\((?P<q>['"])(?P<token>.+?)(?P=q)"""),
                 validate.none_or_all(
-                    validate.get(1),
+                    validate.get("token"),
                     validate.url(),
                 ),
             ),
@@ -121,8 +121,8 @@ class Albavision(Plugin):
         schema = validate.Schema(
             validate.xml_xpath_string(".//script[contains(text(), 'LIVE_URL')]/text()"),
             validate.none_or_all(
-                re.compile(r"""Math\.floor\(Date\.now\(\)\s*/\s*3600000\),\s*(?P<q>['"])(.+?)(?P=q)"""),
-                validate.none_or_all(validate.get(1)),
+                re.compile(r"""Math\.floor\(Date\.now\(\)\s*/\s*3600000\),\s*(?P<q>['"])(?P<token>.+?)(?P=q)"""),
+                validate.none_or_all(validate.get("token")),
             ),
         )
         token_req_str = schema.validate(self.page)
@@ -137,6 +137,9 @@ class Albavision(Plugin):
             return update_qsd(token_req_host, {"rsk": token_req_token})
 
     def _get_token(self):
+        if not self._is_token_based_site():
+            return
+
         token_req_url = self._get_token_req_url()
         if not token_req_url:
             return
@@ -183,13 +186,11 @@ class Albavision(Plugin):
             log.info("This stream may be off-air or not available in your country")
             return
 
-        if self._is_token_based_site():
-            token = self._get_token()
-            if not token:
-                return
-            return HLSStream.parse_variant_playlist(self.session, update_qsd(live_url, {"iut": token}))
-        else:
-            return HLSStream.parse_variant_playlist(self.session, live_url)
+        token = self._get_token()
+        if token:
+            live_url = update_qsd(live_url, {"iut": token})
+
+        return HLSStream.parse_variant_playlist(self.session, live_url)
 
 
 __plugin__ = Albavision

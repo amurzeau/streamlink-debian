@@ -1,6 +1,7 @@
 import pkgutil
 import re
 import tokenize
+from inspect import Parameter, signature
 from pathlib import Path
 
 import pytest
@@ -67,6 +68,19 @@ class TestPlugins:
         assert classname == classname[0].upper() + classname[1:], "__plugin__ class name starts with uppercase letter"
         assert "_" not in classname, "__plugin__ class name does not contain underscores"
 
+    def test_constructor(self, plugin):
+        assert (
+            plugin.__plugin__.__init__ is Plugin.__init__
+            or tuple(
+                (param.name, param.kind)
+                for param in signature(plugin.__plugin__.__init__).parameters.values()
+            ) == (
+                ("self", Parameter.POSITIONAL_OR_KEYWORD),
+                ("args", Parameter.VAR_POSITIONAL),
+                ("kwargs", Parameter.VAR_KEYWORD),
+            )
+        )
+
     def test_matchers(self, plugin):
         pluginclass = plugin.__plugin__
         assert isinstance(pluginclass.matchers, list) and len(pluginclass.matchers) > 0, "Has at least one matcher"
@@ -79,7 +93,7 @@ class TestPlugins:
         assert callable(pluginclass._get_streams), "Implements _get_streams()"
 
     def test_has_valid_global_args(self, global_arg_dests, plugin):
-        assert all(parg.dest in global_arg_dests for parg in plugin.__plugin__.arguments if parg.is_global), \
+        assert all(parg.dest in global_arg_dests for parg in plugin.__plugin__.arguments or [] if parg.is_global), \
             "All plugin arguments with is_global=True are valid global arguments"
 
 

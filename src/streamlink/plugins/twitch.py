@@ -5,6 +5,7 @@ $type live, vod
 $notes :ref:`Low latency streaming <cli/plugins/twitch:Low latency streaming>` is supported
 """
 
+import argparse
 import json
 import logging
 import re
@@ -15,7 +16,7 @@ from typing import List, NamedTuple, Optional
 from urllib.parse import urlparse
 
 from streamlink.exceptions import NoStreamsError, PluginError
-from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
+from streamlink.plugin import Plugin, pluginargument, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream, HLSStreamReader, HLSStreamWorker, HLSStreamWriter
 from streamlink.stream.hls_playlist import ByteRange, ExtInf, Key, M3U8, M3U8Parser, Map, load as load_hls_playlist
@@ -106,6 +107,10 @@ class TwitchM3U8Parser(M3U8Parser):
 
 
 class TwitchHLSStreamWorker(HLSStreamWorker):
+    reader: "TwitchHLSStreamReader"
+    writer: "TwitchHLSStreamWriter"
+    stream: "TwitchHLSStream"
+
     def __init__(self, reader, *args, **kwargs):
         self.had_content = False
         super().__init__(reader, *args, **kwargs)
@@ -145,6 +150,9 @@ class TwitchHLSStreamWorker(HLSStreamWorker):
 
 
 class TwitchHLSStreamWriter(HLSStreamWriter):
+    reader: "TwitchHLSStreamReader"
+    stream: "TwitchHLSStream"
+
     def should_filter_sequence(self, sequence: TwitchSequence):  # type: ignore[override]
         return self.stream.disable_ads and sequence.segment.ad
 
@@ -153,7 +161,11 @@ class TwitchHLSStreamReader(HLSStreamReader):
     __worker__ = TwitchHLSStreamWorker
     __writer__ = TwitchHLSStreamWriter
 
-    def __init__(self, stream):
+    worker: "TwitchHLSStreamWorker"
+    writer: "TwitchHLSStreamWriter"
+    stream: "TwitchHLSStream"
+
+    def __init__(self, stream: "TwitchHLSStream"):
         if stream.disable_ads:
             log.info("Will skip ad segments")
         if stream.low_latency:
@@ -221,7 +233,7 @@ class TwitchAPI:
         self.headers = {
             "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko",
         }
-        self.headers.update(**{k: v for k, v in session.get_plugin_option("twitch", "api-header") or []})
+        self.headers.update(**dict(session.get_plugin_option("twitch", "api-header") or []))
 
     def call(self, data, schema=None):
         res = self.session.http.post(
@@ -443,24 +455,6 @@ class TwitchAPI:
             validate.get(("data", "user", "stream"))
         ))
 
-    def hosted_channel(self, channel):
-        query = self._gql_persisted_query(
-            "UseHosting",
-            "427f55a3daca510f726c02695a898ef3a0de4355b39af328848876052ea6b337",
-            channelLogin=channel
-        )
-
-        return self.call(query, schema=validate.Schema(
-            {"data": {"user": {
-                "hosting": {
-                    "login": str,
-                    "displayName": str
-                }
-            }}},
-            validate.get(("data", "user", "hosting")),
-            validate.union_get("login", "displayName")
-        ))
-
 
 @pluginmatcher(re.compile(r"""
     https?://(?:(?P<subdomain>[\w-]+)\.)?twitch\.tv/
@@ -475,70 +469,63 @@ class TwitchAPI:
         )?
     )
 """, re.VERBOSE))
+@pluginargument(
+    "disable-ads",
+    action="store_true",
+    help="""
+        Skip embedded advertisement segments at the beginning or during a stream.
+        Will cause these segments to be missing from the output.
+    """,
+)
+@pluginargument(
+    "disable-hosting",
+    action="store_true",
+    help=argparse.SUPPRESS,
+)
+@pluginargument(
+    "disable-reruns",
+    action="store_true",
+    help="Do not open the stream if the target channel is currently broadcasting a rerun.",
+)
+@pluginargument(
+    "low-latency",
+    action="store_true",
+    help=f"""
+        Enables low latency streaming by prefetching HLS segments.
+        Sets --hls-segment-stream-data to true and --hls-live-edge to `{LOW_LATENCY_MAX_LIVE_EDGE}`, if it is higher.
+        Reducing --hls-live-edge to `1` will result in the lowest latency possible, but will most likely cause buffering.
+
+        In order to achieve true low latency streaming during playback, the player's caching/buffering settings will
+        need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
+        This depends on the stream's bitrate and the quality of the connection to Twitch's servers. Please refer to the
+        player's own documentation for the required configuration. Player parameters can be set via --player-args.
+
+        Note: Low latency streams have to be enabled by the broadcasters on Twitch themselves.
+        Regular streams can cause buffering issues with this option enabled due to the reduced --hls-live-edge value.
+    """,
+)
+@pluginargument(
+    "api-header",
+    metavar="KEY=VALUE",
+    type=keyvalue,
+    action="append",
+    help="""
+        A header to add to each Twitch API HTTP request.
+
+        Can be repeated to add multiple headers.
+    """,
+)
 class Twitch(Plugin):
-    arguments = PluginArguments(
-        PluginArgument(
-            "disable-hosting",
-            action="store_true",
-            help="""
-            Do not open the stream if the target channel is hosting another channel.
-            """
-        ),
-        PluginArgument(
-            "disable-ads",
-            action="store_true",
-            help="""
-            Skip embedded advertisement segments at the beginning or during a stream.
-            Will cause these segments to be missing from the stream.
-            """
-        ),
-        PluginArgument(
-            "disable-reruns",
-            action="store_true",
-            help="""
-            Do not open the stream if the target channel is currently broadcasting a rerun.
-            """
-        ),
-        PluginArgument(
-            "low-latency",
-            action="store_true",
-            help=f"""
-            Enables low latency streaming by prefetching HLS segments.
-            Sets --hls-segment-stream-data to true and --hls-live-edge to `{LOW_LATENCY_MAX_LIVE_EDGE}`, if it is higher.
-            Reducing --hls-live-edge to `1` will result in the lowest latency possible, but will most likely cause buffering.
-
-            In order to achieve true low latency streaming during playback, the player's caching/buffering settings will
-            need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
-            This depends on the stream's bitrate and the quality of the connection to Twitch's servers. Please refer to the
-            player's own documentation for the required configuration. Player parameters can be set via --player-args.
-
-            Note: Low latency streams have to be enabled by the broadcasters on Twitch themselves.
-            Regular streams can cause buffering issues with this option enabled due to the reduced --hls-live-edge value.
-            """
-        ),
-        PluginArgument(
-            "api-header",
-            metavar="KEY=VALUE",
-            type=keyvalue,
-            action="append",
-            help="""
-            A header to add to each Twitch API HTTP request.
-
-            Can be repeated to add multiple headers.
-            """
-        )
-    )
-
     @classmethod
     def stream_weight(cls, stream):
         if stream == "source":
             return sys.maxsize, stream
         return super().stream_weight(stream)
 
-    def __init__(self, url):
-        super().__init__(url)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         match = self.match.groupdict()
-        parsed = urlparse(url)
+        parsed = urlparse(self.url)
         self.params = parse_qsd(parsed.query)
         self.subdomain = match.get("subdomain")
         self.video_id = None
@@ -602,30 +589,6 @@ class Twitch(Plugin):
 
         return sig, token, restricted_bitrates
 
-    def _switch_to_hosted_channel(self):
-        disabled = self.options.get("disable_hosting")
-        hosted_chain = [self.channel]
-        while True:
-            try:
-                login, display_name = self.api.hosted_channel(self.channel)
-            except PluginError:
-                return False
-
-            log.info(f"{self.channel} is hosting {login}")
-            if disabled:
-                log.info("hosting was disabled by command line option")
-                return True
-
-            if login in hosted_chain:
-                loop = " -> ".join(hosted_chain + [login])
-                log.error(f"A loop of hosted channels has been detected, cannot find a playable stream. ({loop})")
-                return True
-
-            hosted_chain.append(login)
-            log.info(f"switching to {login}")
-            self.channel = login
-            self.author = display_name
-
     def _check_for_rerun(self):
         if not self.options.get("disable_reruns"):
             return False
@@ -641,8 +604,6 @@ class Twitch(Plugin):
         return False
 
     def _get_hls_streams_live(self):
-        if self._switch_to_hosted_channel():
-            return
         if self._check_for_rerun():
             return
 

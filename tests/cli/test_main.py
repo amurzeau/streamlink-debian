@@ -34,8 +34,7 @@ from tests.plugin.testplugin import TestPlugin as _TestPlugin
 
 
 class FakePlugin(_TestPlugin):
-    module = "fake"
-    arguments = []  # type: ignore
+    __module__ = "fake"
     _streams = {}  # type: ignore
 
     def streams(self, *args, **kwargs):
@@ -134,7 +133,7 @@ class TestCLIMainJsonAndStreamUrl(unittest.TestCase):
         stream = Mock()
         streams = dict(best=stream)
 
-        plugin = FakePlugin("")
+        plugin = FakePlugin(Mock(), "")
         plugin._streams = streams
 
         handle_stream(plugin, streams, "best")
@@ -171,9 +170,10 @@ class TestCLIMainJsonAndStreamUrl(unittest.TestCase):
         streams = dict(worst=Mock(), best=stream)
 
         class _FakePlugin(FakePlugin):
+            __module__ = FakePlugin.__module__
             _streams = streams
 
-        with patch("streamlink_cli.main.streamlink", resolve_url=Mock(return_value=(_FakePlugin, ""))):
+        with patch("streamlink_cli.main.streamlink", resolve_url=Mock(return_value=("fake", _FakePlugin, ""))):
             handle_url()
             self.assertEqual(console.msg.mock_calls, [])
             self.assertEqual(console.msg_json.mock_calls, [call(
@@ -468,8 +468,9 @@ class TestCLIMainHandleStream(unittest.TestCase):
         args.player_continuous_http = False
         mock_output_stream.return_value = True
 
-        plugin = FakePlugin("")
-        stream = Stream(session=Mock())
+        session = Mock()
+        plugin = FakePlugin(session, "")
+        stream = Stream(session)
         streams = {"best": stream}
 
         handle_stream(plugin, streams, "best")
@@ -515,7 +516,7 @@ class TestCLIMainSetupConfigArgs(unittest.TestCase):
         def resolve_url(name):
             if name == "noplugin":
                 raise NoPluginError()
-            return Mock(module="testplugin"), name
+            return name, Mock(__module__="testplugin"), name
 
         session = Mock()
         session.resolve_url.side_effect = resolve_url
@@ -536,7 +537,7 @@ class TestCLIMainSetupConfigArgs(unittest.TestCase):
         )
         expected = [self.configdir / "primary"]
         mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
-        self.assertEqual(mock_log.info.mock_calls, [])
+        assert not mock_log.warning.mock_calls
 
     def test_default_primary(self, mock_log):
         mock_setup_args = self.subject(
@@ -545,7 +546,7 @@ class TestCLIMainSetupConfigArgs(unittest.TestCase):
         )
         expected = [self.configdir / "primary", self.configdir / "primary.testplugin"]
         mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
-        self.assertEqual(mock_log.info.mock_calls, [])
+        assert not mock_log.warning.mock_calls
 
     def test_default_secondary_deprecated(self, mock_log):
         mock_setup_args = self.subject(
@@ -554,10 +555,10 @@ class TestCLIMainSetupConfigArgs(unittest.TestCase):
         )
         expected = [self.configdir / "secondary", self.configdir / "secondary.testplugin"]
         mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
-        self.assertEqual(mock_log.info.mock_calls, [
+        assert mock_log.warning.mock_calls == [
             call(f"Loaded config from deprecated path, see CLI docs for how to migrate: {expected[0]}"),
-            call(f"Loaded plugin config from deprecated path, see CLI docs for how to migrate: {expected[1]}")
-        ])
+            call(f"Loaded plugin config from deprecated path, see CLI docs for how to migrate: {expected[1]}"),
+        ]
 
     def test_custom_with_primary_plugin(self, mock_log):
         mock_setup_args = self.subject(
@@ -566,7 +567,7 @@ class TestCLIMainSetupConfigArgs(unittest.TestCase):
         )
         expected = [self.configdir / "custom", self.configdir / "primary.testplugin"]
         mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
-        self.assertEqual(mock_log.info.mock_calls, [])
+        assert not mock_log.warning.mock_calls
 
     def test_custom_with_deprecated_plugin(self, mock_log):
         mock_setup_args = self.subject(
@@ -575,9 +576,9 @@ class TestCLIMainSetupConfigArgs(unittest.TestCase):
         )
         expected = [self.configdir / "custom", DeprecatedPath(self.configdir / "secondary.testplugin")]
         mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
-        self.assertEqual(mock_log.info.mock_calls, [
-            call(f"Loaded plugin config from deprecated path, see CLI docs for how to migrate: {expected[1]}")
-        ])
+        assert mock_log.warning.mock_calls == [
+            call(f"Loaded plugin config from deprecated path, see CLI docs for how to migrate: {expected[1]}"),
+        ]
 
     def test_custom_multiple(self, mock_log):
         mock_setup_args = self.subject(
@@ -586,7 +587,7 @@ class TestCLIMainSetupConfigArgs(unittest.TestCase):
         )
         expected = [self.configdir / "secondary", self.configdir / "primary", self.configdir / "primary.testplugin"]
         mock_setup_args.assert_called_once_with(self.parser, expected, ignore_unknown=False)
-        self.assertEqual(mock_log.info.mock_calls, [])
+        assert not mock_log.warning.mock_calls
 
 
 class _TestCLIMainLogging(unittest.TestCase):
@@ -597,7 +598,7 @@ class _TestCLIMainLogging(unittest.TestCase):
     @classmethod
     def subject(cls, argv, **kwargs):
         session = Streamlink()
-        session.load_plugins(os.path.join(os.path.dirname(__file__), "plugin"))
+        session.load_plugins(str(Path(tests.__path__[0]) / "plugin"))
 
         with patch("streamlink_cli.main.os.geteuid", create=True, new=Mock(return_value=kwargs.get("euid", 1000))), \
              patch("streamlink_cli.main.streamlink", session), \
@@ -605,7 +606,6 @@ class _TestCLIMainLogging(unittest.TestCase):
              patch("streamlink_cli.main.CONFIG_FILES", []), \
              patch("streamlink_cli.main.setup_streamlink"), \
              patch("streamlink_cli.main.setup_plugins"), \
-             patch("streamlink_cli.main.setup_http_session"), \
              patch("streamlink.session.Streamlink.load_builtin_plugins"), \
              patch("sys.argv") as mock_argv:
             mock_argv.__getitem__.side_effect = lambda x: argv[x]
@@ -944,21 +944,18 @@ class TestCLIMainPrint(unittest.TestCase):
              patch.object(Streamlink, "resolve_url") as mock_resolve_url, \
              patch.object(Streamlink, "resolve_url_no_redirect") as mock_resolve_url_no_redirect:
             session = Streamlink()
-            session.load_plugins(os.path.join(os.path.dirname(__file__), "plugin"))
+            session.load_plugins(str(Path(tests.__path__[0]) / "plugin"))
             with patch("streamlink_cli.main.os.geteuid", create=True, new=Mock(return_value=1000)), \
                  patch("streamlink_cli.main.streamlink", session), \
                  patch("streamlink_cli.main.CONFIG_FILES", []), \
                  patch("streamlink_cli.main.setup_streamlink"), \
                  patch("streamlink_cli.main.setup_plugins"), \
-                 patch("streamlink_cli.main.setup_http_session"), \
-                 patch("streamlink_cli.main.setup_signals"), \
-                 patch("streamlink_cli.main.setup_options") as mock_setup_options:
+                 patch("streamlink_cli.main.setup_signals"):
                 with self.assertRaises(SystemExit) as cm:
                     streamlink_cli.main.main()
                 self.assertEqual(cm.exception.code, 0)
                 mock_resolve_url.assert_not_called()
                 mock_resolve_url_no_redirect.assert_not_called()
-                mock_setup_options.assert_not_called()
 
     @staticmethod
     def get_stdout(mock_stdout):

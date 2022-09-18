@@ -1,5 +1,6 @@
 """
 $description United Arab Emirates CDN hosting live content for various websites in The Middle East.
+$url alwasat.ly
 $url cnbcarabia.com
 $url media.gov.kw
 $url rotana.net
@@ -21,6 +22,8 @@ log = logging.getLogger(__name__)
 @pluginmatcher(re.compile(r"""
     https?://(?:www\.)?
     (
+        alwasat\.ly
+    |
         cnbcarabia\.com
     |
         media\.gov\.kw
@@ -38,8 +41,11 @@ class HiPlayer(Plugin):
                 validate.parse_html(),
                 validate.xml_xpath_string(".//script[contains(text(), 'https://hiplayer.hibridcdn.net/l/')]/text()"),
                 validate.none_or_all(
-                    re.compile(r"""(?P<q>['"])(https://hiplayer.hibridcdn.net/l/.+?)(?P=q)"""),
-                    validate.none_or_all(validate.get(1), validate.url()),
+                    re.compile(r"""(?P<q>['"])(?P<url>https://hiplayer.hibridcdn.net/l/.+?)(?P=q)"""),
+                    validate.none_or_all(
+                        validate.get("url"),
+                        validate.url(),
+                    ),
                 ),
             ),
         )
