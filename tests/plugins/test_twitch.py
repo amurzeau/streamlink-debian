@@ -98,8 +98,7 @@ class _TwitchHLSStream(TwitchHLSStream):
 
 def test_stream_weight():
     session = Streamlink()
-    Twitch.bind(session, "tests.plugins.test_twitch")
-    plugin = Twitch("http://twitch.tv/foo")
+    plugin = Twitch(session, "http://twitch.tv/foo")
 
     with text("hls/test_master_twitch_vod.m3u8") as fh:
         playlist = fh.read()
@@ -182,7 +181,8 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             self.content(segments, cond=lambda s: s.num >= 4),
             "Filters out preroll ad segments"
         )
-        self.assertTrue(all([self.called(s) for s in segments.values()]), "Downloads all segments")
+        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
+
         self.assertEqual(mock_log.info.mock_calls, [
             call("Will skip ad segments"),
             call("Waiting for pre-roll ads to finish, be patient")
@@ -203,7 +203,8 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             self.content(segments, cond=lambda s: s.num != 2 and s.num != 3),
             "Filters out mid-stream ad segments"
         )
-        self.assertTrue(all([self.called(s) for s in segments.values()]), "Downloads all segments")
+        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
+
         self.assertEqual(mock_log.info.mock_calls, [
             call("Will skip ad segments")
         ])
@@ -222,7 +223,8 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             self.content(segments),
             "Doesn't filter out segments"
         )
-        self.assertTrue(all([self.called(s) for s in segments.values()]), "Downloads all segments")
+        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
+
         self.assertEqual(mock_log.info.mock_calls, [], "Doesn't log anything")
 
     @patch("streamlink.plugins.twitch.log")
@@ -241,8 +243,10 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             self.content(segments, cond=lambda s: s.num >= 4),
             "Skips first four segments due to reduced live-edge"
         )
-        self.assertFalse(any([self.called(s) for s in segments.values() if s.num < 4]), "Doesn't download old segments")
-        self.assertTrue(all([self.called(s) for s in segments.values() if s.num >= 4]), "Downloads all remaining segments")
+        self.assertFalse(any(self.called(s) for s in segments.values() if s.num < 4), "Doesn't download old segments")
+
+        self.assertTrue(all(self.called(s) for s in segments.values() if s.num >= 4), "Downloads all remaining segments")
+
         self.assertEqual(mock_log.info.mock_calls, [
             call("Low latency streaming (HLS live edge: 2)")
         ])
@@ -263,8 +267,10 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             self.content(segments, cond=lambda s: s.num < 8),
             "Ignores prefetch segments"
         )
-        self.assertTrue(all([self.called(s) for s in segments.values() if s.num <= 7]), "Ignores prefetch segments")
-        self.assertFalse(any([self.called(s) for s in segments.values() if s.num > 7]), "Ignores prefetch segments")
+        self.assertTrue(all(self.called(s) for s in segments.values() if s.num <= 7), "Ignores prefetch segments")
+
+        self.assertFalse(any(self.called(s) for s in segments.values() if s.num > 7), "Ignores prefetch segments")
+
         self.assertEqual(mock_log.info.mock_calls, [], "Doesn't log anything")
 
     @patch("streamlink.plugins.twitch.log")
@@ -298,8 +304,10 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
             self.content(segments, cond=lambda s: s.num > 1),
             "Skips first two segments due to reduced live-edge"
         )
-        self.assertFalse(any([self.called(s) for s in segments.values() if s.num < 2]), "Skips first two preroll segments")
-        self.assertTrue(all([self.called(s) for s in segments.values() if s.num >= 2]), "Downloads all remaining segments")
+        self.assertFalse(any(self.called(s) for s in segments.values() if s.num < 2), "Skips first two preroll segments")
+
+        self.assertTrue(all(self.called(s) for s in segments.values() if s.num >= 2), "Downloads all remaining segments")
+
         self.assertEqual(mock_log.info.mock_calls, [
             call("Low latency streaming (HLS live edge: 2)")
         ])
@@ -359,8 +367,7 @@ class TestTwitchMetadata(unittest.TestCase):
     @staticmethod
     def subject(url):
         session = Streamlink()
-        Twitch.bind(session, "tests.plugins.test_twitch")
-        plugin = Twitch(url)
+        plugin = Twitch(session, url)
         return plugin.get_id(), plugin.get_author(), plugin.get_category(), plugin.get_title()
 
     def mock_request_channel(self, data=True):
@@ -544,112 +551,6 @@ class TestTwitchMetadata(unittest.TestCase):
 
 
 @patch("streamlink.plugins.twitch.log")
-class TestTwitchHosting(unittest.TestCase):
-    @staticmethod
-    def subject(channel, hosts=None, disable=False):
-        with requests_mock.Mocker() as mock:
-            mock.register_uri(requests_mock.ANY, requests_mock.ANY, exc=requests_mock.exceptions.InvalidRequest)
-            if hosts is None:
-                mock.post("https://gql.twitch.tv/gql", json={})
-            else:
-                mock.post("https://gql.twitch.tv/gql", response_list=[
-                    {"json": {"data": {"user": {
-                        "id": host[0],
-                        "hosting": None if not host[1:3] else {
-                            "login": host[1],
-                            "displayName": host[2]
-                        }}}}
-                     } for host in hosts
-                ])
-
-            session = Streamlink()
-            Twitch.bind(session, "tests.plugins.test_twitch")
-            plugin = Twitch("https://twitch.tv/{0}".format(channel))
-            plugin.options.set("disable-hosting", disable)
-
-            res = plugin._switch_to_hosted_channel()
-            return res, plugin.channel, plugin.author
-
-    def test_hosting_invalid_host_data(self, mock_log):
-        res, channel, author = self.subject("foo")
-        self.assertFalse(res, "Doesn't stop HLS resolve procedure")
-        self.assertEqual(channel, "foo", "Doesn't switch channel")
-        self.assertEqual(author, None, "Doesn't override author metadata")
-        self.assertEqual(mock_log.info.mock_calls, [], "Doesn't log anything to info")
-        self.assertEqual(mock_log.error.mock_calls, [], "Doesn't log anything to error")
-
-    def test_hosting_no_host_data(self, mock_log):
-        res, channel, author = self.subject("foo", [(1,)])
-        self.assertFalse(res, "Doesn't stop HLS resolve procedure")
-        self.assertEqual(channel, "foo", "Doesn't switch channel")
-        self.assertEqual(author, None, "Doesn't override author metadata")
-        self.assertEqual(mock_log.info.mock_calls, [], "Doesn't log anything to info")
-        self.assertEqual(mock_log.error.mock_calls, [], "Doesn't log anything to error")
-
-    def test_hosting_host_single(self, mock_log):
-        res, channel, author = self.subject("foo", [(1, "bar", "Bar"), (2,)])
-        self.assertFalse(res, "Doesn't stop HLS resolve procedure")
-        self.assertEqual(channel, "bar", "Switches channel")
-        self.assertEqual(author, "Bar", "Overrides author metadata")
-        self.assertEqual(mock_log.info.mock_calls, [
-            call("foo is hosting bar"),
-            call("switching to bar")
-        ])
-        self.assertEqual(mock_log.error.mock_calls, [], "Doesn't log anything to error")
-
-    def test_hosting_host_single_disable(self, mock_log):
-        res, channel, author = self.subject("foo", [(1, "bar", "Bar")], disable=True)
-        self.assertTrue(res, "Stops HLS resolve procedure")
-        self.assertEqual(channel, "foo", "Doesn't switch channel")
-        self.assertEqual(author, None, "Doesn't override author metadata")
-        self.assertEqual(mock_log.info.mock_calls, [
-            call("foo is hosting bar"),
-            call("hosting was disabled by command line option")
-        ])
-        self.assertEqual(mock_log.error.mock_calls, [], "Doesn't log anything to error")
-
-    def test_hosting_host_multiple(self, mock_log):
-        res, channel, author = self.subject("foo", [
-            (1, "bar", "Bar"),
-            (2, "baz", "Baz"),
-            (3, "qux", "Qux"),
-            (4,)
-        ])
-        self.assertFalse(res, "Doesn't stop HLS resolve procedure")
-        self.assertEqual(channel, "qux", "Switches channel")
-        self.assertEqual(author, "Qux", "Overrides author metadata")
-        self.assertEqual(mock_log.info.mock_calls, [
-            call("foo is hosting bar"),
-            call("switching to bar"),
-            call("bar is hosting baz"),
-            call("switching to baz"),
-            call("baz is hosting qux"),
-            call("switching to qux")
-        ])
-        self.assertEqual(mock_log.error.mock_calls, [], "Doesn't log anything to error")
-
-    def test_hosting_host_multiple_loop(self, mock_log):
-        res, channel, author = self.subject("foo", [
-            (1, "bar", "Bar"),
-            (2, "baz", "Baz"),
-            (3, "foo", "Foo")
-        ])
-        self.assertTrue(res, "Stops HLS resolve procedure")
-        self.assertEqual(channel, "baz", "Has switched channel")
-        self.assertEqual(author, "Baz", "Has overridden author metadata")
-        self.assertEqual(mock_log.info.mock_calls, [
-            call("foo is hosting bar"),
-            call("switching to bar"),
-            call("bar is hosting baz"),
-            call("switching to baz"),
-            call("baz is hosting foo")
-        ])
-        self.assertEqual(mock_log.error.mock_calls, [
-            call("A loop of hosted channels has been detected, cannot find a playable stream. (foo -> bar -> baz -> foo)")
-        ])
-
-
-@patch("streamlink.plugins.twitch.log")
 class TestTwitchReruns(unittest.TestCase):
     log_call = call("Reruns were disabled by command line option")
 
@@ -657,8 +558,7 @@ class TestTwitchReruns(unittest.TestCase):
         with patch("streamlink.plugins.twitch.TwitchAPI.stream_metadata") as mock:
             mock.return_value = None if params.pop("offline", False) else {"type": params.pop("stream_type", "live")}
             session = Streamlink()
-            Twitch.bind(session, "tests.plugins.test_twitch")
-            plugin = Twitch("https://www.twitch.tv/foo")
+            plugin = Twitch(session, "https://www.twitch.tv/foo")
             plugin.options.set("disable-reruns", params.pop("disable", True))
 
             return plugin._check_for_rerun()

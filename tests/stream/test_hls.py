@@ -48,13 +48,13 @@ class TagKey(Tag):
     def __init__(self, method="NONE", uri=None, iv=None, keyformat=None, keyformatversions=None):
         attrs = {"METHOD": method}
         if uri is not False:  # pragma: no branch
-            attrs.update({"URI": lambda tag, namespace: tag.val_quoted_string(tag.url(namespace))})
+            attrs["URI"] = lambda tag, namespace: tag.val_quoted_string(tag.url(namespace))
         if iv is not None:  # pragma: no branch
-            attrs.update({"IV": self.val_hex(iv)})
+            attrs["IV"] = self.val_hex(iv)
         if keyformat is not None:  # pragma: no branch
-            attrs.update({"KEYFORMAT": self.val_quoted_string(keyformat)})
+            attrs["KEYFORMAT"] = self.val_quoted_string(keyformat)
         if keyformatversions is not None:  # pragma: no branch
-            attrs.update({"KEYFORMATVERSIONS": self.val_quoted_string(keyformatversions)})
+            attrs["KEYFORMATVERSIONS"] = self.val_quoted_string(keyformatversions)
         super().__init__("EXT-X-KEY", attrs)
         self.uri = uri
 
@@ -351,7 +351,7 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
 
     def test_hls_encrypted_aes128_key_uri_override(self):
         aesKey, aesIv, key = self.gen_key(uri="http://real-mocked/{namespace}/encryption.key?foo=bar")
-        aesKeyInvalid = bytes([ord(aesKey[i:i + 1]) ^ 0xFF for i in range(16)])
+        aesKeyInvalid = bytes(ord(aesKey[i:i + 1]) ^ 0xFF for i in range(16))
         _, __, key_invalid = self.gen_key(aesKeyInvalid, aesIv, uri="http://mocked/{namespace}/encryption.key?foo=bar")
 
         # noinspection PyTypeChecker
@@ -589,9 +589,7 @@ class TestHlsExtAudio(unittest.TestCase):
         if audio_select:
             streamlink.set_option("hls-audio-select", audio_select)
 
-        master_stream = HLSStream.parse_variant_playlist(streamlink, playlist)
-
-        return master_stream
+        return HLSStream.parse_variant_playlist(streamlink, playlist)
 
     def test_hls_ext_audio_not_selected(self):
         master_url = "http://mocked/path/master.m3u8"

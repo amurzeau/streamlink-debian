@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Aug 15, 2022" "4.3.0" "Streamlink"
+.TH "STREAMLINK" "1" "Sep 16, 2022" "5.0.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -400,12 +400,27 @@ Serve stream data through HTTP without running any player. This is
 useful to allow external devices like smartphones or streaming boxes to
 watch streams they wouldn\(aqt be able to otherwise.
 .sp
-Behavior will be similar to the continuous HTTP option, but no player
-program will be started, and the server will listen on all available
+The default behavior is similar to the \fI\%\-\-player\-continuous\-http\fP option,
+but no player program will be started, and the server will listen on all available
 connections instead of just in the local (loopback) interface.
+.sp
+Optionally, the \fI\%\-\-player\-external\-http\-continuous\fP option allows for disabling
+the continuous run\-mode, so that Streamlink will stop when the stream ends.
 .sp
 The URLs that can be used to access the stream will be printed to the
 console, and the server can be interrupted using CTRL\-C.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-player\-external\-http\-continuous {yes,true,1,on,no,false,0,off}
+Set the run\-mode of \fI\%\-\-player\-external\-http\fP to continuous or non\-continuous.
+.sp
+In the continuous run\-mode, Streamlink will keep running after the stream has ended
+and will wait for the next HTTP request being made unless it gets shut down via CTRL\-C.
+.sp
+If set to non\-continuous, Streamlink will stop once the stream has ended.
+.sp
+Default is: \fBtrue\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1092,8 +1107,7 @@ A afreecatv.com account password to use with \fI\%\-\-afreeca\-username\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-afreeca\-purge\-credentials
-Purge cached AfreecaTV credentials to initiate a new session
-and reauthenticate.
+Purge cached AfreecaTV credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .SS Bbciplayer
 .INDENT 0.0
@@ -1109,8 +1123,7 @@ A bbc.co.uk account password to use with \fI\%\-\-bbciplayer\-username\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-bbciplayer\-hd
-Prefer HD streams over local SD streams, some live programmes may
-not be broadcast in HD.
+Prefer HD streams over local SD streams, some live programmes may not be broadcast in HD.
 .UNINDENT
 .SS Clubbingtv
 .INDENT 0.0
@@ -1139,8 +1152,7 @@ If left blank you will be prompted.
 .INDENT 0.0
 .TP
 .B \-\-crunchyroll\-purge\-credentials
-Purge cached Crunchyroll credentials to initiate a new session
-and reauthenticate.
+Purge cached Crunchyroll credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1190,8 +1202,9 @@ The password of your Niconico account
 .INDENT 0.0
 .TP
 .B \-\-niconico\-user\-session VALUE
-Value of the user\-session token 
-(can be used in case you do not want to put your password here)
+Value of the user\-session token.
+.sp
+Can be used as an alternative to providing a password.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1209,8 +1222,7 @@ Default is: \fB00:00:00\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-openrectv\-email EMAIL
-The email associated with your openrectv account,
-required to access any openrectv stream.
+The email associated with your openrectv account, required to access any openrectv stream.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1221,20 +1233,17 @@ An openrectv account password to use with \fI\%\-\-openrectv\-email\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-pixiv\-sessionid SESSIONID
-The pixiv.net sessionid that\(aqs used in pixivs PHPSESSID cookie.
-can be used instead of the username/password login process.
+The pixiv.net sessionid that\(aqs used in pixiv\(aqs PHPSESSID cookie.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-pixiv\-devicetoken DEVICETOKEN
-The pixiv.net device token that\(aqs used in pixivs device_token cookie.
-can be used instead of the username/password login process.
+The pixiv.net device token that\(aqs used in pixiv\(aqs device_token cookie.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-pixiv\-purge\-credentials
-Purge cached Pixiv credentials to initiate a new session
-and reauthenticate.
+Purge cached Pixiv credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1263,8 +1272,7 @@ streamlink http://play.sbs.co.kr/onair/pc/index.html best \-\-sbscokr\-id S01
 .INDENT 0.0
 .TP
 .B \-\-schoolism\-email EMAIL
-The email associated with your Schoolism account,
-required to access any Schoolism stream.
+The email associated with your Schoolism account, required to access any Schoolism stream.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1293,8 +1301,7 @@ A Steam account password to use with \fI\%\-\-steam\-email\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-streann\-url URL
-Source URL where the iframe is located,
-only required for direct URLs of \fBott.streann.com\fP
+Source URL where the iframe is located, only required for direct URLs of ott.streann.com
 .UNINDENT
 .SS Twitcasting
 .INDENT 0.0
@@ -1305,14 +1312,9 @@ Password for private Twitcasting streams.
 .SS Twitch
 .INDENT 0.0
 .TP
-.B \-\-twitch\-disable\-hosting
-Do not open the stream if the target channel is hosting another channel.
-.UNINDENT
-.INDENT 0.0
-.TP
 .B \-\-twitch\-disable\-ads
 Skip embedded advertisement segments at the beginning or during a stream.
-Will cause these segments to be missing from the stream.
+Will cause these segments to be missing from the output.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1367,8 +1369,7 @@ Your USTV Now account password
 .INDENT 0.0
 .TP
 .B \-\-wwenetwork\-email EMAIL
-The email associated with your WWE Network account,
-required to access any WWE Network stream.
+The email associated with your WWE Network account, required to access any WWE Network stream.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1380,26 +1381,22 @@ A WWE Network account password to use with \fI\%\-\-wwenetwork\-email\fP\&.
 .TP
 .B \-\-yupptv\-boxid BOXID
 The yupptv.com boxid that\(aqs used in the BoxId cookie.
-Can be used instead of the username/password login process.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-yupptv\-yuppflixtoken YUPPFLIXTOKEN
 The yupptv.com yuppflixtoken that\(aqs used in the YuppflixToken cookie.
-Can be used instead of the username/password login process.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-yupptv\-purge\-credentials
-Purge cached YuppTV credentials to initiate a new session
-and reauthenticate.
+Purge cached YuppTV credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .SS Zattoo
 .INDENT 0.0
 .TP
 .B \-\-zattoo\-email EMAIL
-The email associated with your zattoo account,
-required to access any zattoo stream.
+The email associated with your zattoo account, required to access any zattoo stream.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1409,20 +1406,14 @@ A zattoo account password to use with \fI\%\-\-zattoo\-email\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-zattoo\-purge\-credentials
-Purge cached zattoo credentials to initiate a new session
-and reauthenticate.
+Purge cached zattoo credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-zattoo\-stream\-types TYPES
-A comma\-delimited list of stream types which should be used,
-the following types are allowed:
-.INDENT 7.0
-.IP \(bu 2
-dash
-.IP \(bu 2
-hls7
-.UNINDENT
+A comma\-delimited list of stream types which should be used.
+.sp
+The following types are allowed: dash,hls7
 .sp
 Default is: \fB\(dqdash\(dq\fP\&.
 .UNINDENT

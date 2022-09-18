@@ -32,8 +32,7 @@ class TestCommand:
             assert len(mock.call_args_list) == 0
 
     @pytest.mark.parametrize("command,which,expected", [
-        pytest.param(None, {"ffmpeg": None, "avconv": None}, None, id="resolver-negative"),
-        pytest.param(None, {"ffmpeg": None, "avconv": "avconv"}, "avconv", id="resolver-avconv"),
+        pytest.param(None, {"ffmpeg": None}, None, id="resolver-negative"),
         pytest.param(None, {"ffmpeg": "ffmpeg"}, "ffmpeg", id="resolver-posix"),
         pytest.param(None, {"ffmpeg": "ffmpeg.exe"}, "ffmpeg.exe", id="resolver-windows"),
         pytest.param("custom", {"ffmpeg": "ffmpeg"}, None, id="custom-negative"),
@@ -51,6 +50,23 @@ class TestCommand:
     def test_is_usable(self, session: Streamlink, resolved: Optional[str], expected: bool):
         with patch("streamlink.stream.ffmpegmux.which", return_value=resolved):
             assert FFMPEGMuxer.is_usable(session) is expected
+
+    def test_log(self, session: Streamlink):
+        with patch("streamlink.stream.ffmpegmux.log") as mock_log, \
+             patch("streamlink.stream.ffmpegmux.which", return_value=None):
+            assert not FFMPEGMuxer.is_usable(session)
+            assert mock_log.warning.call_args_list == [
+                call("FFmpeg was not found. See the --ffmpeg-ffmpeg option."),
+                call("Muxing streams is unsupported! Only a subset of the available streams can be returned!"),
+            ]
+            assert not FFMPEGMuxer.is_usable(session)
+            assert len(mock_log.warning.call_args_list) == 2
+
+    def test_no_log(self, session: Streamlink):
+        with patch("streamlink.stream.ffmpegmux.log") as mock_log, \
+             patch("streamlink.stream.ffmpegmux.which", return_value="foo"):
+            assert FFMPEGMuxer.is_usable(session)
+            assert not mock_log.warning.call_args_list
 
 
 class TestOpen:

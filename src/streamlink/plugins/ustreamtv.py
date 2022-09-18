@@ -17,7 +17,7 @@ from urllib.parse import urljoin, urlunparse
 from requests import Response
 
 from streamlink.exceptions import PluginError, StreamError
-from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
+from streamlink.plugin import Plugin, pluginargument, pluginmatcher
 from streamlink.plugin.api import useragents, validate
 from streamlink.plugin.api.websocket import WebsocketClient
 from streamlink.stream.ffmpegmux import MuxedStream
@@ -338,8 +338,8 @@ class UStreamTVWsClient(WebsocketClient):
 
 
 class UStreamTVStreamWriter(SegmentedStreamWriter):
-    stream: "UStreamTVStream"
     reader: "UStreamTVStreamReader"
+    stream: "UStreamTVStream"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -394,6 +394,8 @@ class UStreamTVStreamWriter(SegmentedStreamWriter):
 
 
 class UStreamTVStreamWorker(SegmentedStreamWorker):
+    reader: "UStreamTVStreamReader"
+    writer: "UStreamTVStreamWriter"
     stream: "UStreamTVStream"
 
     def __init__(self, *args, **kwargs):
@@ -428,7 +430,10 @@ class UStreamTVStreamWorker(SegmentedStreamWorker):
 class UStreamTVStreamReader(SegmentedStreamReader):
     __worker__ = UStreamTVStreamWorker
     __writer__ = UStreamTVStreamWriter
+
     stream: "UStreamTVStream"
+    worker: "UStreamTVStreamWorker"
+    writer: "UStreamTVStreamWriter"
 
     def open(self):
         self.stream.wsclient.opened.set()
@@ -462,33 +467,32 @@ class UStreamTVStream(Stream):
 
 
 @pluginmatcher(re.compile(r"""
-    https?://(?:(www\.)?ustream\.tv|video\.ibm\.com)
-        (?:
-            (/embed/|/channel/id/)(?P<channel_id>\d+)
-        )?
-        (?:
-            (/embed)?/recorded/(?P<video_id>\d+)
-        )?
-""", re.VERBOSE))
-class UStreamTV(Plugin):
-    arguments = PluginArguments(
-        PluginArgument(
-            "password",
-            argument_name="ustream-password",
-            sensitive=True,
-            metavar="PASSWORD",
-            help="A password to access password protected UStream.tv channels."
-        )
+    https?://(?:(?:www\.)?ustream\.tv|video\.ibm\.com)
+    (?:
+        /combined-embed
+        /(?P<combined_channel_id>\d+)
+        (?:/video/(?P<combined_video_id>\d+))?
+        |
+        (?:(?:/embed/|/channel/(?:id/)?)(?P<channel_id>\d+))?
+        (?:(?:/embed)?/recorded/(?P<video_id>\d+))?
     )
-
+""", re.VERBOSE))
+@pluginargument(
+    "password",
+    sensitive=True,
+    argument_name="ustream-password",
+    metavar="PASSWORD",
+    help="A password to access password protected UStream.tv channels.",
+)
+class UStreamTV(Plugin):
     STREAM_READY_TIMEOUT = 15
 
     def _get_media_app(self):
-        video_id = self.match.group("video_id")
+        video_id = self.match.group("video_id") or self.match.group("combined_video_id")
         if video_id:
             return video_id, "recorded"
 
-        channel_id = self.match.group("channel_id")
+        channel_id = self.match.group("channel_id") or self.match.group("combined_channel_id")
         if not channel_id:
             channel_id = self.session.http.get(
                 self.url,
