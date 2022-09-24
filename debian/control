@@ -10,7 +10,7 @@ Build-Depends: debhelper-compat (= 13),
  pybuild-plugin-pyproject,
 # Streamlink dependencies
  python3-isodate,
- python3-pycountry (>= 16.10.23),
+ python3-pycountry,
  python3-pycryptodome,
  python3-requests,
  python3-setuptools,
