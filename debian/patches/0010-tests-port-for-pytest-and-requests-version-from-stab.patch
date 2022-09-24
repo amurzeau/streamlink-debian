@@ -1,0 +1,289 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Sat, 16 Jul 2022 16:35:11 +0200
+Subject: tests: port for pytest and requests version from stable
+
+- Adjust imports for MonkeyPatch and LogCaptureFixture
+  pytest < 6.2 doesn't expose these types via pytest.
+- Adjust import of requests.exceptions.JSONDecodeError
+  This exception type doesn't exist on request < 2.27.0.
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ src/streamlink_cli/utils/versioncheck.py |  3 ++-
+ tests/cli/test_argparser.py              |  5 +++--
+ tests/cli/utils/test_versioncheck.py     | 30 ++++++++++++++++--------------
+ tests/stream/test_dash.py                |  7 ++++---
+ tests/test_plugin.py                     |  5 +++--
+ tests/test_session.py                    |  5 +++--
+ 6 files changed, 31 insertions(+), 24 deletions(-)
+
+diff --git a/src/streamlink_cli/utils/versioncheck.py b/src/streamlink_cli/utils/versioncheck.py
+index 19582f4..088e21e 100644
+--- a/src/streamlink_cli/utils/versioncheck.py
++++ b/src/streamlink_cli/utils/versioncheck.py
+@@ -1,3 +1,4 @@
++import json
+ import logging
+ import re
+ from typing import Tuple
+@@ -27,7 +28,7 @@ def get_latest() -> str:
+         res.raise_for_status()
+         data = res.json()
+         return str(data.get("info").get("version"))
+-    except requests.exceptions.JSONDecodeError:
++    except json.decoder.JSONDecodeError:
+         log.error("Could not parse JSON data from PyPI API response")
+     except Exception as err:
+         log.error(f"Error while retrieving version data from PyPI API: {err}")
+diff --git a/tests/cli/test_argparser.py b/tests/cli/test_argparser.py
+index f0e0833..3852ba6 100644
+--- a/tests/cli/test_argparser.py
++++ b/tests/cli/test_argparser.py
+@@ -3,6 +3,7 @@ from typing import Any, List
+ from unittest.mock import Mock
+ 
+ import pytest
++from _pytest.monkeypatch import MonkeyPatch
+ 
+ from streamlink.session import Streamlink
+ from streamlink_cli.argparser import build_parser, setup_session_options
+@@ -15,7 +16,7 @@ def parser():
+ 
+ 
+ @pytest.fixture
+-def session(monkeypatch: pytest.MonkeyPatch):
++def session(monkeypatch: MonkeyPatch):
+     monkeypatch.setattr("streamlink.session.Streamlink.load_builtin_plugins", lambda _: None)
+     yield Streamlink()
+ 
+@@ -64,7 +65,7 @@ def test_setup_session_options(parser: ArgumentParser, session: Streamlink, argv
+     assert session.get_option(option) == expected
+ 
+ 
+-def test_cli_main_setup_session_options(monkeypatch: pytest.MonkeyPatch, parser: ArgumentParser, session: Streamlink):
++def test_cli_main_setup_session_options(monkeypatch: MonkeyPatch, parser: ArgumentParser, session: Streamlink):
+     class StopTest(Exception):
+         pass
+ 
+diff --git a/tests/cli/utils/test_versioncheck.py b/tests/cli/utils/test_versioncheck.py
+index 7168efc..2efa227 100644
+--- a/tests/cli/utils/test_versioncheck.py
++++ b/tests/cli/utils/test_versioncheck.py
+@@ -1,13 +1,15 @@
+ from unittest.mock import Mock, call
+ 
+ import pytest
++from _pytest.logging import LogCaptureFixture
++from _pytest.monkeypatch import MonkeyPatch
+ import requests_mock as rm
+ 
+ from streamlink_cli.utils.versioncheck import check_version, get_latest, log
+ 
+ 
+ @pytest.fixture(autouse=True)
+-def _logger(caplog: pytest.LogCaptureFixture):
++def _logger(caplog: LogCaptureFixture):
+     caplog.set_level(1, "streamlink.cli")
+ 
+ 
+@@ -39,29 +41,29 @@ class TestGetLatest:
+             "Error while retrieving version data from PyPI API: 'NoneType' object has no attribute 'get'",
+         ),
+     ], indirect=["pypi"])
+-    def test_request_error(self, caplog: pytest.LogCaptureFixture, pypi, error):
++    def test_request_error(self, caplog: LogCaptureFixture, pypi, error):
+         assert not get_latest()
+         assert [(record.levelname, str(record.message)) for record in caplog.records] == [("error", error)]
+ 
+     @pytest.mark.parametrize("pypi", [{"json": {"info": {"version": "1.2.3"}}}], indirect=True)
+-    def test_request_success(self, caplog: pytest.LogCaptureFixture, pypi):
++    def test_request_success(self, caplog: LogCaptureFixture, pypi):
+         assert get_latest() == "1.2.3"
+         assert not caplog.records
+ 
+ 
+ class TestVersionCheck:
+     @pytest.fixture(autouse=True)
+-    def current(self, monkeypatch: pytest.MonkeyPatch):
++    def current(self, monkeypatch: MonkeyPatch):
+         monkeypatch.setattr("streamlink_cli.utils.versioncheck.streamlink_version", "1.0.0")
+ 
+     @pytest.fixture
+-    def latest(self, request, monkeypatch: pytest.MonkeyPatch):
++    def latest(self, request, monkeypatch: MonkeyPatch):
+         mock_get_latest = Mock(return_value=getattr(request, "param", "1.2.3"))
+         monkeypatch.setattr("streamlink_cli.utils.versioncheck.get_latest", mock_get_latest)
+         yield mock_get_latest
+ 
+     @pytest.fixture
+-    def cache(self, request, monkeypatch: pytest.MonkeyPatch):
++    def cache(self, request, monkeypatch: MonkeyPatch):
+         Cache = Mock()
+         cache = Cache("cli.json")
+         cache.get.side_effect = request.param.get
+@@ -70,7 +72,7 @@ class TestVersionCheck:
+         assert cache.called_once
+ 
+     @pytest.mark.parametrize("cache", [{}], indirect=True)
+-    def test_auto_uncached_outdated(self, caplog: pytest.LogCaptureFixture, cache: Mock, latest: Mock):
++    def test_auto_uncached_outdated(self, caplog: LogCaptureFixture, cache: Mock, latest: Mock):
+         assert not check_version()
+         assert latest.call_args_list == [call()]
+         assert cache.set.call_args_list == [
+@@ -82,7 +84,7 @@ class TestVersionCheck:
+         ]
+ 
+     @pytest.mark.parametrize("cache,latest", [({}, "1.0.0")], indirect=True)
+-    def test_auto_uncached_uptodate(self, caplog: pytest.LogCaptureFixture, cache: Mock, latest: Mock):
++    def test_auto_uncached_uptodate(self, caplog: LogCaptureFixture, cache: Mock, latest: Mock):
+         assert check_version()
+         assert latest.call_args_list == [call()]
+         assert cache.set.call_args_list == [
+@@ -91,7 +93,7 @@ class TestVersionCheck:
+         assert not caplog.records
+ 
+     @pytest.mark.parametrize("cache", [{"latest_version": "1.2.3", "version_info_printed": False}], indirect=True)
+-    def test_auto_cached_outdated(self, caplog: pytest.LogCaptureFixture, cache: Mock, latest: Mock):
++    def test_auto_cached_outdated(self, caplog: LogCaptureFixture, cache: Mock, latest: Mock):
+         assert not check_version()
+         assert not latest.call_args_list
+         assert cache.set.call_args_list == [call("version_info_printed", True, 21600)]
+@@ -100,7 +102,7 @@ class TestVersionCheck:
+         ]
+ 
+     @pytest.mark.parametrize("cache", [{"latest_version": "1.2.3", "version_info_printed": True}], indirect=True)
+-    def test_auto_cached_printed(self, caplog: pytest.LogCaptureFixture, cache: Mock, latest: Mock):
++    def test_auto_cached_printed(self, caplog: LogCaptureFixture, cache: Mock, latest: Mock):
+         assert check_version()
+         assert not latest.call_args_list
+         assert not cache.set.call_args_list
+@@ -110,7 +112,7 @@ class TestVersionCheck:
+         {},
+         {"version_info_printed": True},
+     ], indirect=True)
+-    def test_forced_outdated(self, caplog: pytest.LogCaptureFixture, cache: Mock, latest: Mock):
++    def test_forced_outdated(self, caplog: LogCaptureFixture, cache: Mock, latest: Mock):
+         assert not check_version(True)
+         assert latest.call_args_list == [call()]
+         assert cache.set.call_args_list == [
+@@ -125,7 +127,7 @@ class TestVersionCheck:
+         ({}, "1.0.0"),
+         ({"version_info_printed": True}, "1.0.0"),
+     ], indirect=True)
+-    def test_forced_uptodate(self, caplog: pytest.LogCaptureFixture, cache: Mock, latest: Mock):
++    def test_forced_uptodate(self, caplog: LogCaptureFixture, cache: Mock, latest: Mock):
+         assert check_version(True)
+         assert latest.call_args_list == [call()]
+         assert cache.set.call_args_list == [
+@@ -136,14 +138,14 @@ class TestVersionCheck:
+         ]
+ 
+     @pytest.mark.parametrize("cache,latest", [({}, "")], indirect=True)
+-    def test_error_get_latest(self, caplog: pytest.LogCaptureFixture, cache: Mock, latest: Mock):
++    def test_error_get_latest(self, caplog: LogCaptureFixture, cache: Mock, latest: Mock):
+         assert not check_version(True)
+         assert latest.call_args_list == [call()]
+         assert not cache.set.call_args_list
+         assert not caplog.records  # error gets logged by get_latest()
+ 
+     @pytest.mark.parametrize("cache,latest", [({}, "not a semver version string")], indirect=True)
+-    def test_error_get_latest_version(self, caplog: pytest.LogCaptureFixture, cache: Mock, latest: Mock):
++    def test_error_get_latest_version(self, caplog: LogCaptureFixture, cache: Mock, latest: Mock):
+         assert not check_version(True)
+         assert latest.call_args_list == [call()]
+         assert not cache.set.call_args_list
+diff --git a/tests/stream/test_dash.py b/tests/stream/test_dash.py
+index 49dfa4c..78b09f3 100644
+--- a/tests/stream/test_dash.py
++++ b/tests/stream/test_dash.py
+@@ -3,6 +3,7 @@ from typing import List
+ from unittest.mock import ANY, MagicMock, Mock, call, patch
+ 
+ import pytest
++from _pytest.monkeypatch import MonkeyPatch
+ 
+ from streamlink import PluginError
+ from streamlink.stream.dash import DASHStream, DASHStreamWorker
+@@ -305,13 +306,13 @@ class TestDASHStream(unittest.TestCase):
+ 
+ class TestDASHStreamWorker:
+     @pytest.fixture
+-    def mock_time(self, monkeypatch: pytest.MonkeyPatch) -> Mock:
++    def mock_time(self, monkeypatch: MonkeyPatch) -> Mock:
+         mock = Mock(return_value=1)
+         monkeypatch.setattr("streamlink.stream.dash.time", mock)
+         return mock
+ 
+     @pytest.fixture(autouse=True)
+-    def mock_wait(self, monkeypatch: pytest.MonkeyPatch) -> Mock:
++    def mock_wait(self, monkeypatch: MonkeyPatch) -> Mock:
+         mock = Mock(return_value=True)
+         monkeypatch.setattr("streamlink.stream.dash.DASHStreamWorker.wait", mock)
+         return mock
+@@ -355,7 +356,7 @@ class TestDASHStreamWorker:
+ 
+     def test_dynamic_reload(
+         self,
+-        monkeypatch: pytest.MonkeyPatch,
++        monkeypatch: MonkeyPatch,
+         worker: DASHStreamWorker,
+         representation: Mock,
+         segments: List[Mock],
+diff --git a/tests/test_plugin.py b/tests/test_plugin.py
+index 480b8bc..e478bc0 100644
+--- a/tests/test_plugin.py
++++ b/tests/test_plugin.py
+@@ -7,6 +7,7 @@ from unittest.mock import Mock, call, patch
+ 
+ import freezegun
+ import pytest
++from _pytest.logging import LogCaptureFixture
+ import requests.cookies
+ 
+ from streamlink.plugin import (
+@@ -56,7 +57,7 @@ class TestPlugin:
+         (CustomConstructorOnePlugin, "test_plugin", "tests.test_plugin"),
+         (CustomConstructorTwoPlugin, "test_plugin", "tests.test_plugin"),
+     ])
+-    def test_constructor(self, caplog: pytest.LogCaptureFixture, pluginclass: Type[Plugin], module: str, logger: str):
++    def test_constructor(self, caplog: LogCaptureFixture, pluginclass: Type[Plugin], module: str, logger: str):
+         session = Mock()
+         with patch("streamlink.plugin.plugin.Cache") as mock_cache, \
+              patch.object(pluginclass, "load_cookies") as mock_load_cookies:
+@@ -77,7 +78,7 @@ class TestPlugin:
+ 
+         assert mock_load_cookies.call_args_list == [call()]
+ 
+-    def test_constructor_wrapper(self, caplog: pytest.LogCaptureFixture):
++    def test_constructor_wrapper(self, caplog: LogCaptureFixture):
+         session = Mock()
+         with patch("streamlink.plugin.plugin.Cache") as mock_cache, \
+              patch.object(DeprecatedPlugin, "load_cookies") as mock_load_cookies:
+diff --git a/tests/test_session.py b/tests/test_session.py
+index ffc74dc..236bfd3 100644
+--- a/tests/test_session.py
++++ b/tests/test_session.py
+@@ -5,6 +5,7 @@ from socket import AF_INET, AF_INET6
+ from unittest.mock import Mock, call, patch
+ 
+ import pytest
++from _pytest.logging import LogCaptureFixture
+ import requests_mock
+ # noinspection PyPackageRequirements
+ import urllib3
+@@ -416,12 +417,12 @@ class TestSession(unittest.TestCase):
+ 
+ class TestSessionOptionHttpProxy:
+     @pytest.fixture
+-    def no_deprecation(self, caplog: pytest.LogCaptureFixture):
++    def no_deprecation(self, caplog: LogCaptureFixture):
+         yield
+         assert not caplog.get_records("call")
+ 
+     @pytest.fixture
+-    def logs_deprecation(self, caplog: pytest.LogCaptureFixture):
++    def logs_deprecation(self, caplog: LogCaptureFixture):
+         yield
+         assert [(record.levelname, record.message) for record in caplog.get_records("call")] == [
+             ("warning", "The https-proxy option has been deprecated in favor of a single http-proxy option"),
