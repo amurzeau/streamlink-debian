@@ -3,7 +3,7 @@ from getpass import getpass
 from json import dumps
 from typing import Any, Dict, List, Optional, TextIO, Union
 
-from streamlink.plugin.plugin import UserInputRequester
+from streamlink.user_input import UserInputRequester
 from streamlink_cli.utils import JSONEncoder
 
 
@@ -62,8 +62,7 @@ class ConsoleOutput:
             out = []
             for obj in objs:
                 if isinstance(obj, list):
-                    for item in obj:
-                        out.append(item)
+                    out.extend(obj)
                 else:
                     if hasattr(obj, "__json__") and callable(obj.__json__):
                         obj = obj.__json__()

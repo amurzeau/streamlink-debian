@@ -3,7 +3,10 @@ import logging
 import subprocess
 import sys
 import threading
+from functools import lru_cache
+from pathlib import Path
 from shutil import which
+from typing import Optional
 
 from streamlink import StreamError
 from streamlink.compat import devnull
@@ -69,10 +72,35 @@ class MuxedStream(Stream):
 
 
 class FFMPEGMuxer(StreamIO):
-    __commands__ = ['ffmpeg', 'ffmpeg.exe', 'avconv', 'avconv.exe']
+    __commands__ = ["ffmpeg"]
+
     DEFAULT_OUTPUT_FORMAT = "matroska"
     DEFAULT_VIDEO_CODEC = "copy"
     DEFAULT_AUDIO_CODEC = "copy"
+
+    @classmethod
+    def is_usable(cls, session):
+        return cls.command(session) is not None
+
+    @classmethod
+    def command(cls, session):
+        return cls.resolve_command(session.options.get("ffmpeg-ffmpeg"))
+
+    @classmethod
+    @lru_cache(maxsize=128)
+    def resolve_command(cls, command: Optional[str] = None) -> Optional[str]:
+        if command:
+            resolved = which(command)
+        else:
+            resolved = None
+            for cmd in cls.__commands__:
+                resolved = which(cmd)
+                if resolved:
+                    break
+        if not resolved:
+            log.warning("FFmpeg was not found. See the --ffmpeg-ffmpeg option.")
+            log.warning("Muxing streams is unsupported! Only a subset of the available streams can be returned!")
+        return resolved
 
     @staticmethod
     def copy_to_pipe(stream: StreamIO, pipe: NamedPipeBase):
@@ -143,7 +171,7 @@ class FFMPEGMuxer(StreamIO):
         if session.options.get("ffmpeg-verbose"):
             self.errorlog = sys.stderr
         elif session.options.get("ffmpeg-verbose-path"):
-            self.errorlog = open(session.options.get("ffmpeg-verbose-path"), "w")
+            self.errorlog = Path(session.options.get("ffmpeg-verbose-path")).expanduser().open("w")
             self.close_errorlog = True
         else:
             self.errorlog = devnull()
@@ -156,22 +184,8 @@ class FFMPEGMuxer(StreamIO):
 
         return self
 
-    @classmethod
-    def is_usable(cls, session):
-        return cls.command(session) is not None
-
-    @classmethod
-    def command(cls, session):
-        command = []
-        if session.options.get("ffmpeg-ffmpeg"):
-            command.append(session.options.get("ffmpeg-ffmpeg"))
-        for cmd in command or cls.__commands__:
-            if which(cmd):
-                return cmd
-
     def read(self, size=-1):
-        data = self.process.stdout.read(size)
-        return data
+        return self.process.stdout.read(size)
 
     def close(self):
         if self.closed:
@@ -184,11 +198,12 @@ class FFMPEGMuxer(StreamIO):
             self.process.stdout.close()
 
             # close the streams
-            futures = []
             executor = concurrent.futures.ThreadPoolExecutor()
-            for stream in self.streams:
-                if hasattr(stream, "close") and callable(stream.close):
-                    futures.append(executor.submit(stream.close))
+            futures = [
+                executor.submit(stream.close)
+                for stream in self.streams
+                if hasattr(stream, "close") and callable(stream.close)
+            ]
 
             concurrent.futures.wait(futures, return_when=concurrent.futures.ALL_COMPLETED)
             log.debug("Closed all the substreams")

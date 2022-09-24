@@ -6,6 +6,8 @@ from lxml.etree import Element, tostring as etree_tostring
 
 from streamlink.exceptions import PluginError
 from streamlink.plugin.api import validate
+# noinspection PyProtectedMember
+from streamlink.plugin.api.validate._exception import ValidationError
 
 
 def assert_validationerror(exception, expected):
@@ -64,7 +66,7 @@ class TestEquality:
         assert validate.validate("foo", "foo") == "foo"
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate("foo", "bar")
         assert_validationerror(cm.value, """
             ValidationError(equality):
@@ -87,7 +89,7 @@ class TestType:
         assert validate.validate(A, b) is b
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(int, "1")
         assert_validationerror(cm.value, """
             ValidationError(type):
@@ -120,7 +122,7 @@ class TestSequence:
         assert validate.validate([1, 2, 3], []) == []
 
     def test_failure_items(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate([1, 2, 3], [3, 4, 5])
         assert_validationerror(cm.value, """
             ValidationError(AnySchema):
@@ -133,7 +135,7 @@ class TestSequence:
         """)
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate([1, 2, 3], {1, 2, 3})
         assert_validationerror(cm.value, """
             ValidationError(type):
@@ -204,7 +206,7 @@ class TestDict:
         assert validate.validate(schema, value) == expected
 
     def test_failure_key(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate({str: int}, {"foo": 1, 2: 3})
         assert_validationerror(cm.value, """
             ValidationError(dict):
@@ -214,7 +216,7 @@ class TestDict:
         """)
 
     def test_failure_key_value(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate({str: int}, {"foo": "bar"})
         assert_validationerror(cm.value, """
             ValidationError(dict):
@@ -224,7 +226,7 @@ class TestDict:
         """)
 
     def test_failure_notfound(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate({"foo": "bar"}, {"baz": "qux"})
         assert_validationerror(cm.value, """
             ValidationError(dict):
@@ -232,7 +234,7 @@ class TestDict:
         """)
 
     def test_failure_value(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate({"foo": "bar"}, {"foo": 1})
         assert_validationerror(cm.value, """
             ValidationError(dict):
@@ -242,7 +244,7 @@ class TestDict:
         """)
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate({}, 1)
         assert_validationerror(cm.value, """
             ValidationError(type):
@@ -260,11 +262,51 @@ class TestCallable:
         assert validate.validate(self.subject, value) is value
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(self.subject, None)
         assert_validationerror(cm.value, """
             ValidationError(Callable):
               subject(None) is not true
+        """)
+
+
+class TestPattern:
+    @pytest.mark.parametrize("pattern,data,expected", [
+        (r"\s(?P<bar>\S+)\s", "foo bar baz", {"bar": "bar"}),
+        (rb"\s(?P<bar>\S+)\s", b"foo bar baz", {"bar": b"bar"}),
+    ])
+    def test_success(self, pattern, data, expected):
+        result = validate.validate(re.compile(pattern), data)
+        assert type(result) is re.Match
+        assert result.groupdict() == expected
+
+    def test_stringsubclass(self):
+        assert validate.validate(
+            validate.all(
+                validate.xml_xpath_string(".//@bar"),
+                re.compile(r".+"),
+                validate.get(0),
+            ),
+            Element("foo", {"bar": "baz"}),
+        ) == "baz"
+
+    def test_failure(self):
+        assert validate.validate(re.compile(r"foo"), "bar") is None
+
+    def test_failure_type(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(re.compile(r"foo"), b"foo")
+        assert_validationerror(cm.value, """
+            ValidationError(Pattern):
+              cannot use a string pattern on a bytes-like object
+        """)
+
+    def test_failure_schema(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(re.compile(r"foo"), 123)
+        assert_validationerror(cm.value, """
+            ValidationError(Pattern):
+              Type of 123 should be str or bytes, but is int
         """)
 
 
@@ -312,7 +354,7 @@ class TestAllSchema:
         ]
     )
     def test_failure(self, schema, value, error):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(schema, value)
         assert_validationerror(cm.value, error)
 
@@ -343,7 +385,7 @@ class TestAnySchema:
         assert validate.validate(schema, value) is value
 
     def test_failure(self, schema):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(schema, None)
         assert_validationerror(cm.value, """
             ValidationError(AnySchema):
@@ -353,6 +395,123 @@ class TestAnySchema:
                 Type of None should be str, but is NoneType
               ValidationError(Callable):
                 <lambda>(None) is not true
+        """)
+
+
+class TestNoneOrAllSchema:
+    @pytest.mark.parametrize("data,expected", [("foo", "FOO"), ("bar", None)])
+    def test_success(self, data, expected):
+        assert validate.validate(
+            validate.Schema(
+                re.compile(r"foo"),
+                validate.none_or_all(
+                    validate.get(0),
+                    validate.transform(str.upper),
+                ),
+            ),
+            data,
+        ) == expected
+
+    def test_failure(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.none_or_all(str, int), "foo")
+        assert_validationerror(cm.value, """
+            ValidationError(NoneOrAllSchema):
+              ValidationError(type):
+                Type of 'foo' should be int, but is str
+        """)
+
+
+class TestListSchema:
+    def test_success(self):
+        data = [1, 3.14, "foo"]
+        result = validate.validate(validate.list(int, float, "foo"), data)
+        assert result is not data
+        assert result == [1, 3.14, "foo"]
+        assert type(result) is type(data)
+        assert len(result) == len(data)
+
+    @pytest.mark.parametrize("data", [[1, "foo"], [1.2, "foo"], [1, "bar"], [1.2, "bar"]])
+    def test_success_subschemas(self, data):
+        schema = validate.list(
+            validate.any(int, float),
+            validate.all(validate.any("foo", "bar"), validate.transform(str.upper)),
+        )
+        result = validate.validate(schema, data)
+        assert result is not data
+        assert result[0] is data[0]
+        assert result[1] is not data[1]
+        assert result[1].isupper()
+
+    def test_failure(self):
+        data = [1, 3.14, "foo"]
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.list("foo", int, float), data)
+        assert_validationerror(cm.value, """
+            ValidationError(ListSchema):
+              ValidationError(equality):
+                1 does not equal 'foo'
+              ValidationError(type):
+                Type of 3.14 should be int, but is float
+              ValidationError(type):
+                Type of 'foo' should be float, but is str
+        """)
+
+    def test_failure_type(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.list(), {})
+        assert_validationerror(cm.value, """
+            ValidationError(ListSchema):
+              Type of {} should be list, but is dict
+        """)
+
+    def test_failure_length(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.list("foo", "bar", "baz"), ["foo", "bar"])
+        assert_validationerror(cm.value, """
+            ValidationError(ListSchema):
+              Length of list (2) does not match expectation (3)
+        """)
+
+
+class TestRegexSchema:
+    @pytest.mark.parametrize("pattern,data,expected", [
+        (r"\s(?P<bar>\S+)\s", "foo bar baz", {"bar": "bar"}),
+        (rb"\s(?P<bar>\S+)\s", b"foo bar baz", {"bar": b"bar"}),
+    ])
+    def test_success(self, pattern, data, expected):
+        result = validate.validate(validate.regex(re.compile(pattern)), data)
+        assert type(result) is re.Match
+        assert result.groupdict() == expected
+
+    def test_findall(self):
+        assert validate.validate(validate.regex(re.compile(r"\w+"), "findall"), "foo bar baz") == ["foo", "bar", "baz"]
+
+    def test_split(self):
+        assert validate.validate(validate.regex(re.compile(r"\s+"), "split"), "foo bar baz") == ["foo", "bar", "baz"]
+
+    def test_failure(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.regex(re.compile(r"foo")), "bar")
+        assert_validationerror(cm.value, """
+            ValidationError(RegexSchema):
+              Pattern 'foo' did not match 'bar'
+        """)
+
+    def test_failure_type(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.regex(re.compile(r"foo")), b"foo")
+        assert_validationerror(cm.value, """
+            ValidationError(RegexSchema):
+              cannot use a string pattern on a bytes-like object
+        """)
+
+    def test_failure_schema(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.regex(re.compile(r"foo")), 123)
+        assert_validationerror(cm.value, """
+            ValidationError(RegexSchema):
+              Type of 123 should be str or bytes, but is int
         """)
 
 
@@ -378,7 +537,7 @@ class TestTransformSchema:
         assert str(cm.value).endswith("takes 0 positional arguments but 1 was given")
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             # noinspection PyTypeChecker
             validate.validate(
                 validate.transform("not a callable"),
@@ -430,7 +589,7 @@ class TestGetItemSchema:
     @pytest.mark.parametrize("exception", [TypeError, AttributeError])
     def test_getitem_error(self, exception):
         container = self.Container(exception("failure"))
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.get("foo", default="default"), container)
         assert_validationerror(cm.value, """
             ValidationError(GetItemSchema):
@@ -449,7 +608,7 @@ class TestGetItemSchema:
 
     def test_nested_failure(self):
         dictionary = {"foo": {"bar": {"baz": "qux"}}}
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.get(("foo", "qux", "baz"), default="default"), dictionary)
         assert_validationerror(cm.value, """
             ValidationError(GetItemSchema):
@@ -489,7 +648,7 @@ class TestAttrSchema:
         assert newobj.bar is obj.bar
 
     def test_failure_missing(self, obj):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.attr({"missing": int}), obj)
         assert_validationerror(cm.value, """
             ValidationError(AttrSchema):
@@ -497,7 +656,7 @@ class TestAttrSchema:
         """)
 
     def test_failure_subschema(self, obj):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.attr({"foo": str}), obj)
         assert_validationerror(cm.value, """
             ValidationError(AttrSchema):
@@ -620,12 +779,12 @@ class TestXmlElementSchema:
         ]
     )
     def test_failure(self, element, schema, error):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(schema, element)
         assert_validationerror(cm.value, error)
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.xml_element(), "not-an-element")
         assert_validationerror(cm.value, """
             ValidationError(Callable):
@@ -668,7 +827,7 @@ class TestUnionSchema:
         assert validate.validate(schema, "value") == {"foo": "value", "bar": "VALUE"}
 
     def test_dict_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.union({"foo": int}), "value")
         assert_validationerror(cm.value, """
             ValidationError(UnionSchema):
@@ -699,7 +858,7 @@ class TestUnionSchema:
         assert result == expected
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.union(None), None)
         assert_validationerror(cm.value, """
             ValidationError(UnionSchema):
@@ -722,7 +881,7 @@ class TestLengthValidator:
         [(3, "foo"), (3, [1, 2, 3])]
     )
     def test_failure(self, minlength, value):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.length(minlength + 1), value)
         assert_validationerror(cm.value, """
             ValidationError(length):
@@ -735,7 +894,7 @@ class TestStartsWithValidator:
         assert validate.validate(validate.startswith("foo"), "foo bar baz")
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.startswith("invalid"), "foo bar baz")
         assert_validationerror(cm.value, """
             ValidationError(startswith):
@@ -743,7 +902,7 @@ class TestStartsWithValidator:
         """)
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.startswith("invalid"), 1)
         assert_validationerror(cm.value, """
             ValidationError(type):
@@ -756,7 +915,7 @@ class TestEndsWithValidator:
         assert validate.validate(validate.endswith("baz"), "foo bar baz")
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.endswith("invalid"), "foo bar baz")
         assert_validationerror(cm.value, """
             ValidationError(endswith):
@@ -764,7 +923,7 @@ class TestEndsWithValidator:
         """)
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.endswith("invalid"), 1)
         assert_validationerror(cm.value, """
             ValidationError(type):
@@ -777,7 +936,7 @@ class TestContainsValidator:
         assert validate.validate(validate.contains("bar"), "foo bar baz")
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.contains("invalid"), "foo bar baz")
         assert_validationerror(cm.value, """
             ValidationError(contains):
@@ -785,7 +944,7 @@ class TestContainsValidator:
         """)
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.contains("invalid"), 1)
         assert_validationerror(cm.value, """
             ValidationError(type):
@@ -815,7 +974,7 @@ class TestUrlValidator:
         assert validate.validate(validate.url(**params), self.url)
 
     def test_failure_valid_url(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.url(), "foo")
         assert_validationerror(cm.value, """
             ValidationError(url):
@@ -823,7 +982,7 @@ class TestUrlValidator:
         """)
 
     def test_failure_url_attribute(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.url(invalid=str), self.url)
         assert_validationerror(cm.value, """
             ValidationError(url):
@@ -831,7 +990,7 @@ class TestUrlValidator:
         """)
 
     def test_failure_subschema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.url(hostname="invalid"), self.url)
         assert_validationerror(cm.value, """
             ValidationError(url):
@@ -841,7 +1000,7 @@ class TestUrlValidator:
         """)
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.url(), 1)
         assert_validationerror(cm.value, """
             ValidationError(type):
@@ -879,7 +1038,7 @@ class TestHasAttrValidator:
         assert validate.validate(validate.hasattr("foo"), self.Subject())
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.hasattr("bar"), self.Subject())
         assert_validationerror(cm.value, """
             ValidationError(Callable):
@@ -916,28 +1075,44 @@ class TestXmlFindValidator:
         element = Element("foo")
         assert validate.validate(validate.xml_find("."), element) is element
 
+    def test_namespaces(self):
+        root = Element("root")
+        child = Element("{http://a}foo")
+        root.append(child)
+        assert validate.validate(validate.xml_find("./a:foo", namespaces={"a": "http://a"}), root) is child
+
     def test_failure_no_element(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.xml_find("*"), Element("foo"))
         assert_validationerror(cm.value, """
             ValidationError(xml_find):
-              XPath '*' did not return an element
+              ElementPath query '*' did not return an element
         """)
 
     def test_failure_not_found(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.xml_find("invalid"), Element("foo"))
         assert_validationerror(cm.value, """
             ValidationError(xml_find):
-              XPath 'invalid' did not return an element
+              ElementPath query 'invalid' did not return an element
         """)
 
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.xml_find("."), "not-an-element")
         assert_validationerror(cm.value, """
             ValidationError(Callable):
               iselement('not-an-element') is not true
+        """)
+
+    def test_failure_syntax(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.xml_find("["), Element("foo"))
+        assert_validationerror(cm.value, """
+            ValidationError(xml_find):
+              ElementPath syntax error: '['
+              Context:
+                invalid path
         """)
 
 
@@ -956,8 +1131,14 @@ class TestXmlFindallValidator:
     def test_empty(self, element):
         assert validate.validate(validate.xml_findall("missing"), element) == []
 
+    def test_namespaces(self):
+        root = Element("root")
+        for child in Element("{http://a}foo"), Element("{http://unknown}bar"), Element("{http://a}baz"):
+            root.append(child)
+        assert validate.validate(validate.xml_findall("./a:*", namespaces={"a": "http://a"}), root) == [root[0], root[2]]
+
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.xml_findall("*"), "not-an-element")
         assert_validationerror(cm.value, """
             ValidationError(Callable):
@@ -975,8 +1156,15 @@ class TestXmlFindtextValidator:
         element = Element("foo")
         assert validate.validate(validate.xml_findtext("."), element) is None
 
+    def test_namespaces(self):
+        root = Element("root")
+        child = Element("{http://a}foo")
+        child.text = "bar"
+        root.append(child)
+        assert validate.validate(validate.xml_findtext("./a:foo", namespaces={"a": "http://a"}), root) == "bar"
+
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.xml_findtext("."), "not-an-element")
         assert_validationerror(cm.value, """
             ValidationError(Callable):
@@ -1004,12 +1192,43 @@ class TestXmlXpathValidator:
     def test_other(self, element):
         assert validate.validate(validate.xml_xpath("local-name(.)"), element) == "root"
 
+    def test_namespaces(self):
+        nsmap = {"a": "http://a", "b": "http://b"}
+        root = Element("root", nsmap=nsmap)
+        for child in Element("{http://a}child"), Element("{http://b}child"):
+            root.append(child)
+        assert validate.validate(validate.xml_xpath("./b:child", namespaces=nsmap), root)[0] is root[1]
+
+    def test_extensions(self, element):
+        def foo(context, a, b):
+            return int(context.context_node.attrib.get("val")) + a + b
+
+        element = Element("root", attrib={"val": "3"})
+        assert validate.validate(validate.xml_xpath("foo(5, 7)", extensions={(None, "foo"): foo}), element) == 15.0
+
+    def test_smart_strings(self, element):
+        assert validate.validate(validate.xml_xpath("*/text()"), element)[0].getparent().tag == "foo"
+        assert not hasattr(validate.validate(validate.xml_xpath("*/text()", smart_strings=False), element)[0], "getparent")
+
+    def test_variables(self, element):
+        assert validate.validate(validate.xml_xpath("*[local-name() = $name]/text()", name="foo"), element) == ["FOO"]
+
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.xml_xpath("."), "not-an-element")
         assert_validationerror(cm.value, """
             ValidationError(Callable):
               iselement('not-an-element') is not true
+        """)
+
+    def test_failure_evaluation(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.xml_xpath("?"), Element("root"))
+        assert_validationerror(cm.value, """
+            ValidationError(xml_xpath):
+              XPath evaluation error: '?'
+              Context:
+                Invalid expression
         """)
 
 
@@ -1029,8 +1248,11 @@ class TestXmlXpathStringValidator:
     def test_empty(self, element):
         assert validate.validate(validate.xml_xpath_string("./text()"), element) is None
 
+    def test_smart_strings(self, element):
+        assert not hasattr(validate.validate(validate.xml_xpath_string("./foo/text()"), element)[0], "getparent")
+
     def test_failure_schema(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.xml_xpath_string("."), "not-an-element")
         assert_validationerror(cm.value, """
             ValidationError(Callable):
@@ -1046,7 +1268,7 @@ class TestParseJsonValidator:
         ) == {"a": ["b", True, False, None, 1, 2.3]}
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.parse_json(), "invalid")
         assert_validationerror(cm.value, """
             ValidationError:
@@ -1062,7 +1284,7 @@ class TestParseHtmlValidator:
         ).tag == "html"
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.parse_html(), None)
         assert_validationerror(cm.value, """
             ValidationError:
@@ -1078,7 +1300,7 @@ class TestParseXmlValidator:
         ).tag == "root"
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.parse_xml(), None)
         assert_validationerror(cm.value, """
             ValidationError:
@@ -1094,7 +1316,7 @@ class TestParseQsdValidator:
         ) == {"foo": "baz", "qux": "quux"}
 
     def test_failure(self):
-        with pytest.raises(validate.ValidationError) as cm:
+        with pytest.raises(ValidationError) as cm:
             validate.validate(validate.parse_qsd(), 123)
         assert_validationerror(cm.value, """
             ValidationError:
@@ -1104,20 +1326,20 @@ class TestParseQsdValidator:
 
 class TestValidationError:
     def test_subclass(self):
-        assert issubclass(validate.ValidationError, ValueError)
+        assert issubclass(ValidationError, ValueError)
 
     def test_empty(self):
-        assert str(validate.ValidationError()) == "ValidationError:"
-        assert str(validate.ValidationError("")) == "ValidationError:"
-        assert str(validate.ValidationError(validate.ValidationError())) == "ValidationError:\n  ValidationError:"
-        assert str(validate.ValidationError(validate.ValidationError(""))) == "ValidationError:\n  ValidationError:"
+        assert str(ValidationError()) == "ValidationError:"
+        assert str(ValidationError("")) == "ValidationError:"
+        assert str(ValidationError(ValidationError())) == "ValidationError:\n  ValidationError:"
+        assert str(ValidationError(ValidationError(""))) == "ValidationError:\n  ValidationError:"
 
     def test_single(self):
-        assert str(validate.ValidationError("foo")) == "ValidationError:\n  foo"
-        assert str(validate.ValidationError(ValueError("bar"))) == "ValidationError:\n  bar"
+        assert str(ValidationError("foo")) == "ValidationError:\n  foo"
+        assert str(ValidationError(ValueError("bar"))) == "ValidationError:\n  bar"
 
     def test_single_nested(self):
-        err = validate.ValidationError(validate.ValidationError("baz"))
+        err = ValidationError(ValidationError("baz"))
         assert_validationerror(err, """
             ValidationError:
               ValidationError:
@@ -1125,11 +1347,11 @@ class TestValidationError:
         """)
 
     def test_multiple_nested(self):
-        err = validate.ValidationError(
+        err = ValidationError(
             "a",
-            validate.ValidationError("b", "c"),
+            ValidationError("b", "c"),
             "d",
-            validate.ValidationError("e"),
+            ValidationError("e"),
             "f",
         )
         assert_validationerror(err, """
@@ -1145,16 +1367,12 @@ class TestValidationError:
         """)
 
     def test_context(self):
-        err = validate.ValidationError(
-            "a",
-            context=validate.ValidationError(
-                "b",
-                context=validate.ValidationError(
-                    "c",
-                )
-            )
-        )
-        assert_validationerror(err, """
+        errA = ValidationError("a")
+        errB = ValidationError("b")
+        errC = ValidationError("c")
+        errA.__cause__ = errB
+        errB.__cause__ = errC
+        assert_validationerror(errA, """
             ValidationError:
               a
               Context:
@@ -1164,22 +1382,18 @@ class TestValidationError:
         """)
 
     def test_multiple_nested_context(self):
-        err = validate.ValidationError(
-            "a",
-            "b",
-            context=validate.ValidationError(
-                validate.ValidationError(
-                    "c",
-                    context=validate.ValidationError("d", "e")
-                ),
-                validate.ValidationError(
-                    "f",
-                    context=validate.ValidationError("g")
-                ),
-                context=validate.ValidationError("h", "i")
-            )
-        )
-        assert_validationerror(err, """
+        errAB = ValidationError("a", "b")
+        errC = ValidationError("c")
+        errDE = ValidationError("d", "e")
+        errF = ValidationError("f")
+        errG = ValidationError("g")
+        errHI = ValidationError("h", "i")
+        errCF = ValidationError(errC, errF)
+        errAB.__cause__ = errCF
+        errC.__cause__ = errDE
+        errF.__cause__ = errG
+        errCF.__cause__ = errHI
+        assert_validationerror(errAB, """
             ValidationError:
               a
               b
@@ -1199,12 +1413,12 @@ class TestValidationError:
         """)
 
     def test_schema(self):
-        err = validate.ValidationError(
-            validate.ValidationError(
+        err = ValidationError(
+            ValidationError(
                 "foo",
                 schema=dict
             ),
-            validate.ValidationError(
+            ValidationError(
                 "bar",
                 schema="something"
             ),
@@ -1219,9 +1433,10 @@ class TestValidationError:
         """)
 
     def test_recursion(self):
-        err1 = validate.ValidationError("foo")
-        err2 = validate.ValidationError("bar", context=err1)
-        err1.context = err2
+        err1 = ValidationError("foo")
+        err2 = ValidationError("bar")
+        err2.__cause__ = err1
+        err1.__cause__ = err2
         assert_validationerror(err1, """
             ValidationError:
               foo
@@ -1232,7 +1447,7 @@ class TestValidationError:
         """)
 
     def test_truncate(self):
-        err = validate.ValidationError(
+        err = ValidationError(
             "foo {foo} bar {bar} baz",
             foo="Some really long error message that exceeds the maximum error message length",
             bar=repr("Some really long error message that exceeds the maximum error message length"),

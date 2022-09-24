@@ -1,6 +1,6 @@
 """
 $description United Arab Emirates CDN hosting live content for various websites in The Middle East.
-$url cnbcarabia.com
+$url alwasat.ly
 $url media.gov.kw
 $url rotana.net
 $type live
@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 @pluginmatcher(re.compile(r"""
     https?://(?:www\.)?
     (
-        cnbcarabia\.com
+        alwasat\.ly
     |
         media\.gov\.kw
     |
@@ -30,8 +30,6 @@ log = logging.getLogger(__name__)
 """, re.VERBOSE))
 class HiPlayer(Plugin):
     DAI_URL = "https://pubads.g.doubleclick.net/ssai/event/{0}/streams"
-    js_url_re = re.compile(r"""['"](https://hiplayer.hibridcdn.net/l/[^'"]+)['"]""")
-    base64_data_re = re.compile(r"i\s*=\s*\[(.*)\]\.join")
 
     def _get_streams(self):
         js_url = self.session.http.get(
@@ -39,11 +37,11 @@ class HiPlayer(Plugin):
             schema=validate.Schema(
                 validate.parse_html(),
                 validate.xml_xpath_string(".//script[contains(text(), 'https://hiplayer.hibridcdn.net/l/')]/text()"),
-                validate.any(
-                    None,
-                    validate.all(
-                        validate.transform(self.js_url_re.search),
-                        validate.any(None, validate.all(validate.get(1), validate.url())),
+                validate.none_or_all(
+                    re.compile(r"""(?P<q>['"])(?P<url>https://hiplayer.hibridcdn.net/l/.+?)(?P=q)"""),
+                    validate.none_or_all(
+                        validate.get("url"),
+                        validate.url(),
                     ),
                 ),
             ),
@@ -57,23 +55,20 @@ class HiPlayer(Plugin):
         data = self.session.http.get(
             js_url,
             schema=validate.Schema(
-                validate.transform(self.base64_data_re.search),
-                validate.any(
-                    None,
-                    validate.all(
-                        validate.get(1),
-                        validate.transform(lambda s: re.sub(r"['\", ]", "", s)),
-                        validate.transform(lambda s: base64.b64decode(s)),
-                        validate.parse_json(),
-                        validate.any(
-                            None,
-                            {
-                                "daiEnabled": bool,
-                                "daiAssetKey": str,
-                                "daiApiKey": str,
-                                "streamUrl": validate.any(validate.url(), ""),
-                            },
-                        ),
+                re.compile(r"i\s*=\s*\[(.*)]\.join"),
+                validate.none_or_all(
+                    validate.get(1),
+                    validate.transform(lambda s: re.sub(r"['\", ]", "", s)),
+                    validate.transform(lambda s: base64.b64decode(s)),
+                    validate.parse_json(),
+                    validate.any(
+                        None,
+                        {
+                            "daiEnabled": bool,
+                            "daiAssetKey": str,
+                            "daiApiKey": str,
+                            "streamUrl": validate.any(validate.url(), ""),
+                        },
                     ),
                 ),
             ),

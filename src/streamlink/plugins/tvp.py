@@ -33,8 +33,7 @@ class TVP(Plugin):
 
         video_id = m.group('video_id')
         log.debug('Found video id: {0}'.format(video_id))
-        p_url = self.player_url.format(video_id)
-        return p_url
+        return self.player_url.format(video_id)
 
     def _get_streams(self):
         embed_url = self.get_embed_url()
@@ -47,8 +46,8 @@ class TVP(Plugin):
         for url in m:
             log.debug('URL={0}'.format(url))
             if url.endswith('.m3u8'):
-                for s in HLSStream.parse_variant_playlist(self.session, url, name_fmt='{pixels}_{bitrate}').items():
-                    streams.append(s)
+                streams.extend(HLSStream.parse_variant_playlist(self.session, url, name_fmt="{pixels}_{bitrate}").items())
+
             elif url.endswith('.mp4'):
                 streams.append(('vod', HTTPStream(self.session, url)))
 

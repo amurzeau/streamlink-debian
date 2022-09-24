@@ -172,8 +172,8 @@ class Filmon(Plugin):
 
     TIME_CHANNEL = 60 * 60 * 24 * 365
 
-    def __init__(self, url):
-        super().__init__(url)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         parsed = urlparse(self.url)
         if parsed.path.startswith("/channel/"):
             self.url = urlunparse(parsed._replace(path=parsed.path.replace("/channel/", "/tv/")))
@@ -221,7 +221,7 @@ class Filmon(Plugin):
                     log.debug(f"Found cached channel ID: {_id}")
                 else:
                     _id = self.session.http.get(self.url, schema=validate.Schema(
-                        validate.transform(re.compile(r"""channel_id\s*=\s*(?P<q>['"]?)(?P<value>\d+)(?P=q)""").search),
+                        re.compile(r"""channel_id\s*=\s*(?P<q>['"]?)(?P<value>\d+)(?P=q)"""),
                         validate.any(None, validate.get("value")),
                     ))
                     log.debug(f"Found channel ID: {_id}")

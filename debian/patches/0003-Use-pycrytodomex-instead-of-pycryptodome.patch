@@ -25,10 +25,10 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  10 files changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/setup.cfg b/setup.cfg
-index ed9bb5c..0a1a2cc 100644
+index c6a3b30..6864633 100644
 --- a/setup.cfg
 +++ b/setup.cfg
-@@ -42,7 +42,7 @@ install_requires =
+@@ -43,7 +43,7 @@ install_requires =
  	isodate
  	lxml >=4.6.4,<5.0
  	pycountry
@@ -51,7 +51,7 @@ index ba66416..406d94c 100644
  requests<3.0,>=2.26.0
  websocket-client<2.0,>=1.2.1
 diff --git a/src/streamlink/plugins/abematv.py b/src/streamlink/plugins/abematv.py
-index ad8b153..428e24a 100644
+index 6881b44..f8d423f 100644
 --- a/src/streamlink/plugins/abematv.py
 +++ b/src/streamlink/plugins/abematv.py
 @@ -15,7 +15,7 @@ import uuid
@@ -64,7 +64,7 @@ index ad8b153..428e24a 100644
  from requests.adapters import BaseAdapter
  
 diff --git a/src/streamlink/plugins/mjunoon.py b/src/streamlink/plugins/mjunoon.py
-index 5fceafa..318bfa1 100644
+index e1a81c2..a364a42 100644
 --- a/src/streamlink/plugins/mjunoon.py
 +++ b/src/streamlink/plugins/mjunoon.py
 @@ -10,8 +10,8 @@ import logging
@@ -79,7 +79,7 @@ index 5fceafa..318bfa1 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/plugins/steam.py b/src/streamlink/plugins/steam.py
-index 2133fe5..71f842d 100644
+index 6768dc8..7db007b 100644
 --- a/src/streamlink/plugins/steam.py
 +++ b/src/streamlink/plugins/steam.py
 @@ -11,8 +11,8 @@ import logging
@@ -92,9 +92,9 @@ index 2133fe5..71f842d 100644
 +from Cryptodome.PublicKey import RSA
  
  from streamlink.exceptions import FatalPluginError
- from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
+ from streamlink.plugin import Plugin, pluginargument, pluginmatcher
 diff --git a/src/streamlink/plugins/ustvnow.py b/src/streamlink/plugins/ustvnow.py
-index 6d34aa7..f95c8df 100644
+index 01cad3f..22f751e 100644
 --- a/src/streamlink/plugins/ustvnow.py
 +++ b/src/streamlink/plugins/ustvnow.py
 @@ -12,9 +12,9 @@ import re
@@ -108,7 +108,7 @@ index 6d34aa7..f95c8df 100644
 +from Cryptodome.Hash import SHA256
 +from Cryptodome.Util.Padding import pad, unpad
  
- from streamlink.plugin import Plugin, PluginArgument, PluginArguments, PluginError, pluginmatcher
+ from streamlink.plugin import Plugin, PluginError, pluginargument, pluginmatcher
  from streamlink.stream.hls import HLSStream
 diff --git a/src/streamlink/plugins/webtv.py b/src/streamlink/plugins/webtv.py
 index c8cf2b2..712e447 100644
@@ -124,7 +124,7 @@ index c8cf2b2..712e447 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index 22e9b91..6842b10 100644
+index d44f73f..b7b93aa 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -7,9 +7,9 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
@@ -152,7 +152,7 @@ index abc3901..a71203f 100644
  
  def evp_bytestokey(password, salt, key_len, iv_len):
 diff --git a/tests/stream/test_hls.py b/tests/stream/test_hls.py
-index c58792a..4e429c6 100644
+index aab5e47..03e6004 100644
 --- a/tests/stream/test_hls.py
 +++ b/tests/stream/test_hls.py
 @@ -6,8 +6,8 @@ from unittest.mock import Mock, call, patch

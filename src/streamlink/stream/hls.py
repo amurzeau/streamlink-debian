@@ -63,6 +63,9 @@ class ByteRangeOffset:
 class HLSStreamWriter(SegmentedStreamWriter):
     WRITE_CHUNK_SIZE = 8192
 
+    reader: "HLSStreamReader"
+    stream: "HLSStream"
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         options = self.session.options
@@ -74,7 +77,7 @@ class HLSStreamWriter(SegmentedStreamWriter):
         self.key_uri_override = options.get("hls-segment-key-uri")
         self.stream_data = options.get("hls-segment-stream-data")
 
-        self.ignore_names = False
+        self.ignore_names = None
         ignore_names = {*options.get("hls-segment-ignore-names")}
         if ignore_names:
             segments = "|".join(map(re.escape, ignore_names))
@@ -258,9 +261,12 @@ class HLSStreamWriter(SegmentedStreamWriter):
 
 
 class HLSStreamWorker(SegmentedStreamWorker):
+    reader: "HLSStreamReader"
+    writer: "HLSStreamWriter"
+    stream: "HLSStream"
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.stream = self.reader.stream
 
         self.playlist_changed = False
         self.playlist_end: Optional[int] = None
@@ -328,13 +334,13 @@ class HLSStreamWorker(SegmentedStreamWorker):
         if self.playlist_reload_time_override == "segment" and sequences:
             return sequences[-1].segment.duration
         if self.playlist_reload_time_override == "live-edge" and sequences:
-            return sum([s.segment.duration for s in sequences[-max(1, self.live_edge - 1):]])
+            return sum(s.segment.duration for s in sequences[-max(1, self.live_edge - 1):])
         if type(self.playlist_reload_time_override) is float and self.playlist_reload_time_override > 0:
             return self.playlist_reload_time_override
         if playlist.target_duration:
             return playlist.target_duration
         if sequences:
-            return sum([s.segment.duration for s in sequences[-max(1, self.live_edge - 1):]])
+            return sum(s.segment.duration for s in sequences[-max(1, self.live_edge - 1):])
 
         return self.playlist_reload_time
 
@@ -433,7 +439,11 @@ class HLSStreamReader(SegmentedStreamReader):
     __worker__ = HLSStreamWorker
     __writer__ = HLSStreamWriter
 
-    def __init__(self, stream):
+    worker: "HLSStreamWorker"
+    writer: "HLSStreamWriter"
+    stream: "HLSStream"
+
+    def __init__(self, stream: "HLSStream"):
         self.request_params = dict(stream.args)
         # These params are reserved for internal use
         self.request_params.pop("exception", None)
@@ -502,8 +512,7 @@ class MuxedHLSStream(MuxedStream):
                 tracks.extend(audio)
             else:
                 tracks.append(audio)
-        for i in range(1, len(tracks)):
-            maps.append("{0}:a".format(i))
+        maps.extend(f"{i}:a" for i in range(1, len(tracks)))
         substreams = map(lambda url: HLSStream(session, url, force_restart=force_restart, **args), tracks)
         ffmpeg_options = ffmpeg_options or {}
 

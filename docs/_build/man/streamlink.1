@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Jul 09, 2022" "4.2.0" "Streamlink"
+.TH "STREAMLINK" "1" "Sep 22, 2022" "5.0.1" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -56,7 +56,7 @@ streamlink \-\-twitch\-low\-latency \-p mpv \-a \(aq\-\-cache=yes \-\-demuxer\-m
 .B URL
 A URL to attempt to extract streams from.
 .sp
-Usually, the protocol of http(s) URLs can be omitted (\(dq\fI\%https://\fP\(dq),
+Usually, the protocol of http(s) URLs can be omitted (\fBhttps://\fP),
 depending on the implementation of the plugin being used.
 .sp
 Alternatively, the URL can also be specified by using the \fI\%\-\-url\fP option.
@@ -116,7 +116,7 @@ Multiple directories can be used by separating them with a comma.
 .B \-\-can\-handle\-url URL
 Check if Streamlink has a plugin that can handle the specified URL.
 .sp
-Returns status code 1 for false and 0 for true.
+Returns status code \fB1\fP for false and \fB0\fP for true.
 .sp
 Useful for external scripting.
 .UNINDENT
@@ -141,16 +141,16 @@ merged on top of each other where the last config has highest priority.
 .B \-\-loglevel LEVEL
 Set the log message threshold.
 .sp
-Valid levels are: none, error, warning, info, debug, trace
+Valid levels are: \fBnone\fP, \fBerror\fP, \fBwarning\fP, \fBinfo\fP, \fBdebug\fP, \fBtrace\fP
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-logfile FILE
-Append log output to FILE instead of writing to stdout/stderr.
+Append log output to \fBFILE\fP instead of writing to stdout/stderr.
 .sp
-User prompts and download progress won\(aqt be written to FILE.
+User prompts and download progress won\(aqt be written to \fBFILE\fP\&.
 .sp
-A value of \fB\-\fP will set the file name to an ISO8601\-like string
+A value of \fB\-\fP (dash) will set the file name to an ISO8601\-like string
 and will choose the following default log directories.
 .sp
 Windows:
@@ -196,7 +196,7 @@ ${XDG_STATE_HOME:\-${HOME}/.local/state}/streamlink/logs
 .B \-\-quiet
 Hide all log output.
 .sp
-Alias for \(dq\-\-loglevel none\(dq.
+Alias for \fB\-\-loglevel none\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -225,8 +225,8 @@ Runs a version check and exits.
 The preferred locale setting, for selecting the preferred subtitle and
 audio language.
 .sp
-The locale is formatted as [language_code]_[country_code], eg. en_US or
-es_ES.
+The locale is formatted as \fB[language_code]_[country_code]\fP, eg. \fBen_US\fP or
+\fBes_ES\fP\&.
 .sp
 Default is: \fBsystem locale\fP\&.
 .UNINDENT
@@ -240,14 +240,14 @@ Set the network interface.
 .B \-4
 .TP
 .B \-\-ipv4
-Resolve address names to IPv4 only. This option overrides \fI\%\-6\fP\&.
+Resolve address names to IPv4 only. This option overrides \fI\%\-\-ipv6\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-6
 .TP
 .B \-\-ipv6
-Resolve address names to IPv6 only. This option overrides \fI\%\-4\fP\&.
+Resolve address names to IPv6 only. This option overrides \fI\%\-\-ipv4\fP\&.
 .UNINDENT
 .SH PLAYER OPTIONS
 .INDENT 0.0
@@ -326,15 +326,15 @@ to add arguments after the player\(aqs input argument or if you don\(aqt want
 any of the player arguments to be logged.
 .sp
 The value can contain formatting variables surrounded by curly braces,
-{ and }. If you need to include a brace character, it can be escaped
-by doubling, e.g. {{ and }}.
+\fB{\fP and \fB}\fP\&. If you need to include a brace character, it can be escaped
+by doubling, e.g. \fB{{\fP and \fB}}\fP\&.
 .sp
 Formatting variables available:
 .INDENT 7.0
 .TP
 .B {playerinput}
 This is the input that the player will use. For standard input (stdin),
-it is \fB\-\fP, but it can also be a URL, depending on the options used.
+it is \fB\-\fP (dash), but it can also be a URL, depending on the options used.
 .TP
 .B {filename}
 The old fallback variable name with the same functionality.
@@ -400,18 +400,33 @@ Serve stream data through HTTP without running any player. This is
 useful to allow external devices like smartphones or streaming boxes to
 watch streams they wouldn\(aqt be able to otherwise.
 .sp
-Behavior will be similar to the continuous HTTP option, but no player
-program will be started, and the server will listen on all available
+The default behavior is similar to the \fI\%\-\-player\-continuous\-http\fP option,
+but no player program will be started, and the server will listen on all available
 connections instead of just in the local (loopback) interface.
+.sp
+Optionally, the \fI\%\-\-player\-external\-http\-continuous\fP option allows for disabling
+the continuous run\-mode, so that Streamlink will stop when the stream ends.
 .sp
 The URLs that can be used to access the stream will be printed to the
 console, and the server can be interrupted using CTRL\-C.
 .UNINDENT
 .INDENT 0.0
 .TP
+.B \-\-player\-external\-http\-continuous {yes,true,1,on,no,false,0,off}
+Set the run\-mode of \fI\%\-\-player\-external\-http\fP to continuous or non\-continuous.
+.sp
+In the continuous run\-mode, Streamlink will keep running after the stream has ended
+and will wait for the next HTTP request being made unless it gets shut down via CTRL\-C.
+.sp
+If set to non\-continuous, Streamlink will stop once the stream has ended.
+.sp
+Default is: \fBtrue\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B \-\-player\-external\-http\-port PORT
 A fixed port to use for the external HTTP server if that mode is
-enabled. Omit or set to 0 to use a random high ( >1024) port.
+enabled. Omit or set to \fB0\fP to use a random high ( >1024) port.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -457,11 +472,11 @@ This option is only supported for the following players: mpv, potplayer, vlc
 VLC does support special formatting variables on its own:
 \fI\%https://wiki.videolan.org/Documentation:Format_String/\fP
 .sp
-These variables are accessible in the \-\-title option by adding a backslash
+These variables are accessible in the \fI\%\-\-title\fP option by adding a backslash
 in front of the dollar sign which VLC uses as its formatting character.
 .sp
 For example, to put the current date in your VLC window title,
-the string \(dq\e$A\(dq could be inserted inside the \-\-title string.
+the string \fB\e$A\fP could be inserted inside the \fI\%\-\-title\fP string.
 .UNINDENT
 .sp
 Example:
@@ -482,7 +497,7 @@ streamlink \-p mpv \-\-title \(dq{author} \- {category} \- {title}\(dq <URL> [ST
 .B \-o FILENAME
 .TP
 .B \-\-output FILENAME
-Write stream data to FILENAME instead of playing it. If FILENAME is set to \- (dash), then the stream data will be
+Write stream data to \fBFILENAME\fP instead of playing it. If \fBFILENAME\fP is set to \fB\-\fP (dash), then the stream data will be
 written to stdout, similar to the \fI\%\-\-stdout\fP argument.
 .sp
 Non\-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
@@ -530,8 +545,8 @@ Write stream data to stdout instead of playing it.
 .B \-r FILENAME
 .TP
 .B \-\-record FILENAME
-Open the stream in the player, while at the same time writing it to FILENAME. If FILENAME is set to \- (dash), then the
-stream data will be written to stdout, similar to the \fI\%\-\-stdout\fP argument, while still opening the player.
+Open the stream in the player, while at the same time writing it to \fBFILENAME\fP\&. If \fBFILENAME\fP is set to \fB\-\fP (dash),
+then the stream data will be written to stdout, similar to the \fI\%\-\-stdout\fP argument, while still opening the player.
 .sp
 Non\-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 .sp
@@ -558,7 +573,7 @@ streamlink \-\-record \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%
 .B \-R FILENAME
 .TP
 .B \-\-record\-and\-pipe FILENAME
-Write stream data to stdout, while at the same time writing it to FILENAME.
+Write stream data to stdout, while at the same time writing it to \fBFILENAME\fP\&.
 .sp
 Non\-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 .sp
@@ -593,15 +608,10 @@ shares that are enforcing Windows filename limitations, etc.
 .sp
 These characters are replaced with an underscore for the rules in use:
 .INDENT 7.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-POSIX  : \ex00\-\ex1F /
-Windows: \ex00\-\ex1F \ex7F \(dq * / : < > ? \e |
-.ft P
-.fi
-.UNINDENT
+.IP \(bu 2
+POSIX: \fB\ex00\-\ex1F /\fP
+.IP \(bu 2
+Windows: \fB\ex00\-\ex1F \ex7F \(dq * / : < > ? \e |\fP
 .UNINDENT
 .UNINDENT
 .SH STREAM OPTIONS
@@ -610,7 +620,7 @@ Windows: \ex00\-\ex1F \ex7F \(dq * / : < > ? \e |
 .B \-\-url URL
 A URL to attempt to extract streams from.
 .sp
-Usually, the protocol of http(s) URLs can be omitted (\fI\%https://\fP),
+Usually, the protocol of http(s) URLs can be omitted (\fBhttps://\fP),
 depending on the implementation of the plugin being used.
 .sp
 This is an alternative to setting the URL using a positional argument
@@ -648,7 +658,7 @@ If possible, translate the resolved stream to a URL and print it.
 .TP
 .B \-\-retry\-streams DELAY
 Retry fetching the list of available streams until streams are found
-while waiting DELAY second(s) between each attempt. If unset, only one
+while waiting \fBDELAY\fP second(s) between each attempt. If unset, only one
 attempt will be made to fetch the list of streams available.
 .sp
 The number of fetch retry attempts can be capped with \fI\%\-\-retry\-max\fP\&.
@@ -656,8 +666,8 @@ The number of fetch retry attempts can be capped with \fI\%\-\-retry\-max\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-retry\-max COUNT
-When using \fI\%\-\-retry\-streams\fP, stop retrying the fetch after COUNT retry
-attempt(s). Fetch will retry infinitely if COUNT is zero or unset.
+When using \fI\%\-\-retry\-streams\fP, stop retrying the fetch after \fBCOUNT\fP retry
+attempt(s). Fetch will retry infinitely if \fBCOUNT\fP is zero or unset.
 .sp
 If \fI\%\-\-retry\-max\fP is set without setting \fI\%\-\-retry\-streams\fP, the delay between
 retries will default to 1 second.
@@ -665,7 +675,7 @@ retries will default to 1 second.
 .INDENT 0.0
 .TP
 .B \-\-retry\-open ATTEMPTS
-After a successful fetch, try ATTEMPTS time(s) to open the stream until
+After a successful fetch, try \fBATTEMPTS\fP time(s) to open the stream until
 giving up.
 .sp
 Default is: \fB1\fP\&.
@@ -679,7 +689,7 @@ A comma\-delimited list of stream types to allow.
 .sp
 The order will be used to separate streams when there are multiple
 streams with the same name but different stream types. Any stream type
-not listed will be omitted from the available streams list.  A \fB*\fP can
+not listed will be omitted from the available streams list.  An \fB*\fP (asterisk) can
 be used as a wildcard to match any other type of stream, eg. muxed\-stream.
 .sp
 Default is: \fB\(dqhls,http,*\(dq\fP\&.
@@ -714,7 +724,7 @@ For example this will exclude streams ranked higher than \(dq480p\(dq:
 .sp
 .nf
 .ft C
-\(dq>480p\(dq
+\-\-stream\-sorting\-excludes \(dq>480p\(dq
 .ft P
 .fi
 .UNINDENT
@@ -728,7 +738,7 @@ For example this will exclude streams from two quality types:
 .sp
 .nf
 .ft C
-\(dq>480p,>medium\(dq
+\-\-stream\-sorting\-excludes \(dq>480p,>medium\(dq
 .ft P
 .fi
 .UNINDENT
@@ -772,7 +782,7 @@ Default is: \fB3\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-stream\-segment\-threads THREADS
-The size of the thread pool used to download segments. Minimum value is 1 and maximum is 10.
+The size of the thread pool used to download segments. Minimum value is \fB1\fP and maximum is \fB10\fP\&.
 .sp
 This applies to all different kinds of segmented stream types, such as DASH, HLS, etc.
 .sp
@@ -846,16 +856,12 @@ Default is: \fB3\fP\&.
 Set a custom HLS playlist reload time value, either in seconds
 or by using one of the following keywords:
 .INDENT 7.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
+.IP \(bu 2
 segment: The duration of the last segment in the current playlist
+.IP \(bu 2
 live\-edge: The sum of segment durations of the live edge value minus one
+.IP \(bu 2
 default: The playlist\(aqs target duration metadata
-.ft P
-.fi
-.UNINDENT
 .UNINDENT
 .sp
 Default is: \fBdefault\fP\&.
@@ -865,7 +871,7 @@ Default is: \fBdefault\fP\&.
 .B \-\-hls\-segment\-ignore\-names NAMES
 A comma\-delimited list of segment names that will get filtered out.
 .sp
-Example: \-\-hls\-segment\-ignore\-names 000,001,002
+Example: \fB\-\-hls\-segment\-ignore\-names 000,001,002\fP
 .sp
 This will ignore every segment that ends with 000.ts, 001.ts and 002.ts
 .sp
@@ -909,7 +915,7 @@ Default is: \fBNone\fP\&.
 .TP
 .B \-\-hls\-audio\-select CODE
 Selects a specific audio source or sources, by language code or name,
-when multiple audio sources are available. Can be * to download all
+when multiple audio sources are available. Can be \fB*\fP (asterisk) to download all
 audio sources.
 .sp
 Examples:
@@ -963,9 +969,9 @@ Skip to the beginning of a live stream, or as far back as possible.
 .B \-\-ffmpeg\-ffmpeg FILENAME
 FFMPEG is used to access or mux separate video and audio streams. You
 can specify the location of the ffmpeg executable if it is not in your
-PATH.
+\fBPATH\fP\&.
 .sp
-Example: \(dq/usr/local/bin/ffmpeg\(dq
+Example: \fB\-\-ffmpeg\-ffmpeg \(dq/usr/local/bin/ffmpeg\(dq\fP
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -980,40 +986,40 @@ Path to write the output from the ffmpeg console.
 .INDENT 0.0
 .TP
 .B \-\-ffmpeg\-fout OUTFORMAT
-When muxing streams, set the output format to OUTFORMAT.
+When muxing streams, set the output format to \fBOUTFORMAT\fP\&.
 .sp
 Default is: \fB\(dqmatroska\(dq\fP\&.
 .sp
-Example: \(dqmpegts\(dq
+Example: \fB\-\-ffmpeg\-fout \(dqmpegts\(dq\fP
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-ffmpeg\-video\-transcode CODEC
-When muxing streams, transcode the video to CODEC.
+When muxing streams, transcode the video to \fBCODEC\fP\&.
 .sp
 Default is: \fB\(dqcopy\(dq\fP\&.
 .sp
-Example: \(dqh264\(dq
+Example: \fB\-\-ffmpeg\-video\-transcode \(dqh264\(dq\fP
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-ffmpeg\-audio\-transcode CODEC
-When muxing streams, transcode the audio to CODEC.
+When muxing streams, transcode the audio to \fBCODEC\fP\&.
 .sp
 Default is: \fB\(dqcopy\(dq\fP\&.
 .sp
-Example: \(dqaac\(dq
+Example: \fB\-\-ffmpeg\-audio\-transcode \(dqaac\(dq\fP
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-ffmpeg\-copyts
-Forces the \-copyts ffmpeg option and does not remove
+Forces the \fB\-copyts\fP ffmpeg option and does not remove
 the initial start time offset value.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-ffmpeg\-start\-at\-zero
-Enable the \-start_at_zero ffmpeg option when using copyts.
+Enable the \fB\-start_at_zero\fP ffmpeg option when using \fI\%\-\-ffmpeg\-copyts\fP\&.
 .UNINDENT
 .SH HTTP OPTIONS
 .INDENT 0.0
@@ -1021,7 +1027,7 @@ Enable the \-start_at_zero ffmpeg option when using copyts.
 .B \-\-http\-proxy HTTP_PROXY
 A HTTP proxy to use for all HTTP and HTTPS requests, including WebSocket connections.
 .sp
-Example: \(dq\fI\%http://hostname:port/\fP\(dq
+Example: \fB\-\-http\-proxy \(dqhttp://hostname:port/\(dq\fP
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1048,7 +1054,7 @@ Can be repeated to add multiple query parameters.
 .TP
 .B \-\-http\-ignore\-env
 Ignore HTTP settings set in the environment such as environment
-variables (HTTP_PROXY, etc) or ~/.netrc authentication.
+variables (\fBHTTP_PROXY\fP, etc) or \fB~/.netrc\fP authentication.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1101,8 +1107,7 @@ A afreecatv.com account password to use with \fI\%\-\-afreeca\-username\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-afreeca\-purge\-credentials
-Purge cached AfreecaTV credentials to initiate a new session
-and reauthenticate.
+Purge cached AfreecaTV credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .SS Bbciplayer
 .INDENT 0.0
@@ -1118,8 +1123,7 @@ A bbc.co.uk account password to use with \fI\%\-\-bbciplayer\-username\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-bbciplayer\-hd
-Prefer HD streams over local SD streams, some live programmes may
-not be broadcast in HD.
+Prefer HD streams over local SD streams, some live programmes may not be broadcast in HD.
 .UNINDENT
 .SS Clubbingtv
 .INDENT 0.0
@@ -1148,8 +1152,7 @@ If left blank you will be prompted.
 .INDENT 0.0
 .TP
 .B \-\-crunchyroll\-purge\-credentials
-Purge cached Crunchyroll credentials to initiate a new session
-and reauthenticate.
+Purge cached Crunchyroll credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1199,8 +1202,9 @@ The password of your Niconico account
 .INDENT 0.0
 .TP
 .B \-\-niconico\-user\-session VALUE
-Value of the user\-session token 
-(can be used in case you do not want to put your password here)
+Value of the user\-session token.
+.sp
+Can be used as an alternative to providing a password.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1210,14 +1214,15 @@ Purge cached Niconico credentials to initiate a new session and reauthenticate.
 .INDENT 0.0
 .TP
 .B \-\-niconico\-timeshift\-offset [HH:]MM:SS
-Amount of time to skip from the beginning of a stream. Default is 00:00:00.
+Amount of time to skip from the beginning of a stream.
+.sp
+Default is: \fB00:00:00\fP\&.
 .UNINDENT
 .SS Openrectv
 .INDENT 0.0
 .TP
 .B \-\-openrectv\-email EMAIL
-The email associated with your openrectv account,
-required to access any openrectv stream.
+The email associated with your openrectv account, required to access any openrectv stream.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1228,20 +1233,17 @@ An openrectv account password to use with \fI\%\-\-openrectv\-email\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-pixiv\-sessionid SESSIONID
-The pixiv.net sessionid that\(aqs used in pixivs PHPSESSID cookie.
-can be used instead of the username/password login process.
+The pixiv.net sessionid that\(aqs used in pixiv\(aqs PHPSESSID cookie.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-pixiv\-devicetoken DEVICETOKEN
-The pixiv.net device token that\(aqs used in pixivs device_token cookie.
-can be used instead of the username/password login process.
+The pixiv.net device token that\(aqs used in pixiv\(aqs device_token cookie.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-pixiv\-purge\-credentials
-Purge cached Pixiv credentials to initiate a new session
-and reauthenticate.
+Purge cached Pixiv credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1270,8 +1272,7 @@ streamlink http://play.sbs.co.kr/onair/pc/index.html best \-\-sbscokr\-id S01
 .INDENT 0.0
 .TP
 .B \-\-schoolism\-email EMAIL
-The email associated with your Schoolism account,
-required to access any Schoolism stream.
+The email associated with your Schoolism account, required to access any Schoolism stream.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1300,8 +1301,7 @@ A Steam account password to use with \fI\%\-\-steam\-email\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-streann\-url URL
-Source URL where the iframe is located,
-only required for direct URLs of \fIott.streann.com\fP
+Source URL where the iframe is located, only required for direct URLs of ott.streann.com
 .UNINDENT
 .SS Twitcasting
 .INDENT 0.0
@@ -1312,14 +1312,9 @@ Password for private Twitcasting streams.
 .SS Twitch
 .INDENT 0.0
 .TP
-.B \-\-twitch\-disable\-hosting
-Do not open the stream if the target channel is hosting another channel.
-.UNINDENT
-.INDENT 0.0
-.TP
 .B \-\-twitch\-disable\-ads
 Skip embedded advertisement segments at the beginning or during a stream.
-Will cause these segments to be missing from the stream.
+Will cause these segments to be missing from the output.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1330,8 +1325,8 @@ Do not open the stream if the target channel is currently broadcasting a rerun.
 .TP
 .B \-\-twitch\-low\-latency
 Enables low latency streaming by prefetching HLS segments.
-Sets \fI\%\-\-hls\-segment\-stream\-data\fP to true and \fI\%\-\-hls\-live\-edge\fP to 2, if it is higher.
-Reducing \fI\%\-\-hls\-live\-edge\fP to 1 will result in the lowest latency possible, but will most likely cause buffering.
+Sets \fI\%\-\-hls\-segment\-stream\-data\fP to true and \fI\%\-\-hls\-live\-edge\fP to \fB2\fP, if it is higher.
+Reducing \fI\%\-\-hls\-live\-edge\fP to \fB1\fP will result in the lowest latency possible, but will most likely cause buffering.
 .sp
 In order to achieve true low latency streaming during playback, the player\(aqs caching/buffering settings will
 need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
@@ -1374,8 +1369,7 @@ Your USTV Now account password
 .INDENT 0.0
 .TP
 .B \-\-wwenetwork\-email EMAIL
-The email associated with your WWE Network account,
-required to access any WWE Network stream.
+The email associated with your WWE Network account, required to access any WWE Network stream.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1387,26 +1381,22 @@ A WWE Network account password to use with \fI\%\-\-wwenetwork\-email\fP\&.
 .TP
 .B \-\-yupptv\-boxid BOXID
 The yupptv.com boxid that\(aqs used in the BoxId cookie.
-Can be used instead of the username/password login process.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-yupptv\-yuppflixtoken YUPPFLIXTOKEN
 The yupptv.com yuppflixtoken that\(aqs used in the YuppflixToken cookie.
-Can be used instead of the username/password login process.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-yupptv\-purge\-credentials
-Purge cached YuppTV credentials to initiate a new session
-and reauthenticate.
+Purge cached YuppTV credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .SS Zattoo
 .INDENT 0.0
 .TP
 .B \-\-zattoo\-email EMAIL
-The email associated with your zattoo account,
-required to access any zattoo stream.
+The email associated with your zattoo account, required to access any zattoo stream.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1416,20 +1406,14 @@ A zattoo account password to use with \fI\%\-\-zattoo\-email\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-zattoo\-purge\-credentials
-Purge cached zattoo credentials to initiate a new session
-and reauthenticate.
+Purge cached zattoo credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-zattoo\-stream\-types TYPES
-A comma\-delimited list of stream types which should be used,
-the following types are allowed:
-.INDENT 7.0
-.IP \(bu 2
-dash
-.IP \(bu 2
-hls7
-.UNINDENT
+A comma\-delimited list of stream types which should be used.
+.sp
+The following types are allowed: dash,hls7
 .sp
 Default is: \fB\(dqdash\(dq\fP\&.
 .UNINDENT

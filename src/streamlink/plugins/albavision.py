@@ -69,8 +69,8 @@ log = logging.getLogger(__name__)
     (?:/|\#)?$
 """, re.VERBOSE))
 class Albavision(Plugin):
-    def __init__(self, url):
-        super().__init__(url)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._page = None
 
     @property
@@ -85,53 +85,47 @@ class Albavision(Plugin):
         schema = validate.Schema(
             validate.xml_xpath_string(".//script[contains(text(), 'jQuery.get')]/text()"),
         )
-        is_token_based_site = validate.validate(schema, self.page) is not None
+        is_token_based_site = schema.validate(self.page) is not None
         log.debug(f"is_token_based_site={is_token_based_site}")
         return is_token_based_site
 
     def _get_live_url(self):
-        live_url_re = re.compile(r"""LIVE_URL\s*=\s*['"]([^'"]+)['"]""")
         schema = validate.Schema(
             validate.xml_xpath_string(".//script[contains(text(), 'LIVE_URL')]/text()"),
-            validate.any(None, validate.all(
-                validate.transform(live_url_re.search),
-                validate.any(None, validate.all(
-                    validate.get(1),
+            validate.none_or_all(
+                re.compile(r"""LIVE_URL\s*=\s*(?P<q>['"])(?P<url>.+?)(?P=q)"""),
+                validate.none_or_all(
+                    validate.get("url"),
                     validate.url(),
-                )),
-            )),
+                ),
+            ),
         )
-        live_url = validate.validate(schema, self.page)
+        live_url = schema.validate(self.page)
         log.debug(f"live_url={live_url}")
         return live_url
 
     def _get_token_req_url(self):
-        token_req_host_re = re.compile(r"""jQuery\.get\s*\(['"]([^'"]+)['"]""")
         schema = validate.Schema(
             validate.xml_xpath_string(".//script[contains(text(), 'LIVE_URL')]/text()"),
-            validate.any(None, validate.all(
-                validate.transform(token_req_host_re.search),
-                validate.any(None, validate.all(
-                    validate.get(1),
+            validate.none_or_all(
+                re.compile(r"""jQuery\.get\s*\((?P<q>['"])(?P<token>.+?)(?P=q)"""),
+                validate.none_or_all(
+                    validate.get("token"),
                     validate.url(),
-                )),
-            )),
+                ),
+            ),
         )
-        token_req_host = validate.validate(schema, self.page)
+        token_req_host = schema.validate(self.page)
         log.debug(f"token_req_host={token_req_host}")
 
-        token_req_str_re = re.compile(r"""Math\.floor\(Date\.now\(\)\s*/\s*3600000\),\s*['"]([^'"]+)['"]""")
         schema = validate.Schema(
             validate.xml_xpath_string(".//script[contains(text(), 'LIVE_URL')]/text()"),
-            validate.any(None, validate.all(
-                validate.transform(token_req_str_re.search),
-                validate.any(None, validate.all(
-                    validate.get(1),
-                    str,
-                )),
-            )),
+            validate.none_or_all(
+                re.compile(r"""Math\.floor\(Date\.now\(\)\s*/\s*3600000\),\s*(?P<q>['"])(?P<token>.+?)(?P=q)"""),
+                validate.none_or_all(validate.get("token")),
+            ),
         )
-        token_req_str = validate.validate(schema, self.page)
+        token_req_str = schema.validate(self.page)
         log.debug(f"token_req_str={token_req_str}")
         if not token_req_str:
             return
@@ -143,6 +137,9 @@ class Albavision(Plugin):
             return update_qsd(token_req_host, {"rsk": token_req_token})
 
     def _get_token(self):
+        if not self._is_token_based_site():
+            return
+
         token_req_url = self._get_token_req_url()
         if not token_req_url:
             return
@@ -189,13 +186,11 @@ class Albavision(Plugin):
             log.info("This stream may be off-air or not available in your country")
             return
 
-        if self._is_token_based_site():
-            token = self._get_token()
-            if not token:
-                return
-            return HLSStream.parse_variant_playlist(self.session, update_qsd(live_url, {"iut": token}))
-        else:
-            return HLSStream.parse_variant_playlist(self.session, live_url)
+        token = self._get_token()
+        if token:
+            live_url = update_qsd(live_url, {"iut": token})
+
+        return HLSStream.parse_variant_playlist(self.session, live_url)
 
 
 __plugin__ = Albavision

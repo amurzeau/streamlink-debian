@@ -15,7 +15,7 @@ from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 
 from streamlink.exceptions import FatalPluginError
-from streamlink.plugin import Plugin, PluginArgument, PluginArguments, pluginmatcher
+from streamlink.plugin import Plugin, pluginargument, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.dash import DASHStream
 
@@ -32,6 +32,18 @@ class SteamLoginFailed(Exception):
 @pluginmatcher(re.compile(
     r"https?://steam\.tv/(\w+)"
 ))
+@pluginargument(
+    "email",
+    requires=["password"],
+    metavar="EMAIL",
+    help="A Steam account email address to access friends/private streams",
+)
+@pluginargument(
+    "password",
+    sensitive=True,
+    metavar="PASSWORD",
+    help="A Steam account password to use with --steam-email.",
+)
 class SteamBroadcastPlugin(Plugin):
     _watch_broadcast_url = "https://steamcommunity.com/broadcast/watch/{steamid}"
     _get_broadcast_url = "https://steamcommunity.com/broadcast/getbroadcastmpd/"
@@ -39,27 +51,13 @@ class SteamBroadcastPlugin(Plugin):
     _dologin_url = "https://steamcommunity.com/login/dologin/"
     _captcha_url = "https://steamcommunity.com/public/captcha.php?gid={}"
 
-    arguments = PluginArguments(
-        PluginArgument(
-            "email",
-            metavar="EMAIL",
-            requires=["password"],
-            help="""
-            A Steam account email address to access friends/private streams
-            """
-        ),
-        PluginArgument(
-            "password",
-            metavar="PASSWORD",
-            sensitive=True,
-            help="""
-            A Steam account password to use with --steam-email.
-            """
-        ))
+    @property
+    def donotcache(self):
+        return str(int(time.time() * 1000))
 
     def encrypt_password(self, email, password):
         """
-        Get the RSA key for the user and encrypt the users password
+        Get the RSA key for the user and encrypt the user's password
         :param email: steam account
         :param password: password for account
         :return: encrypted password
@@ -68,7 +66,7 @@ class SteamBroadcastPlugin(Plugin):
             self._get_rsa_key_url,
             params=dict(
                 username=email,
-                donotcache=str(int(time.time() * 1000))
+                donotcache=self.donotcache,
             ),
             schema=validate.Schema(
                 validate.parse_json(),
@@ -100,7 +98,7 @@ class SteamBroadcastPlugin(Plugin):
             "rsatimestamp": rsatimestamp,
             "remember_login": True,
             "donotcache": self.donotcache,
-            "twofactorcode": twofactorcode
+            "twofactorcode": twofactorcode,
         }
 
         resp = self.session.http.post(
@@ -200,12 +198,11 @@ class SteamBroadcastPlugin(Plugin):
         return self.session.http.get(url, schema=validate.Schema(
             validate.parse_html(),
             validate.xml_xpath_string(".//div[@id='webui_config']/@data-broadcast"),
-            validate.any(None, validate.all(
-                str,
+            validate.none_or_all(
                 validate.parse_json(),
                 {"steamid": str},
-                validate.get("steamid")
-            ))
+                validate.get("steamid"),
+            ),
         ))
 
     def _get_streams(self):
@@ -214,7 +211,12 @@ class SteamBroadcastPlugin(Plugin):
         email = self.get_option("email")
         if email:
             log.info(f"Attempting to login to Steam as {email}")
-            if self.dologin(email, self.get_option("password")):
+            try:
+                success = self.dologin(email, self.get_option("password"))
+            except SteamLoginFailed as err:
+                log.error(err)
+                return
+            if success:
                 log.info(f"Logged in as {email}")
                 self.save_cookies(lambda c: "steamMachineAuth" in c.name)
 

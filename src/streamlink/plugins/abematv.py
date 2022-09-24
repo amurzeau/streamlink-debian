@@ -74,7 +74,7 @@ class AbemaTVLicenseAdapter(BaseAdapter):
             "appId": "tv.abema",
             "appVersion": "3.27.1"
         }
-        auth_header = {"Authorization": "Bearer " + self.usertoken}
+        auth_header = {"Authorization": f"Bearer {self.usertoken}"}
         res = self._session.http.get(self._MEDIATOKEN_API, params=params,
                                      headers=auth_header)
         jsonres = self._session.http.json(res,
@@ -89,8 +89,8 @@ class AbemaTVLicenseAdapter(BaseAdapter):
         cid = jsonres['cid']
         k = jsonres['k']
 
-        res = sum([self.STRTABLE.find(k[i]) * (58 ** (len(k) - 1 - i))
-                  for i in range(len(k))])
+        res = sum(self.STRTABLE.find(k[i]) * (58 ** (len(k) - 1 - i)) for i in range(len(k)))
+
         encvideokey = struct.pack('>QQ', res >> 64, res & 0xffffffffffffffff)
 
         # HKEY:
@@ -105,9 +105,7 @@ class AbemaTVLicenseAdapter(BaseAdapter):
         enckey = h.digest()
 
         aes = AES.new(enckey, AES.MODE_ECB)
-        rawvideokey = aes.decrypt(encvideokey)
-
-        return rawvideokey
+        return aes.decrypt(encvideokey)
 
     def send(self, request, stream=False, timeout=None, verify=True, cert=None,
              proxies=None):
@@ -160,8 +158,8 @@ class AbemaTV(Plugin):
 
     _SLOT_SCHEMA = validate.Schema({"slot": {"flags": {validate.optional("timeshiftFree"): bool}}})
 
-    def __init__(self, url):
-        super().__init__(url)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.session.http.headers.update({'User-Agent': useragents.CHROME})
 
     def _generate_applicationkeysecret(self, deviceid):
@@ -199,7 +197,7 @@ class AbemaTV(Plugin):
         return urlsafe_b64encode(tmp).rstrip(b"=").decode("utf-8")
 
     def _is_playable(self, vtype, vid):
-        auth_header = {"Authorization": "Bearer " + self.usertoken}
+        auth_header = {"Authorization": f"Bearer {self.usertoken}"}
         if vtype == "episode":
             res = self.session.http.get(self._PRGM_API.format(vid),
                                         headers=auth_header)
