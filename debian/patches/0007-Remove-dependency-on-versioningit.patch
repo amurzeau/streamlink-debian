@@ -28,12 +28,12 @@ index 9f4dcd0..444c6d6 100644
  mypy
  lxml-stubs
 diff --git a/docs-requirements.txt b/docs-requirements.txt
-index e405591..35f1c02 100644
+index e9ffcbb..35f1c02 100644
 --- a/docs-requirements.txt
 +++ b/docs-requirements.txt
 @@ -1,6 +1,5 @@
  sphinx >=4.0.0
--furo ==2022.06.04.1
+-furo ==2022.09.15
 +sphinx-rtd-theme
  myst-parser >=0.18.0
 -versioningit >=2.0.0, <3
