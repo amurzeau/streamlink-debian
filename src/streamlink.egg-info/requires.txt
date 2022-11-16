@@ -4,6 +4,7 @@ pycountry
 pycryptodome<4,>=3.4.3
 PySocks!=1.5.7,>=1.5.6
 requests<3.0,>=2.26.0
+urllib3>=1.26.0
 websocket-client<2.0,>=1.2.1
 
 [:python_version < "3.8"]

@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Sep 22, 2022" "5.0.1" "Streamlink"
+.TH "STREAMLINK" "1" "Nov 14, 2022" "5.1.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -37,7 +37,16 @@ streamlink \- extracts streams from various services and pipes them into a video
 .nf
 .ft C
 streamlink [OPTIONS] <URL> [STREAM]
-
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH EXAMPLES
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
 streamlink \-\-loglevel debug youtu.be/VIDEO\-ID best
 streamlink \-\-player mpv \-\-player\-args \(aq\-\-no\-border \-\-no\-keepaspect\-window\(aq twitch.tv/CHANNEL 1080p60
 streamlink \-\-player\-external\-http \-\-player\-external\-http\-port 8888 URL STREAM
@@ -45,12 +54,13 @@ streamlink \-\-output /path/to/file \-\-http\-timeout 60 URL STREAM
 streamlink \-\-stdout URL STREAM | ffmpeg \-i pipe:0 ...
 streamlink \-\-http\-header \(aqAuthorization=OAuth TOKEN\(aq \-\-http\-header \(aqReferer=URL\(aq URL STREAM
 streamlink \-\-hls\-live\-edge 5 \-\-stream\-segment\-threads 5 \(aqhls://https://host/playlist.m3u8\(aq best
-streamlink \-\-twitch\-low\-latency \-p mpv \-a \(aq\-\-cache=yes \-\-demuxer\-max\-bytes=750k\(aq twitch.tv/CHANNEL best
+streamlink \-\-twitch\-low\-latency \-p mpv \-a \(aq\-\-cache=yes \-\-demuxer\-max\-back\-bytes=2G\(aq twitch.tv/CHANNEL best
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
-.SH POSITIONAL ARGUMENTS
+.SH OPTIONS
+.SS Positional arguments
 .INDENT 0.0
 .TP
 .B URL
@@ -84,7 +94,7 @@ Fallback streams can be specified by using a comma\-separated list:
 If no stream is specified and \fI\%\-\-default\-stream\fP is not used, then a list
 of available streams will be printed.
 .UNINDENT
-.SH GENERAL OPTIONS
+.SS General options
 .INDENT 0.0
 .TP
 .B \-h
@@ -141,7 +151,7 @@ merged on top of each other where the last config has highest priority.
 .B \-\-loglevel LEVEL
 Set the log message threshold.
 .sp
-Valid levels are: \fBnone\fP, \fBerror\fP, \fBwarning\fP, \fBinfo\fP, \fBdebug\fP, \fBtrace\fP
+Valid levels are: \fBnone\fP, \fBerror\fP, \fBwarning\fP, \fBinfo\fP, \fBdebug\fP, \fBtrace\fP, \fBall\fP
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -249,7 +259,7 @@ Resolve address names to IPv4 only. This option overrides \fI\%\-\-ipv6\fP\&.
 .B \-\-ipv6
 Resolve address names to IPv6 only. This option overrides \fI\%\-\-ipv4\fP\&.
 .UNINDENT
-.SH PLAYER OPTIONS
+.SS Player options
 .INDENT 0.0
 .TP
 .B \-p COMMAND
@@ -491,7 +501,7 @@ streamlink \-p mpv \-\-title \(dq{author} \- {category} \- {title}\(dq <URL> [ST
 .UNINDENT
 .UNINDENT
 .UNINDENT
-.SH FILE OUTPUT OPTIONS
+.SS File output options
 .INDENT 0.0
 .TP
 .B \-o FILENAME
@@ -614,7 +624,7 @@ POSIX: \fB\ex00\-\ex1F /\fP
 Windows: \fB\ex00\-\ex1F \ex7F \(dq * / : < > ? \e |\fP
 .UNINDENT
 .UNINDENT
-.SH STREAM OPTIONS
+.SS Stream options
 .INDENT 0.0
 .TP
 .B \-\-url URL
@@ -744,7 +754,7 @@ For example this will exclude streams from two quality types:
 .UNINDENT
 .UNINDENT
 .UNINDENT
-.SH STREAM TRANSPORT OPTIONS
+.SS Stream transport options
 .INDENT 0.0
 .TP
 .B \-\-ringbuffer\-size SIZE
@@ -975,6 +985,11 @@ Example: \fB\-\-ffmpeg\-ffmpeg \(dq/usr/local/bin/ffmpeg\(dq\fP
 .UNINDENT
 .INDENT 0.0
 .TP
+.B \-\-ffmpeg\-no\-validation
+Disable FFmpeg validation and version logging.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B \-\-ffmpeg\-verbose
 Write the console output from ffmpeg to the console.
 .UNINDENT
@@ -1021,7 +1036,7 @@ the initial start time offset value.
 .B \-\-ffmpeg\-start\-at\-zero
 Enable the \fB\-start_at_zero\fP ffmpeg option when using \fI\%\-\-ffmpeg\-copyts\fP\&.
 .UNINDENT
-.SH HTTP OPTIONS
+.SS HTTP options
 .INDENT 0.0
 .TP
 .B \-\-http\-proxy HTTP_PROXY
@@ -1092,7 +1107,7 @@ other options.
 .sp
 Default is: \fB20.0\fP\&.
 .UNINDENT
-.SH PLUGIN OPTIONS
+.SS Plugin options
 .SS Afreeca
 .INDENT 0.0
 .TP
@@ -1251,23 +1266,6 @@ Purge cached Pixiv credentials to initiate a new session and reauthenticate.
 Select a co\-host stream instead of the owner stream.
 .UNINDENT
 .SS Sbscokr
-.INDENT 0.0
-.TP
-.B \-\-sbscokr\-id CHANNELID
-Channel ID to play.
-.sp
-Example:
-.INDENT 7.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-streamlink http://play.sbs.co.kr/onair/pc/index.html best \-\-sbscokr\-id S01
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.UNINDENT
 .SS Schoolism
 .INDENT 0.0
 .TP
@@ -1347,6 +1345,15 @@ Regular streams can cause buffering issues with this option enabled due to the r
 A header to add to each Twitch API HTTP request.
 .sp
 Can be repeated to add multiple headers.
+.sp
+Useful for adding authentication data that can prevent ads. See the plugin\-specific documentation for more information.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-twitch\-access\-token\-param KEY=VALUE
+A parameter to add to the API request for acquiring the streaming access token.
+.sp
+Can be repeated to add multiple parameters.
 .UNINDENT
 .SS Ustreamtv
 .INDENT 0.0
@@ -1417,6 +1424,21 @@ The following types are allowed: dash,hls7
 .sp
 Default is: \fB\(dqdash\(dq\fP\&.
 .UNINDENT
+.SH BUGS
+.sp
+Please open a new issue on Streamlink\(aqs issue tracker on GitHub and use the appropriate issue forms:
+.sp
+\fI\%https://github.com/streamlink/streamlink/issues\fP
+.SH SEE ALSO
+.sp
+For more detailed information about config files, plugin sideloading, streaming protocols, proxy support, metadata,
+or plugin specific stuff, please see Streamlink\(aqs online CLI documentation here:
+.sp
+\fI\%https://streamlink.github.io/cli.html\fP
+.sp
+The list of available plugins and their descriptions can be found here:
+.sp
+\fI\%https://streamlink.github.io/plugins.html\fP
 .SH AUTHOR
 Streamlink Contributors
 .SH COPYRIGHT

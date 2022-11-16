@@ -131,6 +131,7 @@ class TestPluginMetadata:
     def metadata_keys_repeat(self):
         return (
             "url",
+            "notes",
         )
 
     @pytest.fixture(scope="class")
@@ -143,9 +144,8 @@ class TestPluginMetadata:
 
     @pytest.fixture(scope="class", params=plugins_no_protocols)
     def tokeninfo(self, request):
-        with (Path(plugins_path) / f"{request.param}.py").open() as handle:
-            for tokeninfo in tokenize.generate_tokens(handle.readline):  # pragma: no branch
-                break
+        with (Path(plugins_path) / f"{request.param}.py").open(encoding="utf-8") as handle:
+            tokeninfo = next(tokenize.generate_tokens(handle.readline), None)
 
         assert type(tokeninfo) is tokenize.TokenInfo, "Parses the first token"
         assert tokeninfo.type == tokenize.STRING, "First token is a string"
