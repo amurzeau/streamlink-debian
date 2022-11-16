@@ -127,7 +127,6 @@ src/streamlink/plugins/dogan.py
 src/streamlink/plugins/dogus.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
-src/streamlink/plugins/egame.py
 src/streamlink/plugins/euronews.py
 src/streamlink/plugins/facebook.py
 src/streamlink/plugins/filmon.py
@@ -263,6 +262,7 @@ src/streamlink/utils/l10n.py
 src/streamlink/utils/module.py
 src/streamlink/utils/named_pipe.py
 src/streamlink/utils/parse.py
+src/streamlink/utils/processoutput.py
 src/streamlink/utils/times.py
 src/streamlink/utils/url.py
 src/streamlink_cli/__init__.py
@@ -355,7 +355,6 @@ tests/plugins/test_dogan.py
 tests/plugins/test_dogus.py
 tests/plugins/test_drdk.py
 tests/plugins/test_earthcam.py
-tests/plugins/test_egame.py
 tests/plugins/test_euronews.py
 tests/plugins/test_facebook.py
 tests/plugins/test_filmon.py
@@ -513,5 +512,6 @@ tests/utils/test_l10n.py
 tests/utils/test_module.py
 tests/utils/test_named_pipe.py
 tests/utils/test_parse.py
+tests/utils/test_processoutput.py
 tests/utils/test_times.py
 tests/utils/test_url.py

@@ -66,18 +66,18 @@ class HLSStreamWriter(SegmentedStreamWriter):
     reader: "HLSStreamReader"
     stream: "HLSStream"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         options = self.session.options
 
         self.byterange: ByteRangeOffset = ByteRangeOffset()
         self.map_cache: LRUCache[str, Future] = LRUCache(self.threads)
-        self.key_data = None
-        self.key_uri = None
+        self.key_data: Union[bytes, bytearray, memoryview] = b""
+        self.key_uri: Optional[str] = None
         self.key_uri_override = options.get("hls-segment-key-uri")
         self.stream_data = options.get("hls-segment-stream-data")
 
-        self.ignore_names = None
+        self.ignore_names: Optional[re.Pattern] = None
         ignore_names = {*options.get("hls-segment-ignore-names")}
         if ignore_names:
             segments = "|".join(map(re.escape, ignore_names))
@@ -199,10 +199,11 @@ class HLSStreamWriter(SegmentedStreamWriter):
         )
 
     def should_filter_sequence(self, sequence: Sequence) -> bool:
-        return self.ignore_names and self.ignore_names.search(sequence.segment.uri) is not None
+        return self.ignore_names is not None and self.ignore_names.search(sequence.segment.uri) is not None
 
     def write(self, sequence: Sequence, result: Response, *data):
         if not self.should_filter_sequence(sequence):
+            log.debug(f"Writing segment {sequence.num} to output")
             try:
                 return self._write(sequence, result, *data)
             finally:
@@ -212,6 +213,8 @@ class HLSStreamWriter(SegmentedStreamWriter):
                     self.reader.filter_event.set()
 
         else:
+            log.debug(f"Discarding segment {sequence.num}")
+
             # Read and discard any remaining HTTP response data in the response connection.
             # Unread data in the HTTPResponse connection blocks the connection from being released back to the pool.
             result.raw.drain_conn()
@@ -265,7 +268,7 @@ class HLSStreamWorker(SegmentedStreamWorker):
     writer: "HLSStreamWriter"
     stream: "HLSStream"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.playlist_changed = False
