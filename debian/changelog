@@ -1,12 +1,15 @@
-streamlink (5.1.0-1) UNRELEASED; urgency=medium
+streamlink (5.1.0-1) unstable; urgency=medium
 
   [ Debian Janitor ]
   * Remove constraints unnecessary since buster (oldstable)
 
   [ Alexis Murzeau ]
   * New upstream version 5.1.0
+  * d/patches: update patches
+  * d/control: update build dependencies
+  * d/tests/control: update test dependencies
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 16 Nov 2022 22:36:18 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 16 Nov 2022 23:29:10 +0100
 
 streamlink (5.0.1-1) unstable; urgency=medium
 
