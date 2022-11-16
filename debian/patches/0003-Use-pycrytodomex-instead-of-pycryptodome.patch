@@ -25,7 +25,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  10 files changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/setup.cfg b/setup.cfg
-index c6a3b30..6864633 100644
+index b880e77..ccce881 100644
 --- a/setup.cfg
 +++ b/setup.cfg
 @@ -43,7 +43,7 @@ install_requires =
@@ -36,9 +36,9 @@ index c6a3b30..6864633 100644
 +	pycryptodomex >=3.4.3,<4
  	PySocks !=1.5.7,>=1.5.6
  	requests >=2.26.0,<3.0
- 	websocket-client >=1.2.1,<2.0
+ 	urllib3 >=1.26.0
 diff --git a/src/streamlink.egg-info/requires.txt b/src/streamlink.egg-info/requires.txt
-index ba66416..406d94c 100644
+index 9362ed1..9bfa28d 100644
 --- a/src/streamlink.egg-info/requires.txt
 +++ b/src/streamlink.egg-info/requires.txt
 @@ -1,7 +1,7 @@
@@ -49,7 +49,7 @@ index ba66416..406d94c 100644
 +pycryptodomex<4,>=3.4.3
  PySocks!=1.5.7,>=1.5.6
  requests<3.0,>=2.26.0
- websocket-client<2.0,>=1.2.1
+ urllib3>=1.26.0
 diff --git a/src/streamlink/plugins/abematv.py b/src/streamlink/plugins/abematv.py
 index 6881b44..f8d423f 100644
 --- a/src/streamlink/plugins/abematv.py
@@ -124,7 +124,7 @@ index c8cf2b2..712e447 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index d44f73f..b7b93aa 100644
+index 90c9955..9ba7f68 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
 @@ -7,9 +7,9 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
@@ -152,7 +152,7 @@ index abc3901..a71203f 100644
  
  def evp_bytestokey(password, salt, key_len, iv_len):
 diff --git a/tests/stream/test_hls.py b/tests/stream/test_hls.py
-index aab5e47..03e6004 100644
+index 125bbd6..93a4e32 100644
 --- a/tests/stream/test_hls.py
 +++ b/tests/stream/test_hls.py
 @@ -6,8 +6,8 @@ from unittest.mock import Mock, call, patch

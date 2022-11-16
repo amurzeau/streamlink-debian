@@ -16,10 +16,10 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  5 files changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/dev-requirements.txt b/dev-requirements.txt
-index 9f4dcd0..444c6d6 100644
+index 3afd1e6..e1e27ce 100644
 --- a/dev-requirements.txt
 +++ b/dev-requirements.txt
-@@ -8,7 +8,6 @@ flake8
+@@ -10,7 +10,6 @@ flake8
  flake8-import-order
  flake8-pyi
  shtab
@@ -40,7 +40,7 @@ index e9ffcbb..35f1c02 100644
  
  docutils-stubs
 diff --git a/pyproject.toml b/pyproject.toml
-index af631f9..e0a99d7 100644
+index ab325e0..065248b 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -3,7 +3,6 @@ build-backend = "setuptools.build_meta"
@@ -52,7 +52,7 @@ index af631f9..e0a99d7 100644
  
  
 diff --git a/setup.cfg b/setup.cfg
-index 6864633..d6c3c60 100644
+index ccce881..8526564 100644
 --- a/setup.cfg
 +++ b/setup.cfg
 @@ -1,5 +1,6 @@
