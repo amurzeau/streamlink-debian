@@ -1,3 +1,9 @@
+streamlink (5.1.1-1) unstable; urgency=medium
+
+  * New upstream version 5.1.1
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 28 Nov 2022 21:49:55 +0100
+
 streamlink (5.1.0-1) unstable; urgency=medium
 
   [ Debian Janitor ]
