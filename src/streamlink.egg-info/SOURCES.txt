@@ -246,6 +246,7 @@ src/streamlink/stream/dash.py
 src/streamlink/stream/dash_manifest.py
 src/streamlink/stream/ffmpegmux.py
 src/streamlink/stream/file.py
+src/streamlink/stream/filtered.py
 src/streamlink/stream/hls.py
 src/streamlink/stream/hls_playlist.py
 src/streamlink/stream/http.py

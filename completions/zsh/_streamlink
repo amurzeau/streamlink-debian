@@ -14,7 +14,7 @@ _shtab_streamlink_cli_options=(
   {-h,--help}"[
         Show this help message and exit.
         ]"
-  "(- :)"{-V,--version}"[
+  "(- : *)"{-V,--version}"[
         Show version number and exit.
         ]"
   "--plugins[
@@ -742,15 +742,18 @@ _shtab_streamlink_cli_options=(
 
         Default is \"dash\".
     ]:zattoo_stream_types:"
+  ":A URL to attempt to extract streams from.:"
+  ":Stream to play.:"
 )
 
 
 _shtab_streamlink_cli() {
-  local context state line curcontext="$curcontext"
+  local context state line curcontext="$curcontext" one_or_more='(-)*' remainder='(*)'
 
-  _arguments -C $_shtab_streamlink_cli_options \
-    ': :_shtab_streamlink_cli_commands' \
-    '*::: :->streamlink'
+  if ((${_shtab_streamlink_cli_options[(I)${(q)one_or_more}*]} + ${_shtab_streamlink_cli_options[(I)${(q)remainder}*]} == 0)); then  # noqa: E501
+    _shtab_streamlink_cli_options+=(': :_shtab_streamlink_cli_commands' '*::: :->streamlink')
+  fi
+  _arguments -C $_shtab_streamlink_cli_options
 
   case $state in
     streamlink)

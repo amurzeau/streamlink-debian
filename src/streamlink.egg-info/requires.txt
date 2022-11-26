@@ -1,3 +1,4 @@
+certifi
 isodate
 lxml<5.0,>=4.6.4
 pycountry
