@@ -52,7 +52,7 @@ index ab325e0..065248b 100644
  
  
 diff --git a/setup.cfg b/setup.cfg
-index ccce881..8526564 100644
+index ee33b91..7879c53 100644
 --- a/setup.cfg
 +++ b/setup.cfg
 @@ -1,5 +1,6 @@

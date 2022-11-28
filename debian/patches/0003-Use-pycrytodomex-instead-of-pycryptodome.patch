@@ -25,10 +25,10 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  10 files changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/setup.cfg b/setup.cfg
-index b880e77..ccce881 100644
+index 53485d3..ee33b91 100644
 --- a/setup.cfg
 +++ b/setup.cfg
-@@ -43,7 +43,7 @@ install_requires =
+@@ -44,7 +44,7 @@ install_requires =
  	isodate
  	lxml >=4.6.4,<5.0
  	pycountry
@@ -38,10 +38,10 @@ index b880e77..ccce881 100644
  	requests >=2.26.0,<3.0
  	urllib3 >=1.26.0
 diff --git a/src/streamlink.egg-info/requires.txt b/src/streamlink.egg-info/requires.txt
-index 9362ed1..9bfa28d 100644
+index 2638721..5e4e564 100644
 --- a/src/streamlink.egg-info/requires.txt
 +++ b/src/streamlink.egg-info/requires.txt
-@@ -1,7 +1,7 @@
+@@ -2,7 +2,7 @@ certifi
  isodate
  lxml<5.0,>=4.6.4
  pycountry
@@ -124,10 +124,10 @@ index c8cf2b2..712e447 100644
  from streamlink.plugin import Plugin, pluginmatcher
  from streamlink.plugin.api import validate
 diff --git a/src/streamlink/stream/hls.py b/src/streamlink/stream/hls.py
-index 90c9955..9ba7f68 100644
+index 2a942f4..bd11224 100644
 --- a/src/streamlink/stream/hls.py
 +++ b/src/streamlink/stream/hls.py
-@@ -7,9 +7,9 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
+@@ -6,9 +6,9 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
  from urllib.parse import urlparse
  
  # noinspection PyPackageRequirements
