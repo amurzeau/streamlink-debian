@@ -18,6 +18,7 @@ Build-Depends: debhelper-compat (= 13),
  python3-socks,
  python3-websocket,
  python3-lxml,
+ python3-certifi,
 # Documentation dependencies
  python3-docutils,
  python3-myst-parser,
