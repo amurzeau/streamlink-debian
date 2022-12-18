@@ -1,8 +1,10 @@
-streamlink (5.1.2-1) UNRELEASED; urgency=medium
+streamlink (5.1.2-1) unstable; urgency=medium
 
   * New upstream version 5.1.2
+  * d/README.source: update instructions
+  * d/streamlink.{install,manpages}: update completion scripts location
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 18 Dec 2022 23:42:38 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 19 Dec 2022 00:25:14 +0100
 
 streamlink (5.1.1-1) unstable; urgency=medium
 
