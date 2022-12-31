@@ -1,4 +1,4 @@
 usr/lib/python3*/*-packages/streamlink_cli/
 usr/bin/streamlink
-usr/share/bash-completion/completions/streamlink
-usr/share/zsh/site-functions/_streamlink usr/share/zsh/vendor-completions/
+usr/lib/python3*/*-packages/share/bash-completion/completions/streamlink usr/share/bash-completion/completions/
+usr/lib/python3*/*-packages/share/zsh/site-functions/_streamlink usr/share/zsh/vendor-completions/
