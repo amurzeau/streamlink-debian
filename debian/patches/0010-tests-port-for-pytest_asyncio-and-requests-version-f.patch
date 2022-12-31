@@ -1,11 +1,13 @@
 From: Alexis Murzeau <amubtdx@gmail.com>
-Date: Sat, 16 Jul 2022 16:35:11 +0200
-Subject: tests: port for pytest and requests version from stable
+Date: Sat, 31 Dec 2022 16:27:37 +0100
+Subject: tests: port for pytest_asyncio and requests version from stable
 
 - Adjust imports for MonkeyPatch and LogCaptureFixture
   pytest < 6.2 doesn't expose these types via pytest.
 - Adjust import of requests.exceptions.JSONDecodeError
   This exception type doesn't exist on request < 2.27.0.
+- Replace pytest_asyncio.fixture which is not supported on
+  pytest-asyncio < v0.17.0.
 
 Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
@@ -14,9 +16,13 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  tests/cli/test_argparser.py              |  5 +++--
  tests/cli/utils/test_versioncheck.py     | 30 ++++++++++++++++--------------
  tests/stream/test_dash.py                |  7 ++++---
+ tests/stream/test_ffmpegmux.py           | 11 ++++++-----
+ tests/stream/test_hls.py                 |  3 ++-
+ tests/test_logger.py                     |  3 ++-
  tests/test_plugin.py                     |  5 +++--
  tests/test_session.py                    |  5 +++--
- 6 files changed, 31 insertions(+), 24 deletions(-)
+ tests/utils/test_processoutput.py        |  2 +-
+ 10 files changed, 42 insertions(+), 32 deletions(-)
 
 diff --git a/src/streamlink_cli/utils/versioncheck.py b/src/streamlink_cli/utils/versioncheck.py
 index 19582f4..088e21e 100644
@@ -230,6 +236,102 @@ index 49dfa4c..78b09f3 100644
          worker: DASHStreamWorker,
          representation: Mock,
          segments: List[Mock],
+diff --git a/tests/stream/test_ffmpegmux.py b/tests/stream/test_ffmpegmux.py
+index 8a3ff8a..c1e8b9c 100644
+--- a/tests/stream/test_ffmpegmux.py
++++ b/tests/stream/test_ffmpegmux.py
+@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
+ from unittest.mock import Mock, call, patch
+ 
+ import pytest
++from _pytest.logging import LogCaptureFixture
+ 
+ from streamlink import Streamlink
+ from streamlink.stream.ffmpegmux import FFMPEGMuxer, FFmpegVersionOutput
+@@ -17,7 +18,7 @@ def resolve_command_cache_clear():
+ 
+ 
+ @pytest.fixture(autouse=True)
+-def _logger(caplog: pytest.LogCaptureFixture):
++def _logger(caplog: LogCaptureFixture):
+     caplog.set_level(1, "streamlink")
+ 
+ 
+@@ -57,7 +58,7 @@ class TestCommand:
+         with patch("streamlink.stream.ffmpegmux.which", return_value=resolved):
+             assert FFMPEGMuxer.is_usable(session) is expected
+ 
+-    def test_log(self, caplog: pytest.LogCaptureFixture, session: Streamlink):
++    def test_log(self, caplog: LogCaptureFixture, session: Streamlink):
+         with patch("streamlink.stream.ffmpegmux.which", return_value=None):
+             assert not FFMPEGMuxer.is_usable(session)
+             assert [(record.module, record.levelname, record.message) for record in caplog.records] == [
+@@ -75,12 +76,12 @@ class TestCommand:
+             assert not FFMPEGMuxer.is_usable(session)
+             assert len(caplog.records) == 2
+ 
+-    def test_no_log(self, caplog: pytest.LogCaptureFixture, session: Streamlink):
++    def test_no_log(self, caplog: LogCaptureFixture, session: Streamlink):
+         with patch("streamlink.stream.ffmpegmux.which", return_value="foo"):
+             assert FFMPEGMuxer.is_usable(session)
+             assert not caplog.records
+ 
+-    def test_validate_success(self, caplog: pytest.LogCaptureFixture, session: Streamlink):
++    def test_validate_success(self, caplog: LogCaptureFixture, session: Streamlink):
+         session.options.update({"ffmpeg-no-validation": False})
+ 
+         class MyFFmpegVersionOutput(FFmpegVersionOutput):
+@@ -105,7 +106,7 @@ class TestCommand:
+             ("ffmpegmux", "debug", " bar"),
+         ]
+ 
+-    def test_validate_failure(self, caplog: pytest.LogCaptureFixture, session: Streamlink):
++    def test_validate_failure(self, caplog: LogCaptureFixture, session: Streamlink):
+         session.options.update({"ffmpeg-no-validation": False})
+ 
+         class MyFFmpegVersionOutput(FFmpegVersionOutput):
+diff --git a/tests/stream/test_hls.py b/tests/stream/test_hls.py
+index 93a4e32..208eeb0 100644
+--- a/tests/stream/test_hls.py
++++ b/tests/stream/test_hls.py
+@@ -5,6 +5,7 @@ from threading import Event
+ from unittest.mock import Mock, call, patch
+ 
+ import pytest
++from _pytest.logging import LogCaptureFixture
+ import requests_mock
+ from Cryptodome.Cipher import AES
+ from Cryptodome.Util.Padding import pad
+@@ -681,7 +682,7 @@ class TestHlsExtAudio(unittest.TestCase):
+ 
+ class TestM3U8ParserLogging:
+     @pytest.mark.parametrize("loglevel,has_logs", [("trace", False), ("all", True)])
+-    def test_log(self, caplog: pytest.LogCaptureFixture, loglevel: str, has_logs: bool):
++    def test_log(self, caplog: LogCaptureFixture, loglevel: str, has_logs: bool):
+         caplog.set_level(loglevel, "streamlink")
+ 
+         parser = M3U8Parser()
+diff --git a/tests/test_logger.py b/tests/test_logger.py
+index c22a302..03c911f 100644
+--- a/tests/test_logger.py
++++ b/tests/test_logger.py
+@@ -4,6 +4,7 @@ from unittest.mock import patch
+ 
+ import freezegun
+ import pytest
++from _pytest.logging import LogCaptureFixture
+ 
+ from streamlink import logger
+ 
+@@ -97,7 +98,7 @@ class TestLogging:
+         (logger.TRACE, "trace"),
+         (logger.ALL, "all"),
+     ])
+-    def test_custom_module_name(self, caplog: pytest.LogCaptureFixture, log: logging.Logger, level: int, levelname: str):
++    def test_custom_module_name(self, caplog: LogCaptureFixture, log: logging.Logger, level: int, levelname: str):
+         caplog.set_level(1)
+         log = logging.getLogger(self.__class__.__module__)
+         getattr(log, levelname)("foo")
 diff --git a/tests/test_plugin.py b/tests/test_plugin.py
 index 480b8bc..e478bc0 100644
 --- a/tests/test_plugin.py
@@ -287,3 +389,16 @@ index ffc74dc..236bfd3 100644
          yield
          assert [(record.levelname, record.message) for record in caplog.get_records("call")] == [
              ("warning", "The https-proxy option has been deprecated in favor of a single http-proxy option"),
+diff --git a/tests/utils/test_processoutput.py b/tests/utils/test_processoutput.py
+index 2d57f33..a656491 100644
+--- a/tests/utils/test_processoutput.py
++++ b/tests/utils/test_processoutput.py
+@@ -84,7 +84,7 @@ def processoutput(request, mock_process):
+     )
+ 
+ 
+-@pytest_asyncio.fixture(autouse=True)
++@pytest.fixture(autouse=True)
+ async def assert_tasks_cleanup(event_loop: asyncio.BaseEventLoop):
+     yield
+     current_task = asyncio.current_task(event_loop)

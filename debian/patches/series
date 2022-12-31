@@ -7,5 +7,5 @@
 0007-Remove-dependency-on-versioningit.patch
 0008-Remove-intersphinx.patch
 0009-docs-use-recommonmark-instead-of-myst-parser.patch
-0010-tests-port-for-pytest-and-requests-version-from-stab.patch
+0010-tests-port-for-pytest_asyncio-and-requests-version-f.patch
 0011-Backport-requests.utils.DEFAULT_ACCEPT_ENCODING-in-t.patch
