@@ -2,7 +2,7 @@ Source: streamlink
 Maintainer: Alexis Murzeau <amubtdx@gmail.com>
 Section: python
 Priority: optional
-Standards-Version: 4.6.1
+Standards-Version: 4.6.2
 Build-Depends: debhelper-compat (= 13),
  dh-sequence-python3,
  dh-sequence-sphinxdoc,
@@ -10,7 +10,7 @@ Build-Depends: debhelper-compat (= 13),
  pybuild-plugin-pyproject,
 # Streamlink dependencies
  python3-isodate,
- python3-pycountry (>= 16.10.23),
+ python3-pycountry,
  python3-pycryptodome,
  python3-requests,
  python3-setuptools,
@@ -18,6 +18,7 @@ Build-Depends: debhelper-compat (= 13),
  python3-socks,
  python3-websocket,
  python3-lxml,
+ python3-certifi,
 # Documentation dependencies
  python3-docutils,
  python3-recommonmark,
@@ -26,6 +27,7 @@ Build-Depends: debhelper-compat (= 13),
 # Tests dependencies
  python3-freezegun,
  python3-pytest,
+ python3-pytest-asyncio,
  python3-requests-mock
 Homepage: https://streamlink.github.io/
 Vcs-Git: https://salsa.debian.org/amurzeau/streamlink.git

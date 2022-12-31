@@ -1,3 +1,33 @@
+streamlink (5.1.2-1) unstable; urgency=medium
+
+  * New upstream version 5.1.2
+  * d/README.source: update packaging instructions
+  * d/streamlink.{install,manpages}: update completion scripts location
+    (Closes: #1026714)
+  * Bump Standards-Version to 4.6.2 (no changes)
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 22 Dec 2022 15:35:53 +0100
+
+streamlink (5.1.1-1) unstable; urgency=medium
+
+  * New upstream version 5.1.1
+  * Control: add build-dep on python3-certifi.
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 29 Nov 2022 08:51:03 +0000
+
+streamlink (5.1.0-1) unstable; urgency=medium
+
+  [ Debian Janitor ]
+  * Remove constraints unnecessary since buster (oldstable)
+
+  [ Alexis Murzeau ]
+  * New upstream version 5.1.0
+  * d/patches: update patches
+  * d/control: update build dependencies
+  * d/tests/control: update test dependencies
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 16 Nov 2022 23:29:10 +0100
+
 streamlink (5.0.1-1~bpo11+1) bullseye-backports; urgency=medium
 
   * Rebuild for bullseye-backports.

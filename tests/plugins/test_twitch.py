@@ -329,6 +329,40 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         ])
 
     @patch("streamlink.plugins.twitch.log")
+    def test_hls_low_latency_has_prefetch_disable_ads_no_preroll_with_prefetch_ads(self, mock_log):
+        # segment 1 has a shorter duration, to mess with the extrapolation of the prefetch start times
+        # segments 3-6 are ads
+        Seg, Pre = Segment, SegmentPrefetch
+        ads = [
+            Tag("EXT-X-DISCONTINUITY"),
+            TagDateRangeAd(start=DATETIME_BASE + timedelta(seconds=3), duration=4),
+        ]
+        # noinspection PyTypeChecker
+        thread, segments = self.subject([
+            # regular stream data with prefetch segments
+            Playlist(0, [Seg(0), Seg(1, duration=0.5), Pre(2), Pre(3)]),
+            # three prefetch segments, one regular (2) and two ads (3 and 4)
+            Playlist(1, [Seg(1, duration=0.5), Pre(2)] + ads + [Pre(3), Pre(4)]),
+            # all prefetch segments are gone once regular prefetch segments have shifted
+            Playlist(2, [Seg(2, duration=1.5)] + ads + [Seg(3), Seg(4), Seg(5)]),
+            # still no prefetch segments while ads are playing
+            Playlist(3, ads + [Seg(3), Seg(4), Seg(5), Seg(6)]),
+            # new prefetch segments on the first regular segment occurrence
+            Playlist(4, ads + [Seg(4), Seg(5), Seg(6), Seg(7), Pre(8), Pre(9)]),
+            Playlist(5, ads + [Seg(5), Seg(6), Seg(7), Seg(8), Pre(9), Pre(10)]),
+            Playlist(6, ads + [Seg(6), Seg(7), Seg(8), Seg(9), Pre(10), Pre(11)]),
+            Playlist(7, [Seg(7), Seg(8), Seg(9), Seg(10), Pre(11), Pre(12)], end=True),
+        ], disable_ads=True, low_latency=True)
+
+        self.await_write(11)
+        content = self.await_read(read_all=True)
+        assert content == self.content(segments, cond=lambda s: 2 <= s.num <= 3 or 7 <= s.num)
+        assert mock_log.info.mock_calls == [
+            call("Will skip ad segments"),
+            call("Low latency streaming (HLS live edge: 2)"),
+        ]
+
+    @patch("streamlink.plugins.twitch.log")
     def test_hls_low_latency_no_prefetch_disable_ads_has_preroll(self, mock_log):
         daterange = TagDateRangeAd(duration=4)
         self.subject([

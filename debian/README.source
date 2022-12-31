@@ -40,6 +40,9 @@ gbp import-orig --uscan
 # Update debian/patches
 gbp pq rebase
 
+# Go back to master branch
+gbp pq switch
+
 # Update debian/changelog
 gbp dch -Ra --commit
 
