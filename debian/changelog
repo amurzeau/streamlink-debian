@@ -1,8 +1,11 @@
 streamlink (5.1.2-1~bpo11+1) bullseye-backports; urgency=medium
 
   * Rebuild for bullseye-backports.
+  * d/patches: update patches to use pytest and pytest-asyncio from stable
+  * Revert "d/streamlink.{install,manpages}: update completion scripts location"
+    This is required with stable distribution.
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 31 Dec 2022 15:51:51 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 01 Jan 2023 03:45:47 +0100
 
 streamlink (5.1.2-1) unstable; urgency=medium
 
