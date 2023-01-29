@@ -57,7 +57,6 @@ docs/cli/tutorial.rst
 docs/cli/plugins/crunchyroll.rst
 docs/cli/plugins/funimationnow.rst
 docs/cli/plugins/twitch.rst
-examples/opencv-face.py
 src/streamlink/__init__.py
 src/streamlink/__main__.py
 src/streamlink/_version.py
@@ -156,6 +155,7 @@ src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/mediavitrina.py
 src/streamlink/plugins/mildom.py
 src/streamlink/plugins/mitele.py
+src/streamlink/plugins/mixcloud.py
 src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mrtmk.py
 src/streamlink/plugins/n13tv.py
@@ -172,7 +172,6 @@ src/streamlink/plugins/olympicchannel.py
 src/streamlink/plugins/oneplusone.py
 src/streamlink/plugins/onetv.py
 src/streamlink/plugins/openrectv.py
-src/streamlink/plugins/orf_tvthek.py
 src/streamlink/plugins/pandalive.py
 src/streamlink/plugins/picarto.py
 src/streamlink/plugins/piczel.py
@@ -228,6 +227,7 @@ src/streamlink/plugins/vidio.py
 src/streamlink/plugins/vimeo.py
 src/streamlink/plugins/vinhlongtv.py
 src/streamlink/plugins/vk.py
+src/streamlink/plugins/vkplay.py
 src/streamlink/plugins/vlive.py
 src/streamlink/plugins/vtvgo.py
 src/streamlink/plugins/wasd.py
@@ -274,6 +274,7 @@ src/streamlink_cli/console.py
 src/streamlink_cli/constants.py
 src/streamlink_cli/main.py
 src/streamlink_cli/output.py
+src/streamlink_cli/streamrunner.py
 src/streamlink_cli/utils/__init__.py
 src/streamlink_cli/utils/formatter.py
 src/streamlink_cli/utils/http_server.py
@@ -282,10 +283,11 @@ src/streamlink_cli/utils/player.py
 src/streamlink_cli/utils/progress.py
 src/streamlink_cli/utils/versioncheck.py
 tests/__init__.py
+tests/conftest.py
 tests/test_api_http_session.py
 tests/test_api_validate.py
 tests/test_api_websocket.py
-tests/test_buffer.py
+tests/test_buffers.py
 tests/test_cache.py
 tests/test_logger.py
 tests/test_options.py
@@ -302,6 +304,8 @@ tests/cli/test_cmdline_title.py
 tests/cli/test_console.py
 tests/cli/test_main.py
 tests/cli/test_main_formatter.py
+tests/cli/test_main_setup_config_args.py
+tests/cli/test_streamrunner.py
 tests/cli/output/__init__.py
 tests/cli/output/test_output.py
 tests/cli/output/test_playeroutput.py
@@ -383,6 +387,7 @@ tests/plugins/test_mediaklikk.py
 tests/plugins/test_mediavitrina.py
 tests/plugins/test_mildom.py
 tests/plugins/test_mitele.py
+tests/plugins/test_mixcloud.py
 tests/plugins/test_mjunoon.py
 tests/plugins/test_mrtmk.py
 tests/plugins/test_n13tv.py
@@ -399,7 +404,6 @@ tests/plugins/test_olympicchannel.py
 tests/plugins/test_oneplusone.py
 tests/plugins/test_onetv.py
 tests/plugins/test_openrectv.py
-tests/plugins/test_orf_tvthek.py
 tests/plugins/test_pandalive.py
 tests/plugins/test_picarto.py
 tests/plugins/test_piczel.py
@@ -456,6 +460,7 @@ tests/plugins/test_vidio.py
 tests/plugins/test_vimeo.py
 tests/plugins/test_vinhlongtv.py
 tests/plugins/test_vk.py
+tests/plugins/test_vkplay.py
 tests/plugins/test_vlive.py
 tests/plugins/test_vtvgo.py
 tests/plugins/test_wasd.py
@@ -503,6 +508,9 @@ tests/stream/test_hls_playlist.py
 tests/stream/test_stream_json.py
 tests/stream/test_stream_to_url.py
 tests/stream/test_stream_wrappers.py
+tests/testutils/__init__.py
+tests/testutils/handshake.py
+tests/testutils/test_handshake.py
 tests/utils/__init__.py
 tests/utils/test_args.py
 tests/utils/test_cache.py

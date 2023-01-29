@@ -1,23 +1,20 @@
 import argparse
-import errno
 import logging
 import os
 import platform
 import re
 import signal
 import sys
+import warnings
 from contextlib import closing, suppress
-from functools import partial
 from gettext import gettext
-from itertools import chain
 from pathlib import Path
 from time import sleep
-from typing import Any, Dict, Iterator, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 import streamlink.logger as logger
 from streamlink import NoPluginError, PluginError, StreamError, Streamlink, __version__ as streamlink_version
-from streamlink.compat import is_win32
-from streamlink.exceptions import FatalPluginError
+from streamlink.exceptions import FatalPluginError, StreamlinkDeprecationWarning
 from streamlink.plugin import Plugin, PluginOptions
 from streamlink.stream.stream import Stream, StreamIO
 from streamlink.utils.named_pipe import NamedPipe
@@ -26,16 +23,10 @@ from streamlink_cli.compat import DeprecatedPath, importlib_metadata, stdout
 from streamlink_cli.console import ConsoleOutput, ConsoleUserInputRequester
 from streamlink_cli.constants import CONFIG_FILES, DEFAULT_STREAM_METADATA, LOG_DIR, PLUGIN_DIRS, STREAM_SYNONYMS
 from streamlink_cli.output import FileOutput, PlayerOutput
+from streamlink_cli.streamrunner import StreamRunner
 from streamlink_cli.utils import Formatter, HTTPServer, datetime
-from streamlink_cli.utils.progress import Progress
 from streamlink_cli.utils.versioncheck import check_version
 
-
-ACCEPTABLE_ERRNO = (errno.EPIPE, errno.EINVAL, errno.ECONNRESET)
-try:
-    ACCEPTABLE_ERRNO += (errno.WSAECONNABORTED,)  # type: ignore
-except AttributeError:
-    pass  # Not windows
 
 QUIET_OPTIONS = ("json", "stream_url", "quiet")
 
@@ -262,7 +253,12 @@ def output_stream_http(
 
         if stream_fd and prebuffer:
             log.debug("Writing stream to player")
-            read_stream(stream_fd, server, prebuffer, formatter)
+            stream_runner = StreamRunner(stream_fd, server)
+            try:
+                stream_runner.run(prebuffer)
+            except OSError as err:
+                # TODO: refactor all console.exit() calls
+                console.exit(str(err))
 
         if not continuous:
             break
@@ -364,72 +360,19 @@ def output_stream(stream, formatter: Formatter):
             console.exit(f"Failed to open output ({err}")
         return
 
-    with closing(output):
-        log.debug("Writing stream to output")
-        read_stream(stream_fd, output, prebuffer, formatter)
+    try:
+        with closing(output):
+            log.debug("Writing stream to output")
+            # TODO: finally clean up the global variable mess and refactor the streamlink_cli package
+            # noinspection PyUnboundLocalVariable
+            stream_runner = StreamRunner(stream_fd, output, args.force_progress)
+            # noinspection PyUnboundLocalVariable
+            stream_runner.run(prebuffer)
+    except OSError as err:
+        # TODO: refactor all console.exit() calls
+        console.exit(str(err))
 
     return True
-
-
-def read_stream(stream, output, prebuffer, formatter: Formatter, chunk_size=8192):
-    """Reads data from stream and then writes it to the output."""
-    is_player = isinstance(output, PlayerOutput)
-    is_http = isinstance(output, HTTPServer)
-    is_fifo = is_player and output.namedpipe
-    show_progress = (
-        isinstance(output, FileOutput)
-        and output.fd is not stdout
-        and (sys.stdout.isatty() or args.force_progress)
-    )
-    show_record_progress = (
-        hasattr(output, "record")
-        and isinstance(output.record, FileOutput)
-        and output.record.fd is not stdout
-        and (sys.stdout.isatty() or args.force_progress)
-    )
-
-    progress: Optional[Progress] = None
-    stream_iterator: Iterator = chain(
-        [prebuffer],
-        iter(partial(stream.read, chunk_size), b"")
-    )
-    if show_progress or show_record_progress:
-        progress = Progress(
-            sys.stderr,
-            output.filename or output.record.filename,
-        )
-        stream_iterator = progress.iter(stream_iterator)
-
-    try:
-        for data in stream_iterator:
-            # We need to check if the player process still exists when
-            # using named pipes on Windows since the named pipe is not
-            # automatically closed by the player.
-            if is_win32 and is_fifo:
-                output.player.poll()
-
-                if output.player.returncode is not None:
-                    log.info("Player closed")
-                    break
-
-            try:
-                output.write(data)
-            except OSError as err:
-                if is_player and err.errno in ACCEPTABLE_ERRNO:
-                    log.info("Player closed")
-                elif is_http and err.errno in ACCEPTABLE_ERRNO:
-                    log.info("HTTP connection closed")
-                else:
-                    console.exit(f"Error when writing to output: {err}, exiting")
-
-                break
-    except OSError as err:
-        console.exit(f"Error when reading from stream: {err}, exiting")
-    finally:
-        if progress:
-            progress.close()
-        stream.close()
-        log.info("Stream ended")
 
 
 def handle_stream(plugin: Plugin, streams: Dict[str, Stream], stream_name: str) -> None:
@@ -667,7 +610,10 @@ def load_plugins(dirs: List[Path], showwarning: bool = True):
         if directory.is_dir():
             success = streamlink.load_plugins(str(directory))
             if success and type(directory) is DeprecatedPath:
-                log.warning(f"Loaded plugins from deprecated path, see CLI docs for how to migrate: {directory}")
+                warnings.warn(
+                    f"Loaded plugins from deprecated path, see CLI docs for how to migrate: {directory}",
+                    StreamlinkDeprecationWarning,
+                )
         elif showwarning:
             log.warning(f"Plugin path {directory} does not exist or is not a directory!")
 
@@ -701,7 +647,7 @@ def setup_config_args(parser, ignore_unknown=False):
     config_files = []
 
     if args.config:
-        # We want the config specified last to get highest priority
+        # We want the config specified last to get the highest priority
         config_files.extend(
             config_file
             for config_file in map(lambda path: Path(path).expanduser(), reversed(args.config))
@@ -710,9 +656,12 @@ def setup_config_args(parser, ignore_unknown=False):
 
     else:
         # Only load first available default config
-        for config_file in filter(lambda path: path.is_file(), CONFIG_FILES):
+        for config_file in filter(lambda path: path.is_file(), CONFIG_FILES):  # pragma: no branch
             if type(config_file) is DeprecatedPath:
-                log.warning(f"Loaded config from deprecated path, see CLI docs for how to migrate: {config_file}")
+                warnings.warn(
+                    f"Loaded config from deprecated path, see CLI docs for how to migrate: {config_file}",
+                    StreamlinkDeprecationWarning,
+                )
             config_files.append(config_file)
             break
 
@@ -720,12 +669,15 @@ def setup_config_args(parser, ignore_unknown=False):
         # Only load first available plugin config
         with suppress(NoPluginError):
             pluginname, pluginclass, resolved_url = streamlink.resolve_url(args.url)
-            for config_file in CONFIG_FILES:
+            for config_file in CONFIG_FILES:  # pragma: no branch
                 config_file = config_file.with_name(f"{config_file.name}.{pluginname}")
                 if not config_file.is_file():
                     continue
                 if type(config_file) is DeprecatedPath:
-                    log.warning(f"Loaded plugin config from deprecated path, see CLI docs for how to migrate: {config_file}")
+                    warnings.warn(
+                        f"Loaded plugin config from deprecated path, see CLI docs for how to migrate: {config_file}",
+                        StreamlinkDeprecationWarning,
+                    )
                 config_files.append(config_file)
                 break
 
@@ -903,6 +855,7 @@ def setup_logger_and_console(stream=sys.stdout, filename=None, level="info", jso
         style="{",
         format=f"{'[{asctime}]' if verbose else ''}[{{name}}][{{levelname}}] {{message}}",
         datefmt=f"%H:%M:%S{'.%f' if verbose else ''}",
+        capture_warnings=True,
     )
 
     console = ConsoleOutput(streamhandler.stream, json)

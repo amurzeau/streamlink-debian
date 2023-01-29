@@ -1,16 +1,17 @@
 import re
 import unittest
+import warnings
 from pathlib import Path
 from socket import AF_INET, AF_INET6
 from unittest.mock import Mock, call, patch
 
 import pytest
 import requests_mock
-# noinspection PyPackageRequirements
 import urllib3
 
 import tests.plugin
 from streamlink import NoPluginError, Streamlink
+from streamlink.exceptions import StreamlinkDeprecationWarning
 from streamlink.plugin import HIGH_PRIORITY, LOW_PRIORITY, NORMAL_PRIORITY, NO_PRIORITY, Plugin, pluginmatcher
 from streamlink.stream.hls import HLSStream
 from streamlink.stream.http import HTTPStream
@@ -19,7 +20,6 @@ from streamlink.stream.http import HTTPStream
 PATH_TESTPLUGINS = Path(tests.plugin.__path__[0])
 PATH_TESTPLUGINS_OVERRIDE = PATH_TESTPLUGINS / "override"
 
-# noinspection PyUnresolvedReferences
 _original_allowed_gai_family = urllib3.util.connection.allowed_gai_family  # type: ignore[attr-defined]
 
 
@@ -34,6 +34,7 @@ class EmptyPlugin(Plugin):
         pass  # pragma: no cover
 
 
+# TODO: rewrite using pytest
 class TestSession(unittest.TestCase):
     mocker: requests_mock.Mocker
 
@@ -100,14 +101,14 @@ class TestSession(unittest.TestCase):
         session = self.subject()
         plugins = session.get_plugins()
 
-        with patch("streamlink.session.log") as mock_log:
+        with warnings.catch_warnings(record=True) as record_warnings:
             pluginname, pluginclass, resolved_url = session.resolve_url("http://test.se/channel")
 
         assert issubclass(pluginclass, Plugin)
         assert pluginclass is plugins["testplugin"]
         assert resolved_url == "http://test.se/channel"
         assert hasattr(session.resolve_url, "cache_info"), "resolve_url has a lookup cache"
-        assert not mock_log.warning.call_args_list
+        assert record_warnings == []
 
     def test_resolve_url__noplugin(self):
         session = self.subject()
@@ -247,13 +248,13 @@ class TestSession(unittest.TestCase):
             "dep-high": DeprecatedHighPriority,
         }
 
-        with patch("streamlink.session.log") as mock_log:
+        with pytest.warns() as recwarn:
             plugin = session.resolve_url_no_redirect("low")[1]
 
         assert plugin is DeprecatedHighPriority
-        assert mock_log.warning.call_args_list == [
-            call("Resolved plugin dep-normal-one with deprecated can_handle_url API"),
-            call("Resolved plugin dep-high with deprecated can_handle_url API"),
+        assert [(record.category, str(record.message)) for record in recwarn.list] == [
+            (StreamlinkDeprecationWarning, "Resolved plugin dep-normal-one with deprecated can_handle_url API"),
+            (StreamlinkDeprecationWarning, "Resolved plugin dep-high with deprecated can_handle_url API"),
         ]
 
     def test_options(self):
@@ -416,15 +417,18 @@ class TestSession(unittest.TestCase):
 
 class TestSessionOptionHttpProxy:
     @pytest.fixture
-    def no_deprecation(self, caplog: pytest.LogCaptureFixture):
+    def no_deprecation(self, recwarn: pytest.WarningsRecorder):
         yield
-        assert not caplog.get_records("call")
+        assert recwarn.list == []
 
     @pytest.fixture
-    def logs_deprecation(self, caplog: pytest.LogCaptureFixture):
+    def logs_deprecation(self, recwarn: pytest.WarningsRecorder):
         yield
-        assert [(record.levelname, record.message) for record in caplog.get_records("call")] == [
-            ("warning", "The https-proxy option has been deprecated in favor of a single http-proxy option"),
+        assert [(record.category, str(record.message)) for record in recwarn.list] == [
+            (
+                StreamlinkDeprecationWarning,
+                "The `https-proxy` option has been deprecated in favor of a single `http-proxy` option",
+            ),
         ]
 
     def test_https_proxy_default(self, session: Streamlink, no_deprecation):
@@ -464,6 +468,16 @@ class TestSessionOptionHttpProxy:
 
         assert session.http.proxies["http"] == "socks5://localhost:1234"
         assert session.http.proxies["https"] == "socks5://localhost:1234"
+
+    def test_get_http_proxy(self, session: Streamlink, no_deprecation):
+        session.http.proxies["http"] = "http://testproxy1.com"
+        session.http.proxies["https"] = "http://testproxy2.com"
+        assert session.get_option("http-proxy") == "http://testproxy1.com"
+
+    def test_get_https_proxy(self, session: Streamlink, logs_deprecation):
+        session.http.proxies["http"] = "http://testproxy1.com"
+        session.http.proxies["https"] = "http://testproxy2.com"
+        assert session.get_option("https-proxy") == "http://testproxy2.com"
 
 
 @pytest.mark.parametrize("option", [
