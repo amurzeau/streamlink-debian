@@ -1,8 +1,10 @@
-streamlink (5.2.1-1) UNRELEASED; urgency=medium
+streamlink (5.2.1-1) unstable; urgency=medium
 
   * New upstream version 5.2.1
+  * d/copyright: update copyright years with 2023
+  * d/examples: don't install examples, they were removed
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 29 Jan 2023 12:21:27 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 29 Jan 2023 13:00:22 +0100
 
 streamlink (5.1.2-1) unstable; urgency=medium
 
