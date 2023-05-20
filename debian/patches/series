@@ -2,7 +2,7 @@
 0002-Remove-external-images.patch
 0003-Use-pycrytodomex-instead-of-pycryptodome.patch
 0004-Remove-GitHub-Buttons-without-replacement.patch
-0005-Use-sphinx_rtd_theme-theme-as-a-replacement-of-furo-.patch
 0006-Use-font-awesome-4-icons-a-Debian-doesn-t-have-font-.patch
 0007-Remove-dependency-on-versioningit.patch
 0008-Remove-intersphinx.patch
+0008-docs-remove-furo-version-specification-in-docs-requi.patch

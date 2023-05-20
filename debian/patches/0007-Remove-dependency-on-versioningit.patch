@@ -9,11 +9,11 @@ Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  dev-requirements.txt  | 1 -
- docs-requirements.txt | 3 +--
+ docs-requirements.txt | 1 -
  pyproject.toml        | 1 -
  setup.cfg             | 1 +
  setup.py              | 2 --
- 5 files changed, 2 insertions(+), 6 deletions(-)
+ 5 files changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/dev-requirements.txt b/dev-requirements.txt
 index d0756e2..3804f21 100644
@@ -28,13 +28,11 @@ index d0756e2..3804f21 100644
  ruff ==0.0.259
  
 diff --git a/docs-requirements.txt b/docs-requirements.txt
-index d6cf287..3c3c025 100644
+index d6cf287..78e878d 100644
 --- a/docs-requirements.txt
 +++ b/docs-requirements.txt
-@@ -1,7 +1,6 @@
- sphinx >=5.0.0, <7
--furo ==2023.03.27
-+sphinx-rtd-theme
+@@ -2,6 +2,5 @@ sphinx >=5.0.0, <7
+ furo ==2023.03.27
  myst-parser >=1.0.0, <2
  sphinx-design >=0.4.1, <1
 -versioningit >=2.0.0, <3
