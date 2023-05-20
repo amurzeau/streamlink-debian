@@ -4,6 +4,7 @@ streamlink (5.5.1-1~exp1) experimental; urgency=medium
   * d/patches: update patches
   * d/patches,control: use furo theme instead of sphinx-rtd-theme
   * d/patches,control: use fork-awesome as a replacement for font-awesome
+  * d/s/lintian-overrides: remove obsolete override about a test file
 
  -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 20 May 2023 19:52:43 +0200
 
