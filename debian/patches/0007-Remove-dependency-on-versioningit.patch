@@ -16,31 +16,32 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  5 files changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/dev-requirements.txt b/dev-requirements.txt
-index 3afd1e6..e1e27ce 100644
+index d0756e2..3804f21 100644
 --- a/dev-requirements.txt
 +++ b/dev-requirements.txt
-@@ -10,7 +10,6 @@ flake8
- flake8-import-order
- flake8-pyi
+@@ -7,7 +7,6 @@ mock ; python_version<"3.8"
+ requests-mock
+ freezegun>=1.0.0
  shtab
 -versioningit >=2.0.0, <3
  
- mypy
- lxml-stubs
+ ruff ==0.0.259
+ 
 diff --git a/docs-requirements.txt b/docs-requirements.txt
-index e9ffcbb..35f1c02 100644
+index d6cf287..3c3c025 100644
 --- a/docs-requirements.txt
 +++ b/docs-requirements.txt
-@@ -1,6 +1,5 @@
- sphinx >=4.0.0
--furo ==2022.09.15
+@@ -1,7 +1,6 @@
+ sphinx >=5.0.0, <7
+-furo ==2023.03.27
 +sphinx-rtd-theme
- myst-parser >=0.18.0
+ myst-parser >=1.0.0, <2
+ sphinx-design >=0.4.1, <1
 -versioningit >=2.0.0, <3
  
  docutils-stubs
 diff --git a/pyproject.toml b/pyproject.toml
-index ab325e0..065248b 100644
+index b06efc7..d8c32cb 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -3,7 +3,6 @@ build-backend = "setuptools.build_meta"
@@ -52,7 +53,7 @@ index ab325e0..065248b 100644
  
  
 diff --git a/setup.cfg b/setup.cfg
-index ee33b91..7879c53 100644
+index 2504571..024ad36 100644
 --- a/setup.cfg
 +++ b/setup.cfg
 @@ -1,5 +1,6 @@
@@ -63,7 +64,7 @@ index ee33b91..7879c53 100644
  author_email = streamlink@protonmail.com
  description = Streamlink is a command-line utility that extracts streams from various services and pipes them into a video player of choice.
 diff --git a/setup.py b/setup.py
-index 04a7c5f..73a91bf 100644
+index 62ba06c..f552de7 100644
 --- a/setup.py
 +++ b/setup.py
 @@ -74,10 +74,8 @@ data_files = [

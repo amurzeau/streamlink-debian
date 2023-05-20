@@ -14,10 +14,10 @@ the image for privacy reasons.
 Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
- docs/applications.rst |  4 +---
- docs/donate.rst       | 17 ++++-------------
- docs/thirdparty.rst   |  5 +----
- 3 files changed, 6 insertions(+), 20 deletions(-)
+ docs/applications.rst | 4 +---
+ docs/donate.rst       | 5 -----
+ docs/thirdparty.rst   | 5 +----
+ 3 files changed, 2 insertions(+), 12 deletions(-)
 
 diff --git a/docs/applications.rst b/docs/applications.rst
 index 477031e..0d78e54 100644
@@ -40,54 +40,45 @@ index 477031e..0d78e54 100644
  :Info: An NW.js based desktop web application. Browse Twitch.tv and watch multiple streams at once.
      Filter streams by language, receive desktop notifications when followed channels start
 diff --git a/docs/donate.rst b/docs/donate.rst
-index 0474375..f6ca474 100644
+index 8fe646e..4acb1bd 100644
 --- a/docs/donate.rst
 +++ b/docs/donate.rst
-@@ -19,7 +19,7 @@ as payment for future work.
- .. raw:: html
+@@ -26,35 +26,30 @@ Team members
  
-    <a href="https://opencollective.com/streamlink" target="_blank" class="no-external-link-icon">
--     <img alt="Donate to our collective" src="https://opencollective.com/streamlink/donate/button@2x.png?color=white" width="300" height="50">
-+     Donate to our collective
-    </a>
+     .. grid-item-card::
+         :padding: 3
+-        :img-top: https://github.com/back-to.png?size=100
+         :link: https://github.com/back-to
+         :link-alt: @back-to
+         :text-align: center
  
+     .. grid-item-card::
+         :padding: 3
+-        :img-top: https://github.com/bastimeyer.png?size=100
+         :link: https://github.com/bastimeyer
+         :link-alt: @bastimeyer
+         :text-align: center
  
-@@ -30,10 +30,7 @@ as payment for future work.
- Bastimeyer
- ^^^^^^^^^^
+     .. grid-item-card::
+         :padding: 3
+-        :img-top: https://github.com/beardypig.png?size=100
+         :link: https://github.com/beardypig
+         :link-alt: @beardypig
+         :text-align: center
  
--.. container:: clearfix
--
--   .. image:: https://github.com/bastimeyer.png?size=150
--      :class: github-avatar
-+.. container::
+     .. grid-item-card::
+         :padding: 3
+-        :img-top: https://github.com/gravyboat.png?size=100
+         :link: https://github.com/gravyboat
+         :link-alt: @gravyboat
+         :text-align: center
  
-    .. container::
- 
-@@ -45,10 +42,7 @@ Bastimeyer
- Beardypig
- ^^^^^^^^^
- 
--.. container:: clearfix
--
--   .. image:: https://github.com/beardypig.png?size=150
--      :class: github-avatar
-+.. container::
- 
-    .. container::
- 
-@@ -58,10 +52,7 @@ Beardypig
- Gravyboat
- ^^^^^^^^^
- 
--.. container:: clearfix
--
--   .. image:: https://github.com/gravyboat.png?size=150
--      :class: github-avatar
-+.. container::
- 
-    .. container::
- 
+     .. grid-item-card::
+         :padding: 3
+-        :img-top: https://github.com/mkbloke.png?size=100
+         :link: https://github.com/mkbloke
+         :link-alt: @mkbloke
+         :text-align: center
 diff --git a/docs/thirdparty.rst b/docs/thirdparty.rst
 index de2f5f5..a432bff 100644
 --- a/docs/thirdparty.rst

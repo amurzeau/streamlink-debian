@@ -8,11 +8,11 @@ theme.
 Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
- docs/conf.py | 19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
+ docs/conf.py | 23 ++++++-----------------
+ 1 file changed, 6 insertions(+), 17 deletions(-)
 
 diff --git a/docs/conf.py b/docs/conf.py
-index 0da1597..519e4cd 100644
+index 24d9a73..ef0d708 100644
 --- a/docs/conf.py
 +++ b/docs/conf.py
 @@ -1,6 +1,7 @@
@@ -28,10 +28,10 @@ index 0da1597..519e4cd 100644
      'ext_releaseref',
      'myst_parser',
 +    'sphinx_rtd_theme',
+     'sphinx_design',
  ]
  
- autosectionlabel_prefix_document = True
-@@ -116,16 +118,12 @@ intersphinx_timeout = 60
+@@ -117,18 +119,12 @@ intersphinx_timeout = 60
  
  # The theme to use for HTML and HTML Help pages.  See the documentation for
  # a list of builtin themes.
@@ -45,12 +45,14 @@ index 0da1597..519e4cd 100644
 -    "source_repository": "https://github.com/streamlink/streamlink/",
 -    "source_branch": "master",
 -    "source_directory": "docs/",
+-    "light_logo": "icon.svg",
+-    "dark_logo": "icon.svg",
 -}
 +html_theme_options = {}
  
  # Add any paths that contain custom themes here, relative to this directory.
  #html_theme_path = []
-@@ -146,7 +144,7 @@ html_template_vars = {
+@@ -149,7 +145,7 @@ html_template_vars = {
  
  # The name of an image file (relative to this directory) to place at the top
  # of the sidebar.
@@ -59,17 +61,19 @@ index 0da1597..519e4cd 100644
  
  # The name of an image file (within the static path) to use as favicon of the
  # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
-@@ -160,9 +158,6 @@ html_static_path = ['_static']
+@@ -162,10 +158,7 @@ html_logo = "../icon.svg"
+ html_static_path = ['_static']
  
  html_css_files = [
-     'styles/custom.css',
--    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/fontawesome.min.css',
--    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/solid.min.css',
--    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/brands.min.css',
+-    "styles/custom.css",
+-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/fontawesome.min.css",
+-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/solid.min.css",
+-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/brands.min.css",
++    'styles/custom.css',
  ]
  
  # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
-@@ -172,12 +167,8 @@ html_css_files = [
+@@ -175,12 +168,8 @@ html_css_files = [
  # Custom sidebar templates, maps document names to template names.
  html_sidebars = {
      '**': [
