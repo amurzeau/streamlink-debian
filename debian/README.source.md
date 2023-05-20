@@ -67,6 +67,19 @@ git push origin experimental master upstream pristine-tar bullseye-backports --t
 dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 ```
 
+## For experimental
+
+```sh
+# Update debian/changelog
+gbp dch -Ra --commit -Dexperimental
+
+# Do test build with sbuild (using experimental as an alias to unstable schroot)
+gbp buildpackage "--git-builder=sbuild -v -As -d experimental --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'" --extra-repository='deb http://deb.debian.org/debian experimental main' --build-dep-resolver=aspcud
+```
+
+The rest is identical to unstable.
+
+
 ## For backports
 
 ```sh
