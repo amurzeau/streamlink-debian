@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -47,22 +47,22 @@ class TestPluginCanHandleUrlTwitch(PluginCanHandleUrl):
     ]
 
     should_not_match = [
-        'https://www.twitch.tv',
-        'https://www.twitch.tv/',
+        "https://www.twitch.tv",
+        "https://www.twitch.tv/",
     ]
 
 
-DATETIME_BASE = datetime(2000, 1, 1, 0, 0, 0, 0)
+DATETIME_BASE = datetime(2000, 1, 1, 0, 0, 0, 0, timezone.utc)
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class TagDateRangeAd(Tag):
-    def __init__(self, start=DATETIME_BASE, duration=1, id="stitched-ad-1234", classname="twitch-stitched-ad", custom=None):
+    def __init__(self, start=DATETIME_BASE, duration=1, attrid="stitched-ad-1234", classname="twitch-stitched-ad", custom=None):
         attrs = {
-            "ID": self.val_quoted_string(id),
+            "ID": self.val_quoted_string(attrid),
             "CLASS": self.val_quoted_string(classname),
             "START-DATE": self.val_quoted_string(start.strftime(DATETIME_FORMAT)),
-            "DURATION": duration
+            "DURATION": duration,
         }
         if custom is not None:
             attrs.update(**{key: self.val_quoted_string(value) for (key, value) in custom.items()})
@@ -77,7 +77,7 @@ class Segment(_Segment):
     def build(self, namespace):
         return "#EXT-X-PROGRAM-DATE-TIME:{0}\n{1}".format(
             self.date.strftime(DATETIME_FORMAT),
-            super().build(namespace)
+            super().build(namespace),
         )
 
 
@@ -129,44 +129,76 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         return session
 
     def test_hls_disable_ads_daterange_unknown(self):
-        daterange = TagDateRangeAd(start=DATETIME_BASE, duration=1, id="foo", classname="bar", custom=None)
+        daterange = TagDateRangeAd(
+            start=DATETIME_BASE,
+            duration=1,
+            attrid="foo",
+            classname="bar",
+            custom=None,
+        )
+
         thread, segments = self.subject([
-            Playlist(0, [daterange, Segment(0), Segment(1)], end=True)
+            Playlist(0, [daterange, Segment(0), Segment(1)], end=True),
         ], disable_ads=True, low_latency=False)
 
         self.await_write(2)
-        self.assertEqual(self.await_read(read_all=True), self.content(segments), "Doesn't filter out segments")
-        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
+        data = self.await_read(read_all=True)
+        assert data == self.content(segments), "Doesn't filter out segments"
+        assert all(self.called(s) for s in segments.values()), "Downloads all segments"
 
     def test_hls_disable_ads_daterange_by_class(self):
-        daterange = TagDateRangeAd(start=DATETIME_BASE, duration=1, id="foo", classname="twitch-stitched-ad", custom=None)
+        daterange = TagDateRangeAd(
+            start=DATETIME_BASE,
+            duration=1,
+            attrid="foo",
+            classname="twitch-stitched-ad",
+            custom=None,
+        )
+
         thread, segments = self.subject([
-            Playlist(0, [daterange, Segment(0), Segment(1)], end=True)
+            Playlist(0, [daterange, Segment(0), Segment(1)], end=True),
         ], disable_ads=True, low_latency=False)
 
         self.await_write(2)
-        self.assertEqual(self.await_read(read_all=True), segments[1].content, "Filters out ad segments")
-        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
+        data = self.await_read(read_all=True)
+        assert data == segments[1].content, "Filters out ad segments"
+        assert all(self.called(s) for s in segments.values()), "Downloads all segments"
 
     def test_hls_disable_ads_daterange_by_id(self):
-        daterange = TagDateRangeAd(start=DATETIME_BASE, duration=1, id="stitched-ad-1234", classname="/", custom=None)
+        daterange = TagDateRangeAd(
+            start=DATETIME_BASE,
+            duration=1,
+            attrid="stitched-ad-1234",
+            classname="/",
+            custom=None,
+        )
+
         thread, segments = self.subject([
-            Playlist(0, [daterange, Segment(0), Segment(1)], end=True)
+            Playlist(0, [daterange, Segment(0), Segment(1)], end=True),
         ], disable_ads=True, low_latency=False)
 
         self.await_write(2)
-        self.assertEqual(self.await_read(read_all=True), segments[1].content, "Filters out ad segments")
-        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
+        data = self.await_read(read_all=True)
+        assert data == segments[1].content, "Filters out ad segments"
+        assert all(self.called(s) for s in segments.values()), "Downloads all segments"
 
     def test_hls_disable_ads_daterange_by_attr(self):
-        daterange = TagDateRangeAd(start=DATETIME_BASE, duration=1, id="foo", classname="/", custom={"X-TV-TWITCH-AD-URL": "/"})
+        daterange = TagDateRangeAd(
+            start=DATETIME_BASE,
+            duration=1,
+            attrid="foo",
+            classname="/",
+            custom={"X-TV-TWITCH-AD-URL": "/"},
+        )
+
         thread, segments = self.subject([
-            Playlist(0, [daterange, Segment(0), Segment(1)], end=True)
+            Playlist(0, [daterange, Segment(0), Segment(1)], end=True),
         ], disable_ads=True, low_latency=False)
 
         self.await_write(2)
-        self.assertEqual(self.await_read(read_all=True), segments[1].content, "Filters out ad segments")
-        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
+        data = self.await_read(read_all=True)
+        assert data == segments[1].content, "Filters out ad segments"
+        assert all(self.called(s) for s in segments.values()), "Downloads all segments"
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_disable_ads_has_preroll(self, mock_log):
@@ -174,21 +206,17 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         thread, segments = self.subject([
             Playlist(0, [daterange, Segment(0), Segment(1)]),
             Playlist(2, [daterange, Segment(2), Segment(3)]),
-            Playlist(4, [Segment(4), Segment(5)], end=True)
+            Playlist(4, [Segment(4), Segment(5)], end=True),
         ], disable_ads=True, low_latency=False)
 
         self.await_write(6)
-        self.assertEqual(
-            self.await_read(read_all=True),
-            self.content(segments, cond=lambda s: s.num >= 4),
-            "Filters out preroll ad segments"
-        )
-        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
-
-        self.assertEqual(mock_log.info.mock_calls, [
+        data = self.await_read(read_all=True)
+        assert data == self.content(segments, cond=lambda s: s.num >= 4), "Filters out preroll ad segments"
+        assert all(self.called(s) for s in segments.values()), "Downloads all segments"
+        assert mock_log.info.mock_calls == [
             call("Will skip ad segments"),
-            call("Waiting for pre-roll ads to finish, be patient")
-        ])
+            call("Waiting for pre-roll ads to finish, be patient"),
+        ]
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_disable_ads_has_midstream(self, mock_log):
@@ -196,139 +224,114 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         thread, segments = self.subject([
             Playlist(0, [Segment(0), Segment(1)]),
             Playlist(2, [daterange, Segment(2), Segment(3)]),
-            Playlist(4, [Segment(4), Segment(5)], end=True)
+            Playlist(4, [Segment(4), Segment(5)], end=True),
         ], disable_ads=True, low_latency=False)
 
         self.await_write(6)
-        self.assertEqual(
-            self.await_read(read_all=True),
-            self.content(segments, cond=lambda s: s.num != 2 and s.num != 3),
-            "Filters out mid-stream ad segments"
-        )
-        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
-
-        self.assertEqual(mock_log.info.mock_calls, [
-            call("Will skip ad segments")
-        ])
+        data = self.await_read(read_all=True)
+        assert data == self.content(segments, cond=lambda s: s.num != 2 and s.num != 3), "Filters out mid-stream ad segments"
+        assert all(self.called(s) for s in segments.values()), "Downloads all segments"
+        assert mock_log.info.mock_calls == [
+            call("Will skip ad segments"),
+        ]
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_no_disable_ads_has_preroll(self, mock_log):
         daterange = TagDateRangeAd(duration=2)
         thread, segments = self.subject([
             Playlist(0, [daterange, Segment(0), Segment(1)]),
-            Playlist(2, [Segment(2), Segment(3)], end=True)
+            Playlist(2, [Segment(2), Segment(3)], end=True),
         ], disable_ads=False, low_latency=False)
 
         self.await_write(4)
-        self.assertEqual(
-            self.await_read(read_all=True),
-            self.content(segments),
-            "Doesn't filter out segments"
-        )
-        self.assertTrue(all(self.called(s) for s in segments.values()), "Downloads all segments")
-
-        self.assertEqual(mock_log.info.mock_calls, [], "Doesn't log anything")
+        data = self.await_read(read_all=True)
+        assert data == self.content(segments), "Doesn't filter out segments"
+        assert all(self.called(s) for s in segments.values()), "Downloads all segments"
+        assert mock_log.info.mock_calls == [], "Doesn't log anything"
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_low_latency_has_prefetch(self, mock_log):
         thread, segments = self.subject([
             Playlist(0, [Segment(0), Segment(1), Segment(2), Segment(3), SegmentPrefetch(4), SegmentPrefetch(5)]),
-            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True)
+            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True),
         ], disable_ads=False, low_latency=True)
 
-        self.assertEqual(2, self.session.options.get("hls-live-edge"))
-        self.assertEqual(True, self.session.options.get("hls-segment-stream-data"))
+        assert self.session.options.get("hls-live-edge") == 2
+        assert self.session.options.get("hls-segment-stream-data")
 
         self.await_write(6)
-        self.assertEqual(
-            self.await_read(read_all=True),
-            self.content(segments, cond=lambda s: s.num >= 4),
-            "Skips first four segments due to reduced live-edge"
-        )
-        self.assertFalse(any(self.called(s) for s in segments.values() if s.num < 4), "Doesn't download old segments")
-
-        self.assertTrue(all(self.called(s) for s in segments.values() if s.num >= 4), "Downloads all remaining segments")
-
-        self.assertEqual(mock_log.info.mock_calls, [
-            call("Low latency streaming (HLS live edge: 2)")
-        ])
+        data = self.await_read(read_all=True)
+        assert data == self.content(segments, cond=lambda s: s.num >= 4), "Skips first four segments due to reduced live-edge"
+        assert not any(self.called(s) for s in segments.values() if s.num < 4), "Doesn't download old segments"
+        assert all(self.called(s) for s in segments.values() if s.num >= 4), "Downloads all remaining segments"
+        assert mock_log.info.mock_calls == [
+            call("Low latency streaming (HLS live edge: 2)"),
+        ]
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_no_low_latency_has_prefetch(self, mock_log):
         thread, segments = self.subject([
             Playlist(0, [Segment(0), Segment(1), Segment(2), Segment(3), SegmentPrefetch(4), SegmentPrefetch(5)]),
-            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True)
+            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True),
         ], disable_ads=False, low_latency=False)
 
-        self.assertEqual(4, self.session.options.get("hls-live-edge"))
-        self.assertEqual(False, self.session.options.get("hls-segment-stream-data"))
+        assert self.session.options.get("hls-live-edge") == 4
+        assert not self.session.options.get("hls-segment-stream-data")
 
         self.await_write(8)
-        self.assertEqual(
-            self.await_read(read_all=True),
-            self.content(segments, cond=lambda s: s.num < 8),
-            "Ignores prefetch segments"
-        )
-        self.assertTrue(all(self.called(s) for s in segments.values() if s.num <= 7), "Ignores prefetch segments")
-
-        self.assertFalse(any(self.called(s) for s in segments.values() if s.num > 7), "Ignores prefetch segments")
-
-        self.assertEqual(mock_log.info.mock_calls, [], "Doesn't log anything")
+        data = self.await_read(read_all=True)
+        assert data == self.content(segments, cond=lambda s: s.num < 8), "Ignores prefetch segments"
+        assert all(self.called(s) for s in segments.values() if s.num <= 7), "Ignores prefetch segments"
+        assert not any(self.called(s) for s in segments.values() if s.num > 7), "Ignores prefetch segments"
+        assert mock_log.info.mock_calls == [], "Doesn't log anything"
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_low_latency_no_prefetch(self, mock_log):
         self.subject([
             Playlist(0, [Segment(0), Segment(1), Segment(2), Segment(3)]),
-            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7)], end=True)
+            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7)], end=True),
         ], disable_ads=False, low_latency=True)
 
-        self.assertTrue(self.session.get_plugin_option("twitch", "low-latency"))
-        self.assertFalse(self.session.get_plugin_option("twitch", "disable-ads"))
+        assert self.session.get_plugin_option("twitch", "low-latency")
+        assert not self.session.get_plugin_option("twitch", "disable-ads")
 
         self.await_write(6)
         self.await_read(read_all=True)
-        self.assertEqual(mock_log.info.mock_calls, [
+        assert mock_log.info.mock_calls == [
             call("Low latency streaming (HLS live edge: 2)"),
-            call("This is not a low latency stream")
-        ])
+            call("This is not a low latency stream"),
+        ]
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_low_latency_has_prefetch_has_preroll(self, mock_log):
         daterange = TagDateRangeAd(duration=4)
         thread, segments = self.subject([
             Playlist(0, [daterange, Segment(0), Segment(1), Segment(2), Segment(3)]),
-            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True)
+            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True),
         ], disable_ads=False, low_latency=True)
 
         self.await_write(8)
-        self.assertEqual(
-            self.await_read(read_all=True),
-            self.content(segments, cond=lambda s: s.num > 1),
-            "Skips first two segments due to reduced live-edge"
-        )
-        self.assertFalse(any(self.called(s) for s in segments.values() if s.num < 2), "Skips first two preroll segments")
-
-        self.assertTrue(all(self.called(s) for s in segments.values() if s.num >= 2), "Downloads all remaining segments")
-
-        self.assertEqual(mock_log.info.mock_calls, [
-            call("Low latency streaming (HLS live edge: 2)")
-        ])
+        data = self.await_read(read_all=True)
+        assert data == self.content(segments, cond=lambda s: s.num > 1), "Skips first two segments due to reduced live-edge"
+        assert not any(self.called(s) for s in segments.values() if s.num < 2), "Skips first two preroll segments"
+        assert all(self.called(s) for s in segments.values() if s.num >= 2), "Downloads all remaining segments"
+        assert mock_log.info.mock_calls == [call("Low latency streaming (HLS live edge: 2)")]
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_low_latency_has_prefetch_disable_ads_has_preroll(self, mock_log):
         daterange = TagDateRangeAd(duration=4)
         self.subject([
             Playlist(0, [daterange, Segment(0), Segment(1), Segment(2), Segment(3)]),
-            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True)
+            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7), SegmentPrefetch(8), SegmentPrefetch(9)], end=True),
         ], disable_ads=True, low_latency=True)
 
         self.await_write(8)
         self.await_read(read_all=True)
-        self.assertEqual(mock_log.info.mock_calls, [
+        assert mock_log.info.mock_calls == [
             call("Will skip ad segments"),
             call("Low latency streaming (HLS live edge: 2)"),
-            call("Waiting for pre-roll ads to finish, be patient")
-        ])
+            call("Waiting for pre-roll ads to finish, be patient"),
+        ]
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_low_latency_has_prefetch_disable_ads_no_preroll_with_prefetch_ads(self, mock_log):
@@ -357,8 +360,8 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         ], disable_ads=True, low_latency=True)
 
         self.await_write(11)
-        content = self.await_read(read_all=True)
-        assert content == self.content(segments, cond=lambda s: 2 <= s.num <= 3 or 7 <= s.num)
+        data = self.await_read(read_all=True)
+        assert data == self.content(segments, cond=lambda s: 2 <= s.num <= 3 or 7 <= s.num)
         assert mock_log.info.mock_calls == [
             call("Will skip ad segments"),
             call("Low latency streaming (HLS live edge: 2)"),
@@ -369,30 +372,31 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         daterange = TagDateRangeAd(duration=4)
         self.subject([
             Playlist(0, [daterange, Segment(0), Segment(1), Segment(2), Segment(3)]),
-            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7)], end=True)
+            Playlist(4, [Segment(4), Segment(5), Segment(6), Segment(7)], end=True),
         ], disable_ads=True, low_latency=True)
 
         self.await_write(6)
         self.await_read(read_all=True)
-        self.assertEqual(mock_log.info.mock_calls, [
+        assert mock_log.info.mock_calls == [
             call("Will skip ad segments"),
             call("Low latency streaming (HLS live edge: 2)"),
             call("Waiting for pre-roll ads to finish, be patient"),
-            call("This is not a low latency stream")
-        ])
+            call("This is not a low latency stream"),
+        ]
 
     def test_hls_low_latency_no_ads_reload_time(self):
+        Seg, SegPre = Segment, SegmentPrefetch
         self.subject([
-            Playlist(0, [Segment(0, duration=5), Segment(1, duration=7), Segment(2, duration=11), SegmentPrefetch(3)], end=True)
+            Playlist(0, [Seg(0, duration=5), Seg(1, duration=7), Seg(2, duration=11), SegPre(3)], end=True),
         ], low_latency=True)
 
         self.await_write(4)
         self.await_read(read_all=True)
-        self.assertEqual(self.thread.reader.worker.playlist_reload_time, 23 / 3)
+        assert self.thread.reader.worker.playlist_reload_time == pytest.approx(23 / 3)
 
 
 class TestTwitchAPIAccessToken:
-    @pytest.fixture
+    @pytest.fixture()
     def plugin(self, request):
         session = Streamlink()
         for param in getattr(request, "param", {}):
@@ -400,14 +404,14 @@ class TestTwitchAPIAccessToken:
         yield Twitch(session, "https://twitch.tv/channelname")
         Twitch.options.clear()
 
-    @pytest.fixture
+    @pytest.fixture()
     def mocker(self):
         # The built-in requests_mock fixture is bad when trying to reference the following constants or classes
         with requests_mock.Mocker() as mocker:
             mocker.register_uri(requests_mock.ANY, requests_mock.ANY, exc=requests_mock.exceptions.InvalidRequest)
             yield mocker
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock(self, request, mocker: requests_mock.Mocker):
         mock = mocker.post("https://gql.twitch.tv/gql", **getattr(request, "param", {"json": {}}))
         yield mock
@@ -422,8 +426,8 @@ class TestTwitchAPIAccessToken:
             },
         }
 
-    @pytest.fixture
-    def assert_live(self, mock):
+    @pytest.fixture()
+    def _assert_live(self, mock):
         yield
         assert mock.last_request.json().get("variables") == {  # type: ignore[union-attr]
             "isLive": True,
@@ -433,8 +437,8 @@ class TestTwitchAPIAccessToken:
             "playerType": "embed",
         }
 
-    @pytest.fixture
-    def assert_vod(self, mock):
+    @pytest.fixture()
+    def _assert_vod(self, mock):
         yield
         assert mock.last_request.json().get("variables") == {  # type: ignore[union-attr]
             "isLive": False,
@@ -444,7 +448,7 @@ class TestTwitchAPIAccessToken:
             "playerType": "embed",
         }
 
-    @pytest.mark.parametrize("plugin,exp_headers,exp_variables", [
+    @pytest.mark.parametrize(("plugin", "exp_headers", "exp_variables"), [
         (
             [],
             {"Client-ID": TwitchAPI.CLIENT_ID},
@@ -492,35 +496,40 @@ class TestTwitchAPIAccessToken:
         assert requestheaders == exp_headers
         assert mock.last_request.json().get("variables") == exp_variables  # type: ignore[union-attr]
 
+    @pytest.mark.usefixtures("_assert_live")
     @pytest.mark.parametrize("mock", [{
         "json": {"data": {"streamPlaybackAccessToken": {"value": '{"channel":"foo"}', "signature": "sig"}}},
     }], indirect=True)
-    def test_live_success(self, plugin: Twitch, mock: requests_mock.Mocker, assert_live):
+    def test_live_success(self, plugin: Twitch, mock: requests_mock.Mocker):
         data = plugin._access_token(True, "channelname")
         assert data == ("sig", '{"channel":"foo"}', [])
 
+    @pytest.mark.usefixtures("_assert_live")
     @pytest.mark.parametrize("mock", [{
         "json": {"data": {"streamPlaybackAccessToken": None}},
     }], indirect=True)
-    def test_live_failure(self, plugin: Twitch, mock: requests_mock.Mocker, assert_live):
+    def test_live_failure(self, plugin: Twitch, mock: requests_mock.Mocker):
         with pytest.raises(NoStreamsError):
             plugin._access_token(True, "channelname")
 
+    @pytest.mark.usefixtures("_assert_vod")
     @pytest.mark.parametrize("mock", [{
         "json": {"data": {"videoPlaybackAccessToken": {"value": '{"channel":"foo"}', "signature": "sig"}}},
     }], indirect=True)
-    def test_vod_success(self, plugin: Twitch, mock: requests_mock.Mocker, assert_vod):
+    def test_vod_success(self, plugin: Twitch, mock: requests_mock.Mocker):
         data = plugin._access_token(False, "vodid")
         assert data == ("sig", '{"channel":"foo"}', [])
 
+    @pytest.mark.usefixtures("_assert_vod")
     @pytest.mark.parametrize("mock", [{
         "json": {"data": {"videoPlaybackAccessToken": None}},
     }], indirect=True)
-    def test_vod_failure(self, plugin: Twitch, mock: requests_mock.Mocker, assert_vod):
+    def test_vod_failure(self, plugin: Twitch, mock: requests_mock.Mocker):
         with pytest.raises(NoStreamsError):
             plugin._access_token(False, "vodid")
 
-    @pytest.mark.parametrize("plugin,mock", [
+    @pytest.mark.usefixtures("_assert_live")
+    @pytest.mark.parametrize(("plugin", "mock"), [
         (
             [("api-header", [("Authorization", "OAuth invalid-token")])],
             {
@@ -529,7 +538,7 @@ class TestTwitchAPIAccessToken:
             },
         ),
     ], indirect=True)
-    def test_auth_failure(self, caplog: pytest.LogCaptureFixture, plugin: Twitch, mock: requests_mock.Mocker, assert_live):
+    def test_auth_failure(self, caplog: pytest.LogCaptureFixture, plugin: Twitch, mock: requests_mock.Mocker):
         with pytest.raises(NoStreamsError):
             plugin._access_token(True, "channelname")
         assert mock.last_request._request.headers["Authorization"] == "OAuth invalid-token"  # type: ignore[union-attr]
@@ -558,20 +567,20 @@ class TestTwitchMetadata(unittest.TestCase):
             "https://gql.twitch.tv/gql",
             json=[
                 {"data": {"userOrError": {"userDoesNotExist": "error"} if not data else {
-                    "displayName": "channel name"
+                    "displayName": "channel name",
                 }}},
                 {"data": {"user": None if not data else {
                     "lastBroadcast": {
-                        "title": "channel status"
+                        "title": "channel status",
                     },
                     "stream": {
                         "id": "stream id",
                         "game": {
-                            "name": "channel game"
-                        }
-                    }
-                }}}
-            ]
+                            "name": "channel game",
+                        },
+                    },
+                }}},
+            ],
         )
 
     def mock_request_video(self, data=True):
@@ -581,12 +590,12 @@ class TestTwitchMetadata(unittest.TestCase):
                 "id": "video id",
                 "title": "video title",
                 "game": {
-                    "displayName": "video game"
+                    "displayName": "video game",
                 },
                 "owner": {
-                    "displayName": "channel name"
-                }
-            }}}
+                    "displayName": "channel name",
+                },
+            }}},
         )
 
     def mock_request_clip(self, data=True):
@@ -597,140 +606,137 @@ class TestTwitchMetadata(unittest.TestCase):
                     "clip": None if not data else {
                         "id": "clip id",
                         "broadcaster": {
-                            "displayName": "channel name"
+                            "displayName": "channel name",
                         },
                         "game": {
-                            "name": "game name"
-                        }
-                    }
+                            "name": "game name",
+                        },
+                    },
                 }},
                 {"data": {
                     "clip": None if not data else {
-                        "title": "clip title"
-                    }
-                }}
-            ]
+                        "title": "clip title",
+                    },
+                }},
+            ],
         )
 
     def test_metadata_channel(self):
         mock = self.mock_request_channel()
         _id, author, category, title = self.subject("https://twitch.tv/foo")
-        self.assertEqual(_id, "stream id")
-        self.assertEqual(author, "channel name")
-        self.assertEqual(category, "channel game")
-        self.assertEqual(title, "channel status")
-        self.assertEqual(mock.call_count, 1)
-        self.assertEqual(mock.request_history[0].json(), [
+        assert _id == "stream id"
+        assert author == "channel name"
+        assert category == "channel game"
+        assert title == "channel status"
+        assert mock.call_count == 1
+        assert mock.request_history[0].json() == [
             {
                 "operationName": "ChannelShell",
                 "extensions": {
                     "persistedQuery": {
                         "version": 1,
-                        "sha256Hash": "c3ea5a669ec074a58df5c11ce3c27093fa38534c94286dc14b68a25d5adcbf55"
-                    }
+                        "sha256Hash": "c3ea5a669ec074a58df5c11ce3c27093fa38534c94286dc14b68a25d5adcbf55",
+                    },
                 },
                 "variables": {
                     "login": "foo",
-                    "lcpVideosEnabled": False
-                }
+                    "lcpVideosEnabled": False,
+                },
             },
             {
                 "operationName": "StreamMetadata",
                 "extensions": {
                     "persistedQuery": {
                         "version": 1,
-                        "sha256Hash": "059c4653b788f5bdb2f5a2d2a24b0ddc3831a15079001a3d927556a96fb0517f"
-                    }
+                        "sha256Hash": "059c4653b788f5bdb2f5a2d2a24b0ddc3831a15079001a3d927556a96fb0517f",
+                    },
                 },
                 "variables": {
-                    "channelLogin": "foo"
-                }
-            }
-        ])
+                    "channelLogin": "foo",
+                },
+            },
+        ]
 
     def test_metadata_channel_no_data(self):
         self.mock_request_channel(data=False)
         _id, author, category, title = self.subject("https://twitch.tv/foo")
-        self.assertEqual(_id, None)
-        self.assertEqual(author, None)
-        self.assertEqual(category, None)
-        self.assertEqual(title, None)
+        assert _id is None
+        assert author is None
+        assert category is None
+        assert title is None
 
     def test_metadata_video(self):
         mock = self.mock_request_video()
         _id, author, category, title = self.subject("https://twitch.tv/videos/1337")
-        self.assertEqual(_id, "video id")
-        self.assertEqual(author, "channel name")
-        self.assertEqual(category, "video game")
-        self.assertEqual(title, "video title")
-        self.assertEqual(mock.call_count, 1)
-        self.assertEqual(
-            mock.request_history[0].json(),
-            {
-                "operationName": "VideoMetadata",
-                "extensions": {
-                    "persistedQuery": {
-                        "version": 1,
-                        "sha256Hash": "cb3b1eb2f2d2b2f65b8389ba446ec521d76c3aa44f5424a1b1d235fe21eb4806"
-                    }
+        assert _id == "video id"
+        assert author == "channel name"
+        assert category == "video game"
+        assert title == "video title"
+        assert mock.call_count == 1
+        assert mock.request_history[0].json() == {
+            "operationName": "VideoMetadata",
+            "extensions": {
+                "persistedQuery": {
+                    "version": 1,
+                    "sha256Hash": "cb3b1eb2f2d2b2f65b8389ba446ec521d76c3aa44f5424a1b1d235fe21eb4806",
                 },
-                "variables": {
-                    "channelLogin": "",
-                    "videoID": "1337"
-                }
-            }
-        )
+            },
+            "variables": {
+                "channelLogin": "",
+                "videoID": "1337",
+            },
+        }
 
     def test_metadata_video_no_data(self):
         self.mock_request_video(data=False)
         _id, author, category, title = self.subject("https://twitch.tv/videos/1337")
-        self.assertEqual(_id, None)
-        self.assertEqual(author, None)
-        self.assertEqual(category, None)
-        self.assertEqual(title, None)
+        assert _id is None
+        assert author is None
+        assert category is None
+        assert title is None
 
     def test_metadata_clip(self):
         mock = self.mock_request_clip()
         _id, author, category, title = self.subject("https://clips.twitch.tv/foo")
-        self.assertEqual(_id, "clip id")
-        self.assertEqual(author, "channel name")
-        self.assertEqual(category, "game name")
-        self.assertEqual(title, "clip title")
-        self.assertEqual(mock.call_count, 1)
-        self.assertEqual(mock.request_history[0].json(), [
+        assert _id == "clip id"
+        assert author == "channel name"
+        assert category == "game name"
+        assert title == "clip title"
+        assert mock.call_count == 1
+        assert mock.request_history[0].json() == [
             {
                 "operationName": "ClipsView",
                 "extensions": {
                     "persistedQuery": {
                         "version": 1,
-                        "sha256Hash": "4480c1dcc2494a17bb6ef64b94a5213a956afb8a45fe314c66b0d04079a93a8f"
-                    }
+                        "sha256Hash": "4480c1dcc2494a17bb6ef64b94a5213a956afb8a45fe314c66b0d04079a93a8f",
+                    },
                 },
                 "variables": {
-                    "slug": "foo"
-                }
+                    "slug": "foo",
+                },
             },
             {
                 "operationName": "ClipsTitle",
                 "extensions": {
                     "persistedQuery": {
                         "version": 1,
-                        "sha256Hash": "f6cca7f2fdfbfc2cecea0c88452500dae569191e58a265f97711f8f2a838f5b4"
-                    }
+                        "sha256Hash": "f6cca7f2fdfbfc2cecea0c88452500dae569191e58a265f97711f8f2a838f5b4",
+                    },
                 },
                 "variables": {
-                    "slug": "foo"
-                }
-            }
-        ])
+                    "slug": "foo",
+                },
+            },
+        ]
 
     def test_metadata_clip_no_data(self):
         self.mock_request_clip(data=False)
         _id, author, category, title = self.subject("https://clips.twitch.tv/foo")
-        self.assertEqual(_id, None)
-        self.assertEqual(author, None)
-        self.assertEqual(category, None)
-        self.assertEqual(title, None)
+        assert _id is None
+        assert author is None
+        assert category is None
+        assert title is None
 
 
 @patch("streamlink.plugins.twitch.log")
@@ -747,17 +753,17 @@ class TestTwitchReruns(unittest.TestCase):
             return plugin._check_for_rerun()
 
     def test_disable_reruns_live(self, mock_log):
-        self.assertFalse(self.subject())
-        self.assertNotIn(self.log_call, mock_log.info.call_args_list)
+        assert not self.subject()
+        assert self.log_call not in mock_log.info.call_args_list
 
     def test_disable_reruns_not_live(self, mock_log):
-        self.assertTrue(self.subject(stream_type="rerun"))
-        self.assertIn(self.log_call, mock_log.info.call_args_list)
+        assert self.subject(stream_type="rerun")
+        assert self.log_call in mock_log.info.call_args_list
 
     def test_disable_reruns_offline(self, mock_log):
-        self.assertFalse(self.subject(offline=True))
-        self.assertNotIn(self.log_call, mock_log.info.call_args_list)
+        assert not self.subject(offline=True)
+        assert self.log_call not in mock_log.info.call_args_list
 
     def test_enable_reruns(self, mock_log):
-        self.assertFalse(self.subject(stream_type="rerun", disable=False))
-        self.assertNotIn(self.log_call, mock_log.info.call_args_list)
+        assert not self.subject(stream_type="rerun", disable=False)
+        assert self.log_call not in mock_log.info.call_args_list

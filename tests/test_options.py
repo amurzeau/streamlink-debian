@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from streamlink.exceptions import StreamlinkDeprecationWarning
 from streamlink.options import Argument, Arguments, Options
 from streamlink.plugin import Plugin, pluginargument
 from streamlink_cli.argparser import ArgumentParser
@@ -14,28 +15,28 @@ class TestOptions(unittest.TestCase):
     def setUp(self):
         self.options = Options({
             "a_default": "default",
-            "another-default": "default2"
+            "another-default": "default2",
         })
 
     def test_options(self):
-        self.assertEqual(self.options.get("a_default"), "default")
-        self.assertEqual(self.options.get("non_existing"), None)
+        assert self.options.get("a_default") == "default"
+        assert self.options.get("non_existing") is None
 
         self.options.set("a_option", "option")
-        self.assertEqual(self.options.get("a_option"), "option")
+        assert self.options.get("a_option") == "option"
 
     def test_options_update(self):
-        self.assertEqual(self.options.get("a_default"), "default")
-        self.assertEqual(self.options.get("non_existing"), None)
+        assert self.options.get("a_default") == "default"
+        assert self.options.get("non_existing") is None
 
         self.options.update({"a_option": "option"})
-        self.assertEqual(self.options.get("a_option"), "option")
+        assert self.options.get("a_option") == "option"
 
     def test_options_name_normalised(self):
-        self.assertEqual(self.options.get("a_default"), "default")
-        self.assertEqual(self.options.get("a-default"), "default")
-        self.assertEqual(self.options.get("another-default"), "default2")
-        self.assertEqual(self.options.get("another_default"), "default2")
+        assert self.options.get("a_default") == "default"
+        assert self.options.get("a-default") == "default"
+        assert self.options.get("another-default") == "default2"
+        assert self.options.get("another_default") == "default2"
 
 
 class TestMappedOptions:
@@ -62,7 +63,7 @@ class TestMappedOptions:
             "baz": _set_add,
         }
 
-    @pytest.fixture
+    @pytest.fixture()
     def options(self):
         return self.MappedOptions({"foo-bar": 123, "baz": 100})
 
@@ -90,22 +91,41 @@ class TestMappedOptions:
         assert options.get("baz") == 2
         assert options.get_explicit("baz") == 1
 
+    def test_mutablemapping_methods(self, options: MappedOptions):
+        options["key"] = "value"
+        assert options["key"] == "value"
+
+        assert options["foo-bar"] is None
+
+        options["baz"] = 0
+        assert options["baz"] == 2
+
+        assert "foo-bar" in options
+        assert "qux" not in options
+
+        assert len(options) == 3
+
+        assert list(iter(options)) == ["foo-bar", "baz", "key"]
+        assert list(options.keys()) == ["foo-bar", "baz", "key"]
+        assert list(options.values()) == [123, 1, "value"]
+        assert list(options.items()) == [("foo-bar", 123), ("baz", 1), ("key", "value")]
+
 
 class TestArgument(unittest.TestCase):
     def test_name(self):
-        self.assertEqual(Argument("test-arg").argument_name("plugin"), "--plugin-test-arg")
-        self.assertEqual(Argument("test-arg").namespace_dest("plugin"), "plugin_test_arg")
-        self.assertEqual(Argument("test-arg").dest, "test_arg")
+        assert Argument("test-arg").argument_name("plugin") == "--plugin-test-arg"
+        assert Argument("test-arg").namespace_dest("plugin") == "plugin_test_arg"
+        assert Argument("test-arg").dest == "test_arg"
 
     def test_name_plugin(self):
-        self.assertEqual(Argument("test-arg").argument_name("test_plugin"), "--test-plugin-test-arg")
-        self.assertEqual(Argument("test-arg").namespace_dest("test_plugin"), "test_plugin_test_arg")
-        self.assertEqual(Argument("test-arg").dest, "test_arg")
+        assert Argument("test-arg").argument_name("test_plugin") == "--test-plugin-test-arg"
+        assert Argument("test-arg").namespace_dest("test_plugin") == "test_plugin_test_arg"
+        assert Argument("test-arg").dest == "test_arg"
 
     def test_name_override(self):
-        self.assertEqual(Argument("test", argument_name="override-name").argument_name("plugin"), "--override-name")
-        self.assertEqual(Argument("test", argument_name="override-name").namespace_dest("plugin"), "override_name")
-        self.assertEqual(Argument("test", argument_name="override-name").dest, "test")
+        assert Argument("test", argument_name="override-name").argument_name("plugin") == "--override-name"
+        assert Argument("test", argument_name="override-name").namespace_dest("plugin") == "override_name"
+        assert Argument("test", argument_name="override-name").dest == "test"
 
 
 class TestArguments(unittest.TestCase):
@@ -114,9 +134,9 @@ class TestArguments(unittest.TestCase):
         test2 = Argument("test2")
         args = Arguments(test1, test2)
 
-        self.assertEqual(args.get("test1"), test1)
-        self.assertEqual(args.get("test2"), test2)
-        self.assertEqual(args.get("test3"), None)
+        assert args.get("test1") == test1
+        assert args.get("test2") == test2
+        assert args.get("test3") is None
 
     def test_iter(self):
         test1 = Argument("test1")
@@ -125,8 +145,8 @@ class TestArguments(unittest.TestCase):
 
         i_args = iter(args)
 
-        self.assertEqual(next(i_args), test1)
-        self.assertEqual(next(i_args), test2)
+        assert next(i_args) == test1
+        assert next(i_args) == test2
 
     def test_requires(self):
         test1 = Argument("test1", requires="test2")
@@ -135,14 +155,15 @@ class TestArguments(unittest.TestCase):
 
         args = Arguments(test1, test2, test3)
 
-        self.assertEqual(list(args.requires("test1")), [test2, test3])
+        assert list(args.requires("test1")) == [test2, test3]
 
     def test_requires_invalid(self):
         test1 = Argument("test1", requires="test2")
 
         args = Arguments(test1)
 
-        self.assertRaises(KeyError, lambda: list(args.requires("test1")))
+        with pytest.raises(KeyError):
+            list(args.requires("test1"))
 
     def test_requires_cycle(self):
         test1 = Argument("test1", requires="test2")
@@ -150,7 +171,8 @@ class TestArguments(unittest.TestCase):
 
         args = Arguments(test1, test2)
 
-        self.assertRaises(RuntimeError, lambda: list(args.requires("test1")))
+        with pytest.raises(RuntimeError):
+            list(args.requires("test1"))
 
     def test_requires_cycle_deep(self):
         test1 = Argument("test1", requires="test-2")
@@ -159,18 +181,20 @@ class TestArguments(unittest.TestCase):
 
         args = Arguments(test1, test2, test3)
 
-        self.assertRaises(RuntimeError, lambda: list(args.requires("test1")))
+        with pytest.raises(RuntimeError):
+            list(args.requires("test1"))
 
     def test_requires_cycle_self(self):
         test1 = Argument("test1", requires="test1")
 
         args = Arguments(test1)
 
-        self.assertRaises(RuntimeError, lambda: list(args.requires("test1")))
+        with pytest.raises(RuntimeError):
+            list(args.requires("test1"))
 
 
 class TestSetupOptions:
-    def test_setup_plugin_args(self):
+    def test_setup_plugin_args(self, recwarn: pytest.WarningsRecorder):
         session = Mock()
         plugin = Mock()
         parser = ArgumentParser(add_help=False)
@@ -182,8 +206,12 @@ class TestSetupOptions:
             Argument("global-arg1", is_global=True),
             Argument("test1", default="default1"),
             Argument("test2", default="default2"),
-            Argument("test3")
+            Argument("test3"),
         )
+
+        assert [(record.category, str(record.message)) for record in recwarn.list] == [
+            (StreamlinkDeprecationWarning, "Defining global plugin arguments is deprecated. Use the session options instead."),
+        ]
 
         setup_plugin_args(session, parser)
 
@@ -206,13 +234,21 @@ class TestSetupOptions:
         assert plugin.options.get("test2") == "default2"
         assert plugin.options.get("test3") is None
 
-    def test_setup_plugin_options(self):
+    def test_setup_plugin_options(self, recwarn: pytest.WarningsRecorder):
         @pluginargument("foo-foo", is_global=True)
         @pluginargument("bar-bar", default=456)
         @pluginargument("baz-baz", default=789, help=argparse.SUPPRESS)
         class FakePlugin(Plugin):
             def _get_streams(self):  # pragma: no cover
                 pass
+
+        assert [(record.category, str(record.message), record.filename) for record in recwarn.list] == [
+            (
+                StreamlinkDeprecationWarning,
+                "Defining global plugin arguments is deprecated. Use the session options instead.",
+                __file__,
+            ),
+        ]
 
         session = Mock()
         parser = ArgumentParser()

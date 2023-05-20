@@ -1,5 +1,6 @@
 import logging
 import warnings
+from datetime import timezone
 from inspect import currentframe, getframeinfo
 from io import StringIO
 from pathlib import Path
@@ -13,34 +14,38 @@ from streamlink import logger
 from streamlink.exceptions import StreamlinkDeprecationWarning, StreamlinkWarning
 
 
-@pytest.fixture
+@pytest.fixture()
 def output():
     return StringIO()
 
 
-@pytest.fixture
+@pytest.fixture()
 def log(request, output: StringIO):
     params = getattr(request, "param", {})
     params.setdefault("format", "[{name}][{levelname}] {message}")
     params.setdefault("style", "{")
     fakeroot = logging.getLogger("streamlink.test")
-    with patch("streamlink.logger.root", fakeroot):
-        logger.basicConfig(stream=output, **params)
+    with patch("streamlink.logger.root", fakeroot), \
+         patch("streamlink.utils.times.LOCAL", timezone.utc):
+        handler = logger.basicConfig(stream=output, **params)
+        assert isinstance(handler, logging.Handler)
         yield fakeroot
         logger.capturewarnings(False)
+        fakeroot.removeHandler(handler)
+        assert not fakeroot.handlers
 
 
 class TestLogging:
-    @pytest.fixture
+    @pytest.fixture()
     def log_failure(self, request, log: logging.Logger, output: StringIO):
         params = getattr(request, "param", {})
         root = logging.getLogger("streamlink")
-        with pytest.raises(Exception) as cm:
-            with patch("streamlink.logger.root", root):
+        with patch("streamlink.logger.root", root):
+            with pytest.raises(Exception) as cm:  # noqa: PT011
                 logger.basicConfig(stream=output, **params)
         return cm.value
 
-    @pytest.mark.parametrize("name,level", [
+    @pytest.mark.parametrize(("name", "level"), [
         ("none", logger.NONE),
         ("critical", logger.CRITICAL),
         ("error", logger.ERROR),
@@ -87,7 +92,7 @@ class TestLogging:
         log.debug("test")
         assert output.getvalue() == "[test][debug] test\n"
 
-    @pytest.mark.parametrize("loglevel,calllevel,expected", [
+    @pytest.mark.parametrize(("loglevel", "calllevel", "expected"), [
         (logger.DEBUG, logger.TRACE, ""),
         (logger.TRACE, logger.TRACE, "[test][trace] test\n"),
         (logger.TRACE, logger.DEBUG, "[test][debug] test\n"),
@@ -101,7 +106,7 @@ class TestLogging:
         assert output.getvalue() == expected
 
     # https://github.com/streamlink/streamlink/issues/4862
-    @pytest.mark.parametrize("level,levelname", [
+    @pytest.mark.parametrize(("level", "levelname"), [
         (logger.TRACE, "trace"),
         (logger.ALL, "all"),
     ])
@@ -115,7 +120,7 @@ class TestLogging:
             ("test_logger", levelname, "bar"),
         ]
 
-    @pytest.mark.parametrize("level,expected", [
+    @pytest.mark.parametrize(("level", "expected"), [
         (logger.DEBUG, ""),
         (logger.INFO, "[test][info] foo\n[test][info] bar\n"),
     ])
@@ -152,12 +157,12 @@ class TestLogging:
 
     @freezegun.freeze_time("2000-01-02T03:04:05.123456Z")
     @pytest.mark.parametrize("log", [
-        {"format": "[{asctime}][{name}][{levelname}] {message}", "datefmt": "%H:%M:%S.%f"},
+        {"format": "[{asctime}][{name}][{levelname}] {message}", "datefmt": "%H:%M:%S.%f%z"},
     ], indirect=True)
     def test_datefmt_custom(self, log: logging.Logger, output: StringIO):
         log.setLevel("info")
         log.info("test")
-        assert output.getvalue() == "[03:04:05.123456][test][info] test\n"
+        assert output.getvalue() == "[03:04:05.123456+0000][test][info] test\n"
 
 
 class TestCaptureWarnings:
@@ -181,7 +186,7 @@ class TestCaptureWarnings:
         assert output.getvalue() == ""
 
     @pytest.mark.parametrize("log", [{"capture_warnings": True}], indirect=["log"])
-    @pytest.mark.parametrize("warning,expected,origin", [
+    @pytest.mark.parametrize(("warning", "expected", "origin"), [
         (("Test warning", UserWarning), "[warnings][userwarning] Test warning\n", True),
         (("Test warning", DeprecationWarning), "[warnings][deprecationwarning] Test warning\n", True),
         (("Test warning", FutureWarning), "[warnings][futurewarning] Test warning\n", True),

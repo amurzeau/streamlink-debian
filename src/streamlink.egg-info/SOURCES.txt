@@ -5,6 +5,7 @@ MANIFEST.in
 README.md
 dev-requirements.txt
 docs-requirements.txt
+icon.svg
 pyproject.toml
 setup.cfg
 setup.py
@@ -39,6 +40,8 @@ docs/_static/apple-touch-icon.png
 docs/_static/favicon-16x16.png
 docs/_static/favicon-32x32.png
 docs/_static/favicon.ico
+docs/_static/icon-ffmpeg.svg
+docs/_static/icon-python.svg
 docs/_static/icon.svg
 docs/_static/opengraph-image.png
 docs/_static/site.webmanifest
@@ -55,7 +58,6 @@ docs/cli/protocols.rst
 docs/cli/proxy.rst
 docs/cli/tutorial.rst
 docs/cli/plugins/crunchyroll.rst
-docs/cli/plugins/funimationnow.rst
 docs/cli/plugins/twitch.rst
 src/streamlink/__init__.py
 src/streamlink/__main__.py
@@ -67,6 +69,7 @@ src/streamlink/compat.py
 src/streamlink/exceptions.py
 src/streamlink/logger.py
 src/streamlink/options.py
+src/streamlink/py.typed
 src/streamlink/session.py
 src/streamlink/user_input.py
 src/streamlink.egg-info/PKG-INFO
@@ -130,7 +133,6 @@ src/streamlink/plugins/euronews.py
 src/streamlink/plugins/facebook.py
 src/streamlink/plugins/filmon.py
 src/streamlink/plugins/foxtr.py
-src/streamlink/plugins/funimationnow.py
 src/streamlink/plugins/galatasaraytv.py
 src/streamlink/plugins/goltelevision.py
 src/streamlink/plugins/goodgame.py
@@ -143,6 +145,7 @@ src/streamlink/plugins/htv.py
 src/streamlink/plugins/huajiao.py
 src/streamlink/plugins/huya.py
 src/streamlink/plugins/idf1.py
+src/streamlink/plugins/indihometv.py
 src/streamlink/plugins/invintus.py
 src/streamlink/plugins/kugou.py
 src/streamlink/plugins/linelive.py
@@ -159,7 +162,6 @@ src/streamlink/plugins/mixcloud.py
 src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mrtmk.py
 src/streamlink/plugins/n13tv.py
-src/streamlink/plugins/nbcnews.py
 src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nicolive.py
 src/streamlink/plugins/nimotv.py
@@ -190,7 +192,6 @@ src/streamlink/plugins/rtve.py
 src/streamlink/plugins/rtvs.py
 src/streamlink/plugins/ruv.py
 src/streamlink/plugins/sbscokr.py
-src/streamlink/plugins/schoolism.py
 src/streamlink/plugins/showroom.py
 src/streamlink/plugins/sportal.py
 src/streamlink/plugins/sportschau.py
@@ -203,6 +204,7 @@ src/streamlink/plugins/stv.py
 src/streamlink/plugins/svtplay.py
 src/streamlink/plugins/swisstxt.py
 src/streamlink/plugins/telefe.py
+src/streamlink/plugins/telemadrid.py
 src/streamlink/plugins/tf1.py
 src/streamlink/plugins/trovo.py
 src/streamlink/plugins/turkuvaz.py
@@ -220,7 +222,6 @@ src/streamlink/plugins/tvrplus.py
 src/streamlink/plugins/tvtoya.py
 src/streamlink/plugins/twitcasting.py
 src/streamlink/plugins/twitch.py
-src/streamlink/plugins/useetv.py
 src/streamlink/plugins/ustreamtv.py
 src/streamlink/plugins/ustvnow.py
 src/streamlink/plugins/vidio.py
@@ -273,11 +274,14 @@ src/streamlink_cli/compat.py
 src/streamlink_cli/console.py
 src/streamlink_cli/constants.py
 src/streamlink_cli/main.py
-src/streamlink_cli/output.py
 src/streamlink_cli/streamrunner.py
+src/streamlink_cli/output/__init__.py
+src/streamlink_cli/output/abc.py
+src/streamlink_cli/output/file.py
+src/streamlink_cli/output/http.py
+src/streamlink_cli/output/player.py
 src/streamlink_cli/utils/__init__.py
 src/streamlink_cli/utils/formatter.py
-src/streamlink_cli/utils/http_server.py
 src/streamlink_cli/utils/path.py
 src/streamlink_cli/utils/player.py
 src/streamlink_cli/utils/progress.py
@@ -364,7 +368,6 @@ tests/plugins/test_euronews.py
 tests/plugins/test_facebook.py
 tests/plugins/test_filmon.py
 tests/plugins/test_foxtr.py
-tests/plugins/test_funimationnow.py
 tests/plugins/test_galatasaraytv.py
 tests/plugins/test_goltelevision.py
 tests/plugins/test_goodgame.py
@@ -375,6 +378,7 @@ tests/plugins/test_htv.py
 tests/plugins/test_huajiao.py
 tests/plugins/test_huya.py
 tests/plugins/test_idf1.py
+tests/plugins/test_indihometv.py
 tests/plugins/test_invintus.py
 tests/plugins/test_kugou.py
 tests/plugins/test_linelive.py
@@ -391,7 +395,6 @@ tests/plugins/test_mixcloud.py
 tests/plugins/test_mjunoon.py
 tests/plugins/test_mrtmk.py
 tests/plugins/test_n13tv.py
-tests/plugins/test_nbcnews.py
 tests/plugins/test_nhkworld.py
 tests/plugins/test_nicolive.py
 tests/plugins/test_nimotv.py
@@ -422,7 +425,6 @@ tests/plugins/test_rtve.py
 tests/plugins/test_rtvs.py
 tests/plugins/test_ruv.py
 tests/plugins/test_sbscokr.py
-tests/plugins/test_schoolism.py
 tests/plugins/test_showroom.py
 tests/plugins/test_sportal.py
 tests/plugins/test_sportschau.py
@@ -436,6 +438,7 @@ tests/plugins/test_stv.py
 tests/plugins/test_svtplay.py
 tests/plugins/test_swisstxt.py
 tests/plugins/test_telefe.py
+tests/plugins/test_telemadrid.py
 tests/plugins/test_tf1.py
 tests/plugins/test_trovo.py
 tests/plugins/test_turkuvaz.py
@@ -453,7 +456,6 @@ tests/plugins/test_tvrplus.py
 tests/plugins/test_tvtoya.py
 tests/plugins/test_twitcasting.py
 tests/plugins/test_twitch.py
-tests/plugins/test_useetv.py
 tests/plugins/test_ustreamtv.py
 tests/plugins/test_ustvnow.py
 tests/plugins/test_vidio.py
@@ -485,13 +487,17 @@ tests/resources/dash/test_10.mpd
 tests/resources/dash/test_11_static.mpd
 tests/resources/dash/test_2.mpd
 tests/resources/dash/test_3.mpd
-tests/resources/dash/test_4.mpd
-tests/resources/dash/test_5.mpd
-tests/resources/dash/test_6_p1.mpd
-tests/resources/dash/test_6_p2.mpd
-tests/resources/dash/test_7.mpd
 tests/resources/dash/test_8.mpd
 tests/resources/dash/test_9.mpd
+tests/resources/dash/test_dynamic_timeline_continued_p1.mpd
+tests/resources/dash/test_dynamic_timeline_continued_p2.mpd
+tests/resources/dash/test_nested_baseurls.mpd
+tests/resources/dash/test_no_segment_list_or_template.mpd
+tests/resources/dash/test_segment_list.mpd
+tests/resources/dash/test_segments_byterange.mpd
+tests/resources/dash/test_segments_dynamic_number.mpd
+tests/resources/dash/test_static_no_publish_time.mpd
+tests/resources/dash/test_timeline_ids.mpd
 tests/resources/hls/test_1.m3u8
 tests/resources/hls/test_2.m3u8
 tests/resources/hls/test_date.m3u8

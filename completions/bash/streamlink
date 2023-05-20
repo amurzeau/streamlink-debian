@@ -2,20 +2,21 @@
 
 
 
-_shtab_streamlink_cli_option_strings=('-h' '--help' '-V' '--version' '--plugins' '--plugin-dirs' '--can-handle-url' '--can-handle-url-no-redirect' '--config' '-l' '--loglevel' '--logfile' '-Q' '--quiet' '-j' '--json' '--auto-version-check' '--version-check' '--locale' '--interface' '-4' '--ipv4' '-6' '--ipv6' '-p' '--player' '-a' '--player-args' '-v' '--verbose-player' '-n' '--player-fifo' '--fifo' '--player-http' '--player-continuous-http' '--player-external-http' '--player-external-http-continuous' '--player-external-http-port' '--player-passthrough' '--player-no-close' '-t' '--title' '-o' '--output' '-f' '--force' '--force-progress' '-O' '--stdout' '-r' '--record' '-R' '--record-and-pipe' '--fs-safe-rules' '--url' '--default-stream' '--stream-url' '--retry-streams' '--retry-max' '--retry-open' '--stream-types' '--stream-priority' '--stream-sorting-excludes' '--ringbuffer-size' '--stream-segment-attempts' '--stream-segment-threads' '--stream-segment-timeout' '--stream-timeout' '--mux-subtitles' '--hls-live-edge' '--hls-segment-stream-data' '--hls-playlist-reload-attempts' '--hls-playlist-reload-time' '--hls-segment-ignore-names' '--hls-segment-key-uri' '--hls-audio-select' '--hls-start-offset' '--hls-duration' '--hls-live-restart' '--ffmpeg-ffmpeg' '--ffmpeg-no-validation' '--ffmpeg-verbose' '--ffmpeg-verbose-path' '--ffmpeg-fout' '--ffmpeg-video-transcode' '--ffmpeg-audio-transcode' '--ffmpeg-copyts' '--ffmpeg-start-at-zero' '--http-proxy' '--http-cookie' '--http-header' '--http-query-param' '--http-ignore-env' '--http-no-ssl-verify' '--http-disable-dh' '--http-ssl-cert' '--http-ssl-cert-crt-key' '--http-timeout' '--afreeca-username' '--afreeca-password' '--afreeca-purge-credentials' '--bbciplayer-username' '--bbciplayer-password' '--bbciplayer-hd' '--clubbingtv-username' '--clubbingtv-password' '--crunchyroll-username' '--crunchyroll-password' '--crunchyroll-purge-credentials' '--crunchyroll-session-id' '--funimation-email' '--funimation-password' '--funimation-language' '--niconico-email' '--niconico-password' '--niconico-user-session' '--niconico-purge-credentials' '--niconico-timeshift-offset' '--openrectv-email' '--openrectv-password' '--pixiv-sessionid' '--pixiv-devicetoken' '--pixiv-purge-credentials' '--pixiv-performer' '--schoolism-email' '--schoolism-password' '--schoolism-part' '--steam-email' '--steam-password' '--streann-url' '--twitcasting-password' '--twitch-disable-ads' '--twitch-disable-reruns' '--twitch-low-latency' '--twitch-api-header' '--twitch-access-token-param' '--ustream-password' '--ustvnow-username' '--ustvnow-password' '--wwenetwork-email' '--wwenetwork-password' '--yupptv-boxid' '--yupptv-yuppflixtoken' '--yupptv-purge-credentials' '--zattoo-email' '--zattoo-password' '--zattoo-purge-credentials' '--zattoo-stream-types')
+_shtab_streamlink_cli_option_strings=('-h' '--help' '-V' '--version' '--plugins' '--plugin-dirs' '--can-handle-url' '--can-handle-url-no-redirect' '--config' '--no-config' '-l' '--loglevel' '--logfile' '-Q' '--quiet' '-j' '--json' '--auto-version-check' '--version-check' '--locale' '--interface' '-4' '--ipv4' '-6' '--ipv6' '-p' '--player' '-a' '--player-args' '-v' '--verbose-player' '-n' '--player-fifo' '--fifo' '--player-http' '--player-continuous-http' '--player-external-http' '--player-external-http-continuous' '--player-external-http-interface' '--player-external-http-port' '--player-passthrough' '--player-no-close' '-t' '--title' '-o' '--output' '-O' '--stdout' '-r' '--record' '-R' '--record-and-pipe' '--fs-safe-rules' '-f' '--force' '--progress' '--force-progress' '--url' '--default-stream' '--stream-url' '--retry-streams' '--retry-max' '--retry-open' '--stream-types' '--stream-priority' '--stream-sorting-excludes' '--ringbuffer-size' '--stream-segment-attempts' '--stream-segment-threads' '--stream-segment-timeout' '--stream-timeout' '--mux-subtitles' '--hls-live-edge' '--hls-segment-stream-data' '--hls-playlist-reload-attempts' '--hls-playlist-reload-time' '--hls-segment-ignore-names' '--hls-segment-key-uri' '--hls-audio-select' '--hls-start-offset' '--hls-duration' '--hls-live-restart' '--dash-manifest-reload-attempts' '--ffmpeg-ffmpeg' '--ffmpeg-no-validation' '--ffmpeg-verbose' '--ffmpeg-verbose-path' '--ffmpeg-fout' '--ffmpeg-video-transcode' '--ffmpeg-audio-transcode' '--ffmpeg-copyts' '--ffmpeg-start-at-zero' '--http-proxy' '--http-cookie' '--http-header' '--http-query-param' '--http-ignore-env' '--http-no-ssl-verify' '--http-disable-dh' '--http-ssl-cert' '--http-ssl-cert-crt-key' '--http-timeout' '--afreeca-username' '--afreeca-password' '--afreeca-purge-credentials' '--bbciplayer-username' '--bbciplayer-password' '--bbciplayer-hd' '--clubbingtv-username' '--clubbingtv-password' '--crunchyroll-username' '--crunchyroll-password' '--crunchyroll-purge-credentials' '--crunchyroll-session-id' '--niconico-email' '--niconico-password' '--niconico-user-session' '--niconico-purge-credentials' '--niconico-timeshift-offset' '--openrectv-email' '--openrectv-password' '--pixiv-sessionid' '--pixiv-devicetoken' '--pixiv-purge-credentials' '--pixiv-performer' '--steam-email' '--steam-password' '--streann-url' '--twitcasting-password' '--twitch-disable-ads' '--twitch-disable-reruns' '--twitch-low-latency' '--twitch-api-header' '--twitch-access-token-param' '--ustream-password' '--ustvnow-username' '--ustvnow-password' '--wwenetwork-email' '--wwenetwork-password' '--yupptv-boxid' '--yupptv-yuppflixtoken' '--yupptv-purge-credentials' '--zattoo-email' '--zattoo-password' '--zattoo-purge-credentials' '--zattoo-stream-types')
 
 
 
 _shtab_streamlink_cli__l_choices=('none' 'critical' 'error' 'warning' 'info' 'debug' 'trace' 'all')
 _shtab_streamlink_cli___loglevel_choices=('none' 'critical' 'error' 'warning' 'info' 'debug' 'trace' 'all')
 _shtab_streamlink_cli___fs_safe_rules_choices=('POSIX' 'Windows')
-_shtab_streamlink_cli___funimation_language_choices=('en' 'ja' 'english' 'japanese')
+_shtab_streamlink_cli___progress_choices=('yes' 'force' 'no')
 
 _shtab_streamlink_cli__h_nargs=0
 _shtab_streamlink_cli___help_nargs=0
 _shtab_streamlink_cli__V_nargs=0
 _shtab_streamlink_cli___version_nargs=0
 _shtab_streamlink_cli___plugins_nargs=0
+_shtab_streamlink_cli___no_config_nargs=0
 _shtab_streamlink_cli__Q_nargs=0
 _shtab_streamlink_cli___quiet_nargs=0
 _shtab_streamlink_cli__j_nargs=0
@@ -34,11 +35,11 @@ _shtab_streamlink_cli___player_http_nargs=0
 _shtab_streamlink_cli___player_continuous_http_nargs=0
 _shtab_streamlink_cli___player_external_http_nargs=0
 _shtab_streamlink_cli___player_no_close_nargs=0
+_shtab_streamlink_cli__O_nargs=0
+_shtab_streamlink_cli___stdout_nargs=0
 _shtab_streamlink_cli__f_nargs=0
 _shtab_streamlink_cli___force_nargs=0
 _shtab_streamlink_cli___force_progress_nargs=0
-_shtab_streamlink_cli__O_nargs=0
-_shtab_streamlink_cli___stdout_nargs=0
 _shtab_streamlink_cli___stream_url_nargs=0
 _shtab_streamlink_cli___mux_subtitles_nargs=0
 _shtab_streamlink_cli___hls_segment_stream_data_nargs=0

@@ -9,6 +9,7 @@ from typing import Any, Optional
 from streamlink.buffers import RingBuffer
 from streamlink.stream.stream import Stream, StreamIO
 
+
 log = logging.getLogger(__name__)
 
 
@@ -137,9 +138,10 @@ class SegmentedStreamWriter(AwaitableMixin, Thread):
         log.debug("Closing writer thread")
 
         self.closed = True
+        self._wait.set()
+
         self.reader.close()
         self.executor.shutdown(wait=True, cancel_futures=True)
-        self._wait.set()
 
     def put(self, segment):
         """Adds a segment to the download pool and write queue."""
@@ -177,14 +179,12 @@ class SegmentedStreamWriter(AwaitableMixin, Thread):
 
         Should be overridden by the inheriting class.
         """
-        pass
 
     def write(self, segment, result, *data):
         """Writes a segment to the buffer.
 
         Should be overridden by the inheriting class.
         """
-        pass
 
     def run(self):
         while not self.closed:
@@ -253,5 +253,5 @@ class SegmentedStreamReader(StreamIO):
         return self.buffer.read(
             size,
             block=self.writer.is_alive(),
-            timeout=self.timeout
+            timeout=self.timeout,
         )

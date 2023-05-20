@@ -104,9 +104,6 @@ class PluginArguments(ast.NodeVisitor, IDatalistItem):
             ):
                 continue
 
-            if any(kw.value.value for kw in decorator.keywords if kw.arg == "is_global" and type(kw.value) is ast.Constant):
-                continue
-
             if any(
                 True
                 for kw in decorator.keywords
@@ -220,7 +217,7 @@ class PluginFinder:
                 return pluginmetadata
 
             except Exception as err:
-                raise ExtensionError(f"Error while parsing plugin file {pluginfile.name}", err)
+                raise ExtensionError(f"Error while parsing plugin file {pluginfile.name}", err) from err
 
 
 class PluginsDirective(Directive):

@@ -4,11 +4,10 @@ import sys
 from contextlib import suppress
 from pathlib import Path
 from threading import Event, Lock, Thread
-from typing import Optional, Union
+from typing import Optional
 
 from streamlink.stream.stream import StreamIO
-from streamlink_cli.output import FileOutput, PlayerOutput
-from streamlink_cli.utils.http_server import HTTPServer
+from streamlink_cli.output import FileOutput, HTTPOutput, Output, PlayerOutput
 from streamlink_cli.utils.progress import Progress
 
 
@@ -19,6 +18,10 @@ log = logging.getLogger("streamlink.cli")
 ACCEPTABLE_ERRNO = errno.EPIPE, errno.EINVAL, errno.ECONNRESET
 with suppress(AttributeError):
     ACCEPTABLE_ERRNO += (errno.WSAECONNABORTED,)  # type: ignore[assignment,attr-defined]
+
+
+def _noop(_):
+    return None
 
 
 class _ReadError(BaseException):
@@ -71,16 +74,15 @@ class StreamRunner:
     playerpoller: Optional[PlayerPollThread] = None
     progress: Optional[Progress] = None
 
-    # TODO: refactor all output implementations
     def __init__(
         self,
         stream: StreamIO,
-        output: Union[PlayerOutput, FileOutput, HTTPServer],
-        force_progress: bool = False,
+        output: Output,
+        show_progress: bool = False,
     ):
         self.stream = stream
         self.output = output
-        self.is_http = isinstance(output, HTTPServer)
+        self.is_http = isinstance(output, HTTPOutput)
 
         filename: Optional[Path] = None
 
@@ -95,7 +97,7 @@ class StreamRunner:
             elif output.record:
                 filename = output.record.filename
 
-        if filename and (sys.stdout.isatty() or force_progress):
+        if filename and show_progress:
             self.progress = Progress(sys.stderr, filename)
 
     def run(
@@ -105,7 +107,7 @@ class StreamRunner:
     ) -> None:
         read = self.stream.read
         write = self.output.write
-        progress = self.progress.write if self.progress else lambda _: None
+        progress = self.progress.write if self.progress else _noop
 
         if self.playerpoller:
             self.playerpoller.start()

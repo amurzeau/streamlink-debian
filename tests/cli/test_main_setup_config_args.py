@@ -13,26 +13,26 @@ from streamlink_cli.main import setup_config_args
 configdir = Path(tests.resources.__path__[0], "cli", "config")
 
 
-@pytest.fixture
-def args(request: pytest.FixtureRequest):
+@pytest.fixture()
+def _args(request: pytest.FixtureRequest):
     with patch("streamlink_cli.main.args", Namespace(**getattr(request, "param", {}))):
         yield
 
 
-@pytest.fixture
-def config_files(request: pytest.FixtureRequest):
+@pytest.fixture()
+def _config_files(request: pytest.FixtureRequest):
     with patch("streamlink_cli.main.CONFIG_FILES", getattr(request, "param", [])):
         yield
 
 
-@pytest.fixture
+@pytest.fixture()
 def setup_args():
     with patch("streamlink_cli.main.setup_args") as mock_setup_args:
         yield mock_setup_args
 
 
 @pytest.fixture(autouse=True)
-def session():
+def _session():
     def resolve_url(name):
         if name == "noplugin":
             raise NoPluginError()
@@ -43,9 +43,12 @@ def session():
         yield
 
 
-@pytest.mark.parametrize("args,config_files,expected,deprecations", [
+# noinspection PyTestParametrized
+@pytest.mark.usefixtures("_args", "_config_files")
+@pytest.mark.parametrize(("_args", "_config_files", "expected", "deprecations"), [
     pytest.param(
         {
+            "no_config": False,
             "config": None,
             "url": None,
         },
@@ -61,6 +64,7 @@ def session():
     ),
     pytest.param(
         {
+            "no_config": False,
             "config": [
                 str(configdir / "non-existent"),
             ],
@@ -76,6 +80,7 @@ def session():
     ),
     pytest.param(
         {
+            "no_config": False,
             "config": None,
             "url": "noplugin",
         },
@@ -91,6 +96,7 @@ def session():
     ),
     pytest.param(
         {
+            "no_config": False,
             "config": [
                 str(configdir / "non-existent"),
             ],
@@ -106,6 +112,7 @@ def session():
     ),
     pytest.param(
         {
+            "no_config": False,
             "config": None,
             "url": "testplugin",
         },
@@ -122,6 +129,7 @@ def session():
     ),
     pytest.param(
         {
+            "no_config": False,
             "config": None,
             "url": "testplugin",
         },
@@ -149,6 +157,7 @@ def session():
     ),
     pytest.param(
         {
+            "no_config": False,
             "config": [
                 str(configdir / "custom"),
             ],
@@ -167,6 +176,7 @@ def session():
     ),
     pytest.param(
         {
+            "no_config": False,
             "config": [
                 str(configdir / "custom"),
             ],
@@ -191,6 +201,7 @@ def session():
     ),
     pytest.param(
         {
+            "no_config": False,
             "config": [
                 str(configdir / "non-existent"),
                 str(configdir / "primary"),
@@ -210,11 +221,48 @@ def session():
         [],
         id="Multiple custom configs",
     ),
-], indirect=["args", "config_files"])
+    pytest.param(
+        {
+            "no_config": True,
+            "config": [],
+            "url": "testplugin",
+        },
+        [],
+        [],
+        [],
+        id="No config",
+    ),
+    pytest.param(
+        {
+            "no_config": True,
+            "config": [
+                str(configdir / "primary"),
+                str(configdir / "secondary"),
+            ],
+            "url": "testplugin",
+        },
+        [],
+        [],
+        [],
+        id="No config with multiple custom configs",
+    ),
+    pytest.param(
+        {
+            "no_config": True,
+            "config": [],
+            "url": "testplugin",
+        },
+        [
+            configdir / "primary",
+            DeprecatedPath(configdir / "secondary"),
+        ],
+        [],
+        [],
+        id="No config with multiple default configs",
+    ),
+], indirect=["_args", "_config_files"])
 def test_setup_config_args(
     recwarn: pytest.WarningsRecorder,
-    args: Namespace,
-    config_files: list,
     setup_args: Mock,
     expected: list,
     deprecations: list,
