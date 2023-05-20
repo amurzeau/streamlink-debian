@@ -1,0 +1,44 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Fri, 25 Dec 2020 23:27:16 +0100
+Subject: Use fork-awesome a Debian doesn't have font-awesome 5
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ docs/_static/styles/custom.css | 4 ++--
+ docs/conf.py                   | 5 ++---
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/docs/_static/styles/custom.css b/docs/_static/styles/custom.css
+index c88a46d..b82f565 100644
+--- a/docs/_static/styles/custom.css
++++ b/docs/_static/styles/custom.css
+@@ -97,10 +97,10 @@ a[href^="https://"]:not(.muted-link):not(.sd-badge):not([href^="https://streamli
+ 
+ a[href^="http://"]:not(.no-external-link-icon):not(.muted-link):not(.sd-badge)::after,
+ a[href^="https://"]:not(.no-external-link-icon):not(.muted-link):not(.sd-badge):not([href^="https://streamlink.github.io/"])::after {
+-  content: "\f35d";
++  content: "\f08e";
+   display: inline-block;
+   padding-left: .4em;
+-  font: 900 .6em "Font Awesome 6 Free";
++  font: 900 .6em "forkawesome";
+   vertical-align: middle;
+   text-decoration: none;
+ }
+diff --git a/docs/conf.py b/docs/conf.py
+index 24d9a73..0a98873 100644
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -163,9 +163,8 @@ html_static_path = ['_static']
+ 
+ html_css_files = [
+     "styles/custom.css",
+-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/fontawesome.min.css",
+-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/solid.min.css",
+-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/brands.min.css",
++    "styles/fork-awesome.css",
++    "styles/v5-compat.css",
+ ]
+ 
+ # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,

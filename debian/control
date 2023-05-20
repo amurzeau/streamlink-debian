@@ -60,7 +60,8 @@ Section: doc
 Architecture: all
 Multi-Arch: foreign
 Depends: ${sphinxdoc:Depends},
-  ${misc:Depends}
+  ${misc:Depends},
+  fonts-fork-awesome
 Built-Using: ${sphinxdoc:Built-Using}
 Suggests: python3-streamlink
 Description: CLI for extracting video streams from various websites (documentation)
