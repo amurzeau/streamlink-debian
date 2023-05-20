@@ -109,7 +109,7 @@ class PluginCanHandleUrl:
 
     # ---- misc fixtures
 
-    @pytest.fixture
+    @pytest.fixture()
     def classnames(self):
         yield _plugin_can_handle_url_classnames
         _plugin_can_handle_url_classnames.add(self.__class__.__name__)
@@ -117,7 +117,8 @@ class PluginCanHandleUrl:
     # ---- tests
 
     def test_class_setup(self):
-        assert issubclass(getattr(self, "__plugin__"), Plugin), "Test has a __plugin__ that is a subclass of the Plugin class"
+        assert hasattr(self, "__plugin__"), "Test has a __plugin__ attribute"
+        assert issubclass(self.__plugin__, Plugin), "Test has a __plugin__ that is a subclass of the Plugin class"
         assert len(self.should_match) + len(self.should_match_groups) > 0, "Test has at least one positive URL"
 
     def test_class_name(self, classnames: Set[str]):

@@ -1,16 +1,17 @@
 import logging
 import sys
 import warnings
-from datetime import datetime
 from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING
 from pathlib import Path
 from sys import version_info
 from threading import Lock
-from typing import IO, Iterator, List, Optional, TYPE_CHECKING, Union
+from typing import IO, TYPE_CHECKING, Iterator, List, Optional, Union
+
 # noinspection PyProtectedMember
 from warnings import WarningMessage
 
 from streamlink.exceptions import StreamlinkWarning
+from streamlink.utils.times import fromlocaltimestamp
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -106,7 +107,7 @@ class StringFormatter(logging.Formatter):
         return self._usesTime
 
     def formatTime(self, record, datefmt=None):
-        tdt = datetime.fromtimestamp(record.created)
+        tdt = fromlocaltimestamp(record.created)
 
         return tdt.strftime(datefmt or self.default_time_format)
 
@@ -165,11 +166,11 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
 
 
 def capturewarnings(capture=False):
-    global _showwarning_default
+    global _showwarning_default  # noqa: PLW0603
 
     if capture:
         if _showwarning_default is None:
-            _showwarning_default = warnings.showwarning
+            _showwarning_default = warnings.showwarning  # noqa: PLW0603
             warnings.showwarning = _showwarning
     else:
         if _showwarning_default is not None:
@@ -183,7 +184,7 @@ def basicConfig(
     filemode: str = "a",
     stream: Optional[IO] = None,
     level: Optional[str] = None,
-    format: str = FORMAT_BASE,
+    format: str = FORMAT_BASE,  # noqa: A002  # TODO: rename to "fmt" (breaking)
     style: str = FORMAT_STYLE,  # TODO: py38: Literal["%", "{", "$"]
     datefmt: str = FORMAT_DATE,
     remove_base: Optional[List[str]] = None,

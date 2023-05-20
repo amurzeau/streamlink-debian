@@ -2,10 +2,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import ANY, Mock, call, patch
 
+import pytest
+
 import streamlink_cli.main
 import tests
 from streamlink import Streamlink
-from tests import posix_only, windows_only
 
 
 class CommandLineTestCase(unittest.TestCase):
@@ -33,9 +34,9 @@ class CommandLineTestCase(unittest.TestCase):
              patch("streamlink_cli.main.setup_plugins"), \
              patch("streamlink_cli.main.setup_streamlink") as mock_setup_streamlink, \
              patch("streamlink_cli.main.streamlink", session), \
-             patch("streamlink_cli.output.subprocess.Popen") as mock_popen, \
-             patch("streamlink_cli.output.subprocess.call") as mock_call, \
-             patch("streamlink_cli.output.sleep"):
+             patch("streamlink_cli.output.player.subprocess.Popen") as mock_popen, \
+             patch("streamlink_cli.output.player.subprocess.call") as mock_call, \
+             patch("streamlink_cli.output.player.sleep"):
             mock_argv.__getitem__.side_effect = lambda x: args[x]
             mock_popen.return_value = Mock(poll=Mock(side_effect=poll_factory([None, 0])))
             try:
@@ -51,7 +52,7 @@ class CommandLineTestCase(unittest.TestCase):
             assert mock_call.call_args_list == [call(commandline, stderr=ANY, stdout=ANY)]
 
 
-@posix_only
+@pytest.mark.posix_only()
 class TestCommandLinePOSIX(CommandLineTestCase):
     """
     Commandline tests under POSIX-like operating systems
@@ -70,13 +71,13 @@ class TestCommandLinePOSIX(CommandLineTestCase):
 
     def test_open_player_extra_args_in_player(self):
         self._test_args(["streamlink", "-p", "/usr/bin/player",
-                         "-a", '''--input-title-format "Poker \\"Stars\\"" {filename}''',
+                         "-a", """--input-title-format "Poker \\"Stars\\"" {filename}""",
                          "http://test.se", "test"],
                         ["/usr/bin/player", "--input-title-format", 'Poker "Stars"', "-"])
 
     def test_open_player_extra_args_in_player_pass_through(self):
         self._test_args(["streamlink", "--player-passthrough", "hls", "-p", "/usr/bin/player",
-                         "-a", '''--input-title-format "Poker \\"Stars\\"" {filename}''',
+                         "-a", """--input-title-format "Poker \\"Stars\\"" {filename}""",
                          "test.se", "hls"],
                         ["/usr/bin/player", "--input-title-format", 'Poker "Stars"', "http://test.se/playlist.m3u8"],
                         passthrough=True)
@@ -89,7 +90,7 @@ class TestCommandLinePOSIX(CommandLineTestCase):
                         ["/usr/bin/player", "-v", "-"])
 
 
-@windows_only
+@pytest.mark.windows_only()
 class TestCommandLineWindows(CommandLineTestCase):
     """
     Commandline tests for Windows
@@ -107,19 +108,19 @@ class TestCommandLineWindows(CommandLineTestCase):
         self._test_args(["streamlink", "-p",
                          '''c:\\Program Files\\Player\\player.exe --input-title-format "Poker \\"Stars\\""''',
                          "http://test.se", "test"],
-                        '''c:\\Program Files\\Player\\player.exe --input-title-format "Poker \\"Stars\\"" -''')
+                        """c:\\Program Files\\Player\\player.exe --input-title-format "Poker \\"Stars\\"" -""")
 
     def test_open_player_extra_args_in_player(self):
         self._test_args(["streamlink", "-p", "c:\\Program Files\\Player\\player.exe",
-                         "-a", '''--input-title-format "Poker \\"Stars\\"" {filename}''',
+                         "-a", """--input-title-format "Poker \\"Stars\\"" {filename}""",
                          "http://test.se", "test"],
-                        '''c:\\Program Files\\Player\\player.exe --input-title-format "Poker \\"Stars\\"" -''')
+                        """c:\\Program Files\\Player\\player.exe --input-title-format "Poker \\"Stars\\"" -""")
 
     def test_open_player_extra_args_in_player_pass_through(self):
         self._test_args(["streamlink", "--player-passthrough", "hls", "-p", "c:\\Program Files\\Player\\player.exe",
-                         "-a", '''--input-title-format "Poker \\"Stars\\"" {filename}''',
+                         "-a", """--input-title-format "Poker \\"Stars\\"" {filename}""",
                          "test.se", "hls"],
-                        '''c:\\Program Files\\Player\\player.exe'''
+                        """c:\\Program Files\\Player\\player.exe"""
                         + ''' --input-title-format "Poker \\"Stars\\"" \"http://test.se/playlist.m3u8\"''',
                         passthrough=True)
 

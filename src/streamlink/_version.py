@@ -6,10 +6,10 @@ def _get_version() -> str:
     import streamlink
 
     return get_version(
-        project_dir=Path(streamlink.__file__).parents[2]
+        project_dir=Path(streamlink.__file__).parents[2],
     )
 
 
 # The following _get_version() call will get replaced by versioningit with a static version string when building streamlink
 # `pip install .` / `pip wheel .` / `python setup.py build` / `python setup.py bdist_wheel` / etc.
-__version__ = "5.2.1"
+__version__ = "5.5.1"

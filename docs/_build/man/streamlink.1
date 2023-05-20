@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Jan 23, 2023" "5.2.1" "Streamlink"
+.TH "STREAMLINK" "1" "May 08, 2023" "5.5.1" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -146,12 +146,21 @@ merged on top of each other where the last config has highest priority.
 .UNINDENT
 .INDENT 0.0
 .TP
+.B \-\-no\-config
+Disable loading any default or custom config files.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B \-l LEVEL
 .TP
 .B \-\-loglevel LEVEL
 Set the log message threshold.
 .sp
-Valid levels are: \fBnone\fP, \fBerror\fP, \fBwarning\fP, \fBinfo\fP, \fBdebug\fP, \fBtrace\fP, \fBall\fP
+Valid levels are, in order of increasing verbosity:
+.sp
+\fBnone\fP, \fBcritical\fP, \fBerror\fP, \fBwarning\fP, \fBinfo\fP, \fBdebug\fP, \fBtrace\fP, \fBall\fP
+.sp
+Default is: \fB\(dqinfo\(dq\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -414,6 +423,9 @@ The default behavior is similar to the \fI\%\-\-player\-continuous\-http\fP opti
 but no player program will be started, and the server will listen on all available
 connections instead of just in the local (loopback) interface.
 .sp
+See \fI\%\-\-player\-external\-http\-interface\fP for choosing a specific network interface, and
+see \fI\%\-\-player\-external\-http\-port\fP for choosing a non\-randomized port.
+.sp
 Optionally, the \fI\%\-\-player\-external\-http\-continuous\fP option allows for disabling
 the continuous run\-mode, so that Streamlink will stop when the stream ends.
 .sp
@@ -431,6 +443,12 @@ and will wait for the next HTTP request being made unless it gets shut down via 
 If set to non\-continuous, Streamlink will stop once the stream has ended.
 .sp
 Default is: \fBtrue\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-player\-external\-http\-interface INTERFACE
+The network interface on which the HTTP server will be listening on.
+If unset or set to \fB0.0.0.0\fP, all available interfaces will be bound.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -532,19 +550,6 @@ streamlink \-\-output \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-f
-.TP
-.B \-\-force
-When using \fI\%\-\-output\fP or \fI\%\-\-record\fP, always write to file even if it already exists (overwrite).
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-force\-progress
-When using \fI\%\-\-output\fP or \fI\%\-\-record\fP,
-show the download progress bar even if there is no terminal.
-.UNINDENT
-.INDENT 0.0
-.TP
 .B \-O
 .TP
 .B \-\-stdout
@@ -623,6 +628,25 @@ POSIX: \fB\ex00\-\ex1F /\fP
 .IP \(bu 2
 Windows: \fB\ex00\-\ex1F \ex7F \(dq * / : < > ? \e |\fP
 .UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-f
+.TP
+.B \-\-force
+When using \fI\%\-\-output\fP or \fI\%\-\-record\fP, always write to file even if it already exists (overwrite).
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-progress {yes,force,no}
+When using \fI\%\-\-output\fP or \fI\%\-\-record\fP, show or hide the download progress bar, or force it if there\(aqs no terminal.
+.sp
+Default is: \fByes\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-force\-progress
+Deprecated in favor of \fI\%\-\-progress=force\fP\&.
 .UNINDENT
 .SS Stream options
 .INDENT 0.0
@@ -822,8 +846,6 @@ Default is: \fB60.0\fP\&.
 Automatically mux available subtitles into the output stream.
 .sp
 Needs to be supported by the used plugin.
-.sp
-\fBSupported plugins:\fP funimationnow, rtve, svtplay, vimeo
 .UNINDENT
 .SS HLS options
 .INDENT 0.0
@@ -856,7 +878,7 @@ Immediately write segment data into output buffer while downloading.
 .INDENT 0.0
 .TP
 .B \-\-hls\-playlist\-reload\-attempts ATTEMPTS
-How many attempts should be done to reload the HLS playlist before giving up.
+Max number of attempts when reloading the HLS playlist before giving up.
 .sp
 Default is: \fB3\fP\&.
 .UNINDENT
@@ -972,6 +994,14 @@ Default is: \fBunlimited\fP\&.
 .TP
 .B \-\-hls\-live\-restart
 Skip to the beginning of a live stream, or as far back as possible.
+.UNINDENT
+.SS DASH options
+.INDENT 0.0
+.TP
+.B \-\-dash\-manifest\-reload\-attempts ATTEMPTS
+Max number of attempts when reloading the DASH manifest before giving up.
+.sp
+Default is: \fB3\fP\&.
 .UNINDENT
 .SS FFmpeg options
 .INDENT 0.0
@@ -1185,24 +1215,6 @@ and the session ID does not match the account.
 .UNINDENT
 .UNINDENT
 .UNINDENT
-.SS Funimationnow
-.INDENT 0.0
-.TP
-.B \-\-funimation\-email
-Email address for your Funimation account.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-funimation\-password
-Password for your Funimation account.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-funimation\-language
-The audio language to use for the stream; japanese or english.
-.sp
-Default is: \fB\(dqenglish\(dq\fP\&.
-.UNINDENT
 .SS Nicolive
 .INDENT 0.0
 .TP
@@ -1266,24 +1278,6 @@ Purge cached Pixiv credentials to initiate a new session and reauthenticate.
 Select a co\-host stream instead of the owner stream.
 .UNINDENT
 .SS Sbscokr
-.SS Schoolism
-.INDENT 0.0
-.TP
-.B \-\-schoolism\-email EMAIL
-The email associated with your Schoolism account, required to access any Schoolism stream.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-schoolism\-password PASSWORD
-A Schoolism account password to use with \fI\%\-\-schoolism\-email\fP\&.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-schoolism\-part PART
-Play part number PART of the lesson, or assignment feedback video.
-.sp
-Default is: \fB1\fP\&.
-.UNINDENT
 .SS Steam
 .INDENT 0.0
 .TP

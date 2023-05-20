@@ -17,8 +17,9 @@ from streamlink.plugin import (
     pluginargument,
     pluginmatcher,
 )
+
 # noinspection PyProtectedMember
-from streamlink.plugin.plugin import Matcher, _COOKIE_KEYS
+from streamlink.plugin.plugin import _COOKIE_KEYS, Matcher
 from streamlink.session import Streamlink
 
 
@@ -48,7 +49,7 @@ class DeprecatedPlugin(FakePlugin):
 
 
 class TestPlugin:
-    @pytest.mark.parametrize("pluginclass,module,logger", [
+    @pytest.mark.parametrize(("pluginclass", "module", "logger"), [
         (Plugin, "plugin", "streamlink.plugin.plugin"),
         (FakePlugin, "test_plugin", "tests.test_plugin"),
         (RenamedPlugin, "baz", "foo.bar.baz"),
@@ -84,8 +85,12 @@ class TestPlugin:
 
         assert isinstance(plugin, DeprecatedPlugin)
         assert plugin.custom_attribute == "HTTP://LOCALHOST"
-        assert [(record.category, str(record.message)) for record in recwarn.list] == [
-            (FutureWarning, "Initialized test_plugin plugin with deprecated constructor"),
+        assert [(record.category, str(record.message), record.filename) for record in recwarn.list] == [
+            (
+                FutureWarning,
+                "Initialized test_plugin plugin with deprecated constructor",
+                __file__,
+            ),
         ]
 
         assert plugin.session is session
@@ -113,12 +118,11 @@ class TestPluginMatcher:
 
     # noinspection PyUnusedLocal
     def test_named_duplicate(self):
-        with pytest.raises(ValueError) as cm:
+        with pytest.raises(ValueError, match=r"^A matcher named 'foo' has already been registered$"):
             @pluginmatcher(re.compile("http://foo"), name="foo")
             @pluginmatcher(re.compile("http://foo"), name="foo")
             class MyPlugin(FakePlugin):
                 pass
-        assert str(cm.value) == "A matcher named 'foo' has already been registered"
 
     def test_no_matchers(self):
         class MyPlugin(FakePlugin):
@@ -237,8 +241,9 @@ class TestPluginArguments:
         assert tuple(arg.name for arg in MixedPlugin.arguments) == ("qux", "foo", "bar", "baz")
 
     def test_decorator_typerror(self):
-        with pytest.raises(TypeError) as cm:
-            with patch("builtins.repr", Mock(side_effect=lambda obj: obj.__name__)):
+        with patch("builtins.repr", Mock(side_effect=lambda obj: obj.__name__)):
+            with pytest.raises(TypeError) as cm:
+                # noinspection PyUnusedLocal
                 @pluginargument("foo")
                 class Foo:
                     pass
@@ -288,35 +293,31 @@ def _create_cookie_dict(name, value, expires=None):
 
 
 class TestCookies:
-    @pytest.fixture
-    def session(self):
-        return Streamlink()
-
-    @pytest.fixture
+    @pytest.fixture()
     def pluginclass(self):
         class MyPlugin(FakePlugin):
             __module__ = "myplugin"
 
         return MyPlugin
 
-    @pytest.fixture
+    @pytest.fixture()
     def plugincache(self, request):
         with patch("streamlink.plugin.plugin.Cache") as mock_cache:
             cache = mock_cache("plugin-cache.json", "myplugin")
             cache.get_all.return_value = request.param
             yield cache
 
-    @pytest.fixture
+    @pytest.fixture()
     def logger(self, pluginclass: Type[Plugin]):
         with patch("streamlink.plugin.plugin.logging") as mock_logging:
             yield mock_logging.getLogger(pluginclass.__module__)
 
-    @pytest.fixture
+    @pytest.fixture()
     def plugin(self, pluginclass: Type[Plugin], session: Streamlink, plugincache: Mock, logger: Mock):
         plugin = pluginclass(session, "http://test.se")
         assert plugin.cache is plugincache
         assert plugin.logger is logger
-        yield plugin
+        return plugin
 
     @staticmethod
     def _cookie_to_dict(cookie):

@@ -11,6 +11,7 @@ from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 
+
 log = logging.getLogger(__name__)
 
 
@@ -37,9 +38,12 @@ class VKplay(Plugin):
                     ),
                     validate.all(
                         {
-                            "category": {
-                                "title": str,
-                            },
+                            validate.optional("category"): validate.all(
+                                {
+                                    "title": str,
+                                },
+                                validate.get("title"),
+                            ),
                             "title": str,
                             "data": validate.any(
                                 [
@@ -63,7 +67,7 @@ class VKplay(Plugin):
                             ),
                         },
                         validate.union_get(
-                            ("category", "title"),
+                            "category",
                             "title",
                             ("data", 0),
                         ),

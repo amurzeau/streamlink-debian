@@ -1,5 +1,5 @@
 import subprocess
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Type
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -10,7 +10,7 @@ from streamlink.stream.ffmpegmux import FFMPEGMuxer, FFmpegVersionOutput
 
 # noinspection PyProtectedMember
 @pytest.fixture(autouse=True)
-def resolve_command_cache_clear():
+def _resolve_command_cache_clear():
     FFMPEGMuxer._resolve_command.cache_clear()
     yield
     FFMPEGMuxer._resolve_command.cache_clear()
@@ -21,10 +21,11 @@ def _logger(caplog: pytest.LogCaptureFixture):
     caplog.set_level(1, "streamlink")
 
 
-@pytest.fixture
-def session():
-    with patch("streamlink.session.Streamlink.load_builtin_plugins"):
-        yield Streamlink({"ffmpeg-no-validation": True})
+@pytest.fixture()
+def session(session: Streamlink):
+    session.set_option("ffmpeg-no-validation", True)
+
+    return session
 
 
 class TestCommand:
@@ -37,7 +38,7 @@ class TestCommand:
             assert FFMPEGMuxer.command(session) == "some_value"
             assert len(mock.call_args_list) == 0
 
-    @pytest.mark.parametrize("command,which,expected", [
+    @pytest.mark.parametrize(("command", "which", "expected"), [
         pytest.param(None, {"ffmpeg": None}, None, id="resolver-negative"),
         pytest.param(None, {"ffmpeg": "ffmpeg"}, "ffmpeg", id="resolver-posix"),
         pytest.param(None, {"ffmpeg": "ffmpeg.exe"}, "ffmpeg.exe", id="resolver-windows"),
@@ -49,7 +50,7 @@ class TestCommand:
         with patch("streamlink.stream.ffmpegmux.which", side_effect=lambda value: which.get(value)):
             assert FFMPEGMuxer.command(session) == expected
 
-    @pytest.mark.parametrize("resolved,expected", [
+    @pytest.mark.parametrize(("resolved", "expected"), [
         pytest.param(None, False, id="negative"),
         pytest.param("ffmpeg", True, id="positive"),
     ])
@@ -130,7 +131,7 @@ class TestCommand:
 
 
 class TestFFmpegVersionOutput:
-    @pytest.fixture
+    @pytest.fixture()
     def output(self):
         output = FFmpegVersionOutput(["/usr/bin/ffmpeg", "-version"], timeout=1.0)
         assert output.command == ["/usr/bin/ffmpeg", "-version"]
@@ -176,17 +177,12 @@ class TestOpen:
         with patch("streamlink.stream.ffmpegmux.which", return_value="ffmpeg") as mock:
             yield mock
 
-    @pytest.fixture(scope="class")
-    def devnull(self):
-        with patch("streamlink.stream.ffmpegmux.devnull") as mock_devnull:
-            yield mock_devnull()
-
-    @pytest.fixture
+    @pytest.fixture()
     def popen(self):
         with patch("subprocess.Popen") as mock:
             yield mock
 
-    @pytest.mark.parametrize("options,muxer_args,expected", [
+    @pytest.mark.parametrize(("options", "muxer_args", "expected"), [
         pytest.param(
             {},
             {},
@@ -403,7 +399,6 @@ class TestOpen:
         self,
         session: Streamlink,
         popen: Mock,
-        devnull: Mock,
         options: Dict,
         muxer_args: Dict,
         expected: List,
@@ -416,11 +411,10 @@ class TestOpen:
             ["ffmpeg"] + expected,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=devnull,
+            stderr=subprocess.DEVNULL,
         )]
 
         streamio.close()
-        assert not devnull.close.called
 
     def test_stderr(self, session: Streamlink, popen: Mock):
         session.options.update({"ffmpeg-verbose": True})
@@ -433,14 +427,21 @@ class TestOpen:
             streamio.close()
             assert not mock_stderr.close.called
 
-    def test_stderr_path(self, session: Streamlink, popen: Mock):
-        session.options.update({"ffmpeg-verbose-path": "foo"})
+    @pytest.mark.parametrize(("options", "side_effect"), [
+        pytest.param({"ffmpeg-verbose-path": "foo"}, None, id="verbose-path"),
+        pytest.param({"ffmpeg-verbose-path": "foo", "ffmpeg-verbose": True}, None, id="verbose-path priority"),
+        pytest.param({"ffmpeg-verbose-path": "foo"}, OSError, id="OSError on close"),
+    ])
+    def test_stderr_path(self, session: Streamlink, popen: Mock, options: dict, side_effect: Optional[Type[Exception]]):
+        session.options.update(options)
         with patch("streamlink.stream.ffmpegmux.Path") as mock_path:
             file: Mock = mock_path("foo").expanduser().open("w")
+            file.close.side_effect = side_effect
             streamio = FFMPEGMuxer(session)
 
             streamio.open()
             assert popen.call_args_list[0][1]["stderr"] is file
+            assert not file.close.called
 
             streamio.close()
-            assert file.close.called
+            assert file.close.called_once

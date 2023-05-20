@@ -42,10 +42,17 @@ _shtab_streamlink_cli_options=(
         Can be repeated to load multiple files, in which case the options are
         merged on top of each other where the last config has highest priority.
         ]:config:"
+  "--no-config[
+        Disable loading any default or custom config files.
+        ]"
   {-l,--loglevel}"[
         Set the log message threshold.
 
-        Valid levels are\: \`none\`, \`error\`, \`warning\`, \`info\`, \`debug\`, \`trace\`, \`all\`
+        Valid levels are, in order of increasing verbosity\:
+
+        \`none\`, \`critical\`, \`error\`, \`warning\`, \`info\`, \`debug\`, \`trace\`, \`all\`
+
+        Default is \"info\".
         ]:loglevel:(none critical error warning info debug trace all)"
   "--logfile[
         Append log output to \`FILE\` instead of writing to stdout\/stderr.
@@ -186,6 +193,9 @@ _shtab_streamlink_cli_options=(
         but no player program will be started, and the server will listen on all available
         connections instead of just in the local (loopback) interface.
 
+        See --player-external-http-interface for choosing a specific network interface, and
+        see --player-external-http-port for choosing a non-randomized port.
+
         Optionally, the --player-external-http-continuous option allows for disabling
         the continuous run-mode, so that Streamlink will stop when the stream ends.
 
@@ -202,6 +212,10 @@ _shtab_streamlink_cli_options=(
 
         Default is true.
         ]:player_external_http_continuous:"
+  "--player-external-http-interface[
+        The network interface on which the HTTP server will be listening on.
+        If unset or set to \`0.0.0.0\`, all available interfaces will be bound.
+        ]:player_external_http_interface:"
   "--player-external-http-port[
         A fixed port to use for the external HTTP server if that mode is
         enabled. Omit or set to \`0\` to use a random high ( \>1024) port.
@@ -264,13 +278,6 @@ _shtab_streamlink_cli_options=(
 
             \%(prog)s --output \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%\%Y\%\%m\%\%d\%\%H\%\%M\%\%S\}.ts\" \<URL\> \[STREAM\]
         ]:output:"
-  {-f,--force}"[
-        When using --output or --record, always write to file even if it already exists (overwrite).
-        ]"
-  "--force-progress[
-        When using --output or --record,
-        show the download progress bar even if there is no terminal.
-        ]"
   {-O,--stdout}"[
         Write stream data to stdout instead of playing it.
         ]"
@@ -319,6 +326,17 @@ _shtab_streamlink_cli_options=(
         - POSIX\: \`\\x00-\\x1F \/\`
         - Windows\: \`\\x00-\\x1F \\x7F \" \* \/ \: \< \> \? \\ \|\`
         ]:fs_safe_rules:(POSIX Windows)"
+  {-f,--force}"[
+        When using --output or --record, always write to file even if it already exists (overwrite).
+        ]"
+  "--progress[
+        When using --output or --record, show or hide the download progress bar, or force it if there\'s no terminal.
+
+        Default is yes.
+        ]:progress:(yes force no)"
+  "--force-progress[
+        Deprecated in favor of --progress\=force.
+        ]"
   "--url[
         A URL to attempt to extract streams from.
 
@@ -469,7 +487,7 @@ _shtab_streamlink_cli_options=(
         Immediately write segment data into output buffer while downloading.
         ]"
   "--hls-playlist-reload-attempts[
-        How many attempts should be done to reload the HLS playlist before giving up.
+        Max number of attempts when reloading the HLS playlist before giving up.
 
         Default is 3.
         ]:hls_playlist_reload_attempts:"
@@ -539,6 +557,11 @@ _shtab_streamlink_cli_options=(
   "--hls-live-restart[
         Skip to the beginning of a live stream, or as far back as possible.
         ]"
+  "--dash-manifest-reload-attempts[
+        Max number of attempts when reloading the DASH manifest before giving up.
+
+        Default is 3.
+        ]:dash_manifest_reload_attempts:"
   "--ffmpeg-ffmpeg[
         FFMPEG is used to access or mux separate video and audio streams. You
         can specify the location of the ffmpeg executable if it is not in your
@@ -657,13 +680,6 @@ _shtab_streamlink_cli_options=(
         Note\: The session ID will be overwritten if authentication is used
         and the session ID does not match the account.
     ]:crunchyroll_session_id:"
-  "--funimation-email[Email address for your Funimation account.]:funimation_email:"
-  "--funimation-password[Password for your Funimation account.]:funimation_password:"
-  "--funimation-language[
-        The audio language to use for the stream\; japanese or english.
-
-        Default is \"english\".
-    ]:funimation_language:(en ja english japanese)"
   "--niconico-email[The email or phone number associated with your Niconico account]:niconico_email:"
   "--niconico-password[The password of your Niconico account]:niconico_password:"
   "--niconico-user-session[
@@ -683,13 +699,6 @@ _shtab_streamlink_cli_options=(
   "--pixiv-devicetoken[The pixiv.net device token that\'s used in pixiv\'s device_token cookie.]:pixiv_devicetoken:"
   "--pixiv-purge-credentials[Purge cached Pixiv credentials to initiate a new session and reauthenticate.]"
   "--pixiv-performer[Select a co-host stream instead of the owner stream.]:pixiv_performer:"
-  "--schoolism-email[The email associated with your Schoolism account, required to access any Schoolism stream.]:schoolism_email:"
-  "--schoolism-password[A Schoolism account password to use with --schoolism-email.]:schoolism_password:"
-  "--schoolism-part[
-        Play part number PART of the lesson, or assignment feedback video.
-
-        Default is 1.
-    ]:schoolism_part:"
   "--steam-email[A Steam account email address to access friends\/private streams]:steam_email:"
   "--steam-password[A Steam account password to use with --steam-email.]:steam_password:"
   "--streann-url[Source URL where the iframe is located, only required for direct URLs of ott.streann.com]:streann_url:"

@@ -1,4 +1,7 @@
+import warnings
 from typing import Any, Callable, ClassVar, Dict, Iterator, Mapping, Optional, Sequence, Union
+
+from streamlink.exceptions import StreamlinkDeprecationWarning
 
 
 class Options:
@@ -60,6 +63,30 @@ class Options:
         for key, value in options.items():
             self.set(key, value)
 
+    def keys(self):
+        return self.options.keys()
+
+    def values(self):
+        return self.options.values()
+
+    def items(self):
+        return self.options.items()
+
+    def __getitem__(self, item):
+        return self.get(item)
+
+    def __setitem__(self, item, value):
+        return self.set(item, value)
+
+    def __contains__(self, item):
+        return self.options.__contains__(item)
+
+    def __len__(self):
+        return self.options.__len__()
+
+    def __iter__(self):
+        return self.options.__iter__()
+
 
 class Argument:
     """
@@ -80,7 +107,7 @@ class Argument:
         argument_name: Optional[str] = None,
         dest: Optional[str] = None,
         is_global: bool = False,
-        **options
+        **options,
     ):
         """
         :param name: Argument name, without leading ``--`` or plugin name prefixes, e.g. ``"username"``, ``"password"``, etc.
@@ -90,7 +117,7 @@ class Argument:
         :param sensitive: Whether the argument is sensitive (passwords, etc.) and should be masked
         :param argument_name: Custom CLI argument name without plugin name prefix
         :param dest: Custom plugin option name
-        :param is_global: Whether this plugin argument refers to a global CLI argument
+        :param is_global: Whether this plugin argument refers to a global CLI argument (deprecated)
         :param options: Arguments passed to :meth:`ArgumentParser.add_argument`, excluding ``requires`` and ``dest``
         """
 
@@ -105,6 +132,14 @@ class Argument:
         self.sensitive = sensitive
         self._default = options.get("default")
         self.is_global = is_global
+        if is_global:
+            warnings.warn(
+                "Defining global plugin arguments is deprecated. Use the session options instead.",
+                StreamlinkDeprecationWarning,
+                # set stacklevel to 3 because of the @pluginargument decorator
+                # which is the public interface for defining plugin arguments
+                stacklevel=3,
+            )
 
     @staticmethod
     def _normalize_name(name: str) -> str:
