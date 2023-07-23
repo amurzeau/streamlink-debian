@@ -24,12 +24,10 @@ def timestamp():
 class TestDASHStreamParseManifest:
     @pytest.fixture(autouse=True)
     def _response(self, request: pytest.FixtureRequest, requests_mock: rm.Mocker):
-        invalid = requests_mock.register_uri(rm.ANY, rm.ANY, exc=rm.exceptions.InvalidRequest("Invalid request"))
         response = requests_mock.register_uri("GET", "http://test/manifest.mpd", **getattr(request, "param", {}))
         called_once = "nomockedhttprequest" not in request.keywords
         yield
-        assert not invalid.called
-        assert response.called_once is called_once
+        assert (response.call_count == 1) is called_once
 
     @pytest.fixture()
     def parse_xml(self, monkeypatch: pytest.MonkeyPatch):
@@ -82,6 +80,60 @@ class TestDASHStreamParseManifest:
         streams = DASHStream.parse_manifest(session, "http://test/manifest.mpd")
         assert mpd.call_args_list == [call(ANY, url="http://test/manifest.mpd", base_url="http://test")]
         assert sorted(streams.keys()) == sorted(["a128k", "a256k"])
+
+    @pytest.mark.parametrize(("with_video_only", "with_audio_only", "expected"), [
+        pytest.param(
+            False,
+            False,
+            ["720p+a128k", "720p+a256k", "1080p+a128k", "1080p+a256k"],
+            id="Only muxed streams",
+        ),
+        pytest.param(
+            True,
+            False,
+            ["720p", "720p+a128k", "720p+a256k", "1080p", "1080p+a128k", "1080p+a256k"],
+            id="With video-only streams",
+        ),
+        pytest.param(
+            False,
+            True,
+            ["a128k", "a256k", "720p+a128k", "720p+a256k", "1080p+a128k", "1080p+a256k"],
+            id="With audio-only streams",
+        ),
+        pytest.param(
+            True,
+            True,
+            ["a128k", "a256k", "720p", "720p+a128k", "720p+a256k", "1080p", "1080p+a128k", "1080p+a256k"],
+            id="With video-only and audio-only streams",
+        ),
+    ])
+    def test_with_videoaudio_only(
+        self,
+        session: Streamlink,
+        mpd: Mock,
+        with_video_only: bool,
+        with_audio_only: bool,
+        expected: List[str],
+    ):
+        adaptationset = Mock(
+            contentProtections=None,
+            representations=[
+                Mock(id="1", contentProtections=None, mimeType="video/mp4", height=720),
+                Mock(id="2", contentProtections=None, mimeType="video/mp4", height=1080),
+                Mock(id="3", contentProtections=None, mimeType="audio/mp4", bandwidth=128.0, lang="en"),
+                Mock(id="4", contentProtections=None, mimeType="audio/mp4", bandwidth=256.0, lang="en"),
+            ],
+        )
+        mpd.return_value = Mock(periods=[Mock(adaptationSets=[adaptationset])])
+
+        streams = DASHStream.parse_manifest(
+            session,
+            "http://test/manifest.mpd",
+            with_video_only=with_video_only,
+            with_audio_only=with_audio_only,
+        )
+        assert mpd.call_args_list == [call(ANY, url="http://test/manifest.mpd", base_url="http://test")]
+        assert list(streams.keys()) == expected
 
     def test_audio_single(self, session: Streamlink, mpd: Mock):
         adaptationset = Mock(
@@ -279,23 +331,25 @@ class TestDASHStreamOpen:
         stream.open()
 
         assert reader.call_args_list == [call(stream, rep_video, timestamp)]
-        reader_video = reader(stream, rep_video, timestamp)
-        assert reader_video.open.called_once
+        assert reader().open.call_count == 1
         assert muxer.call_args_list == []
 
     def test_stream_open_video_audio(self, session: Streamlink, timestamp: datetime, muxer: Mock, reader: Mock):
         rep_video = Mock(ident=(None, None, "1"), mimeType="video/mp4")
         rep_audio = Mock(ident=(None, None, "2"), mimeType="audio/mp3", lang="en")
+
+        mock_reader_video = Mock()
+        mock_reader_audio = Mock()
+        readers = {rep_video: mock_reader_video, rep_audio: mock_reader_audio}
+        reader.side_effect = lambda _stream, _representation, _timestamp: readers[_representation]
+
         stream = DASHStream(session, Mock(), rep_video, rep_audio)
         stream.open()
 
         assert reader.call_args_list == [call(stream, rep_video, timestamp), call(stream, rep_audio, timestamp)]
-        reader_video = reader(stream, rep_video, timestamp)
-        reader_audio = reader(stream, rep_audio, timestamp)
-        assert reader_video.open.called_once
-        assert reader_audio.open.called_once
-        assert muxer.call_args_list == [call(session, reader_video, reader_audio, copyts=True)]
-        assert reader_video.timestamp is reader_audio.timestamp
+        assert mock_reader_video.open.call_count == 1
+        assert mock_reader_audio.open.call_count == 1
+        assert muxer.call_args_list == [call(session, mock_reader_video, mock_reader_audio, copyts=True)]
 
 
 class TestDASHStreamWorker:

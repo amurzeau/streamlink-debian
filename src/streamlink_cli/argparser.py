@@ -1,6 +1,7 @@
 import argparse
 import numbers
 import re
+from pathlib import Path
 from string import printable
 from textwrap import dedent
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -9,12 +10,8 @@ from streamlink import __version__ as streamlink_version, logger
 from streamlink.session import Streamlink
 from streamlink.utils.args import boolean, comma_list, comma_list_filter, filesize, keyvalue, num
 from streamlink.utils.times import hours_minutes_seconds
-from streamlink_cli.constants import (
-    PLAYER_ARGS_INPUT_DEFAULT,
-    PLAYER_ARGS_INPUT_FALLBACK,
-    STREAM_PASSTHROUGH,
-    SUPPORTED_PLAYERS,
-)
+from streamlink_cli.constants import STREAM_PASSTHROUGH
+from streamlink_cli.output.player import PlayerOutput
 from streamlink_cli.utils import find_default_player
 
 
@@ -375,6 +372,7 @@ def build_parser():
     general.add_argument(
         "-4", "--ipv4",
         action="store_true",
+        default=None,
         help="""
         Resolve address names to IPv4 only. This option overrides --ipv6.
         """,
@@ -382,6 +380,7 @@ def build_parser():
     general.add_argument(
         "-6", "--ipv6",
         action="store_true",
+        default=None,
         help="""
         Resolve address names to IPv6 only. This option overrides --ipv4.
         """,
@@ -390,34 +389,21 @@ def build_parser():
     player = parser.add_argument_group("Player options")
     player.add_argument(
         "-p", "--player",
-        metavar="COMMAND",
+        metavar="PATH",
+        type=Path,
         default=find_default_player(),
         help="""
-        Player to feed stream data to. By default, VLC will be used if it can be
-        found in its default location.
+        The player executable that will be launched (unless a different output method was chosen).
 
-        This is a shell-like syntax to support using a specific player:
+        Either set an absolute or relative path to the player executable, or just set the executable's name
+        if it can be resolved from the paths of the system's `PATH` environment variable.
 
-          %(prog)s --player=vlc <url> [stream]
+        In addition to setting the player executable path, custom player arguments can be set via --player-args.
 
-        Absolute or relative paths can also be passed via this option in the
-        event the player's executable can not be resolved:
+        Note: In the past, --player allowed defining additional player arguments, which as a consequence required wrapping
+        player paths that contained spaces in quotation marks. This is unsupported since release `6.0.0`.
 
-          %(prog)s --player=/path/to/vlc <url> [stream]
-          %(prog)s --player=./vlc-player/vlc <url> [stream]
-
-        To use a player that is located in a path with spaces you must quote the
-        parameter or its value:
-
-          %(prog)s "--player=/path/with spaces/vlc" <url> [stream]
-          %(prog)s --player "C:\\path\\with spaces\\mpc-hc64.exe" <url> [stream]
-
-        Options may also be passed to the player. For example:
-
-          %(prog)s --player "vlc --file-caching=5000" <url> [stream]
-
-        As an alternative to this, see the --player-args parameter, which does
-        not log any custom player arguments.
+        Default is VLC player, if available.
         """,
     )
     player.add_argument(
@@ -425,33 +411,27 @@ def build_parser():
         metavar="ARGUMENTS",
         default="",
         help=f"""
-        This option allows you to customize the default arguments which are put
-        together with the value of --player to create a command to execute.
+        This option allows the arguments which are used to launch the player process to be customized.
 
-        It's usually enough to only use --player instead of this unless you need
-        to add arguments after the player's input argument or if you don't want
-        any of the player arguments to be logged.
+        The value can contain formatting variables surrounded by curly braces, `{{` and `}}`.
+        Curly brace characters can be escaped by doubling, e.g. `{{{{` and `}}}}`.
 
-        The value can contain formatting variables surrounded by curly braces,
-        `{{` and `}}`. If you need to include a brace character, it can be escaped
-        by doubling, e.g. `{{{{` and `}}}}`.
+        Available formatting variables:
 
-        Formatting variables available:
+        `{{{PlayerOutput.PLAYER_ARGS_INPUT}}}`
+            This is the input argument that the player will receive. For standard input (stdin),
+            it is `-` (dash), but it can also be a file path or URL, depending on the options used.
+            If unset, then the player input argument will be appended to the parsed player arguments list.
 
-        {{{PLAYER_ARGS_INPUT_DEFAULT}}}
-            This is the input that the player will use. For standard input (stdin),
-            it is `-` (dash), but it can also be a URL, depending on the options used.
-
-        {{{PLAYER_ARGS_INPUT_FALLBACK}}}
-            The old fallback variable name with the same functionality.
+        `{{{PlayerOutput.PLAYER_ARGS_TITLE}}}`
+            The automatically generated player title arguments, if a supported player was found. See --title for more.
+            If unset, automatically generated player title arguments will be prepended to the parsed player arguments list.
 
         Example:
 
-          %(prog)s -p vlc -a "--play-and-exit {{{PLAYER_ARGS_INPUT_DEFAULT}}}" <url> [stream]
+          %(prog)s -p vlc -a "--play-and-exit --no-one-instance" <url> [stream]
 
-        Note: When neither of the variables are found, `{{{PLAYER_ARGS_INPUT_DEFAULT}}}`
-        will be appended to the whole parameter value, to ensure that the player
-        always receives an input argument.
+        Default is "".
         """,
     )
     player.add_argument(
@@ -582,7 +562,7 @@ def build_parser():
 
         Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables.
 
-        This option is only supported for the following players: {', '.join(sorted(SUPPORTED_PLAYERS.keys()))}
+        This option is only supported for the following players: {', '.join(sorted(PlayerOutput.PLAYERS.keys()))}
 
         VLC specific information:
             VLC does support special formatting variables on its own:
@@ -913,6 +893,7 @@ def build_parser():
     transport.add_argument(
         "--mux-subtitles",
         action="store_true",
+        default=None,
         help="""
         Automatically mux available subtitles into the output stream.
 
@@ -943,6 +924,7 @@ def build_parser():
     transport_hls.add_argument(
         "--hls-segment-stream-data",
         action="store_true",
+        default=None,
         help="""
         Immediately write segment data into output buffer while downloading.
         """,
@@ -1054,6 +1036,7 @@ def build_parser():
     transport_hls.add_argument(
         "--hls-live-restart",
         action="store_true",
+        default=None,
         help="""
         Skip to the beginning of a live stream, or as far back as possible.
         """,
@@ -1090,6 +1073,7 @@ def build_parser():
     transport_ffmpeg.add_argument(
         "--ffmpeg-no-validation",
         action="store_true",
+        default=None,
         help="""
         Disable FFmpeg validation and version logging.
         """,
@@ -1097,6 +1081,7 @@ def build_parser():
     transport_ffmpeg.add_argument(
         "--ffmpeg-verbose",
         action="store_true",
+        default=None,
         help="""
         Write the console output from ffmpeg to the console.
         """,
@@ -1146,6 +1131,7 @@ def build_parser():
     transport_ffmpeg.add_argument(
         "--ffmpeg-copyts",
         action="store_true",
+        default=None,
         help="""
         Forces the `-copyts` ffmpeg option and does not remove
         the initial start time offset value.
@@ -1154,6 +1140,7 @@ def build_parser():
     transport_ffmpeg.add_argument(
         "--ffmpeg-start-at-zero",
         action="store_true",
+        default=None,
         help="""
         Enable the `-start_at_zero` ffmpeg option when using --ffmpeg-copyts.
         """,
@@ -1205,7 +1192,8 @@ def build_parser():
     )
     http.add_argument(
         "--http-ignore-env",
-        action="store_true",
+        action="store_false",
+        default=None,
         help="""
         Ignore HTTP settings set in the environment such as environment
         variables (`HTTP_PROXY`, etc) or `~/.netrc` authentication.
@@ -1213,7 +1201,8 @@ def build_parser():
     )
     http.add_argument(
         "--http-no-ssl-verify",
-        action="store_true",
+        action="store_false",
+        default=None,
         help="""
         Don't attempt to verify SSL certificates.
 
@@ -1223,6 +1212,7 @@ def build_parser():
     http.add_argument(
         "--http-disable-dh",
         action="store_true",
+        default=None,
         help="""
         Disable Diffie Hellman key exchange
 
@@ -1260,13 +1250,90 @@ def build_parser():
         """,
     )
 
+    webbrowser = parser.add_argument_group("Web browser options")
+    webbrowser.add_argument(
+        "--webbrowser",
+        type=boolean,
+        metavar="{yes,true,1,on,no,false,0,off}",
+        default=None,
+        help="""
+        Enable or disable support for Streamlink's webbrowser API.
+
+        Streamlink's webbrowser API allows plugins which implement it to launch a web browser and extract data from websites
+        which they otherwise couldn't do via the regular HTTP session in Python due to specific JavaScript restrictions.
+
+        The web browser is run isolated and in a clean environment without access to regular user data.
+
+        Streamlink currently only supports Chromium-based web browsers using the Chrome Devtools Protocol (CDP).
+        This includes Chromium itself, Google Chrome, Microsoft Edge, Brave, Vivaldi, and others, but full support for
+        third party Chromium forks is not guaranteed. If you encounter any issues, please try Chromium or Google Chrome instead.
+
+        Default is true.
+        """,
+    )
+    webbrowser.add_argument(
+        "--webbrowser-executable",
+        metavar="PATH",
+        help="""
+        Path to the web browser's executable.
+
+        By default, it is looked up automatically according to the rules of the used webbrowser API implementation.
+        This usually involves a list of known executable names and fallback paths on all supported operating systems.
+        """,
+    )
+    webbrowser.add_argument(
+        "--webbrowser-timeout",
+        metavar="TIME",
+        type=num(float, gt=0),
+        help="""
+        The maximum amount of time which the web browser can take to launch and execute.
+        """,
+    )
+    webbrowser.add_argument(
+        "--webbrowser-cdp-host",
+        metavar="HOST",
+        help="""
+        Host for the web browser's inter-process communication interface (CDP specific).
+
+        Default is 127.0.0.1.
+        """,
+    )
+    webbrowser.add_argument(
+        "--webbrowser-cdp-port",
+        metavar="PORT",
+        type=num(int, ge=0, le=65535),
+        help="""
+        Port for the web browser's inter-process communication interface (CDP specific).
+
+        Tries to find a free port by default.
+        """,
+    )
+    webbrowser.add_argument(
+        "--webbrowser-cdp-timeout",
+        metavar="TIME",
+        type=num(float, gt=0),
+        help="""
+        The maximum amount of time for waiting on a single CDP command response.
+        """,
+    )
+    webbrowser.add_argument(
+        "--webbrowser-headless",
+        type=boolean,
+        metavar="{yes,true,1,on,no,false,0,off}",
+        default=None,
+        help="""
+        Whether to launch the web browser in headless mode or not.
+        When enabled, it stays completely hidden and doesn't require a desktop environment to run.
+
+        Default is true.
+        """,
+    )
+
     return parser
 
 
-def false(_): return False  # noqa: E704
-
-
 # The order of arguments determines if options get overridden by `Streamlink.set_option()`
+# NOTE: arguments with `action=store_{true,false}` must set `default=None`
 _ARGUMENT_TO_SESSIONOPTION: List[Tuple[str, str, Optional[Callable[[Any], Any]]]] = [
     # generic arguments
     ("locale", "locale", None),
@@ -1282,8 +1349,8 @@ _ARGUMENT_TO_SESSIONOPTION: List[Tuple[str, str, Optional[Callable[[Any], Any]]]
     ("http_cookie", "http-cookies", dict),
     ("http_header", "http-headers", dict),
     ("http_query_param", "http-query-params", dict),
-    ("http_ignore_env", "http-trust-env", false),
-    ("http_no_ssl_verify", "http-ssl-verify", false),
+    ("http_ignore_env", "http-trust-env", None),
+    ("http_no_ssl_verify", "http-ssl-verify", None),
     ("http_disable_dh", "http-disable-dh", None),
     ("http_ssl_cert", "http-ssl-cert", None),
     ("http_ssl_cert_crt_key", "http-ssl-cert", tuple),
@@ -1323,13 +1390,22 @@ _ARGUMENT_TO_SESSIONOPTION: List[Tuple[str, str, Optional[Callable[[Any], Any]]]
     ("ffmpeg_audio_transcode", "ffmpeg-audio-transcode", None),
     ("ffmpeg_copyts", "ffmpeg-copyts", None),
     ("ffmpeg_start_at_zero", "ffmpeg-start-at-zero", None),
+
+    # web browser arguments
+    ("webbrowser", "webbrowser", None),
+    ("webbrowser_executable", "webbrowser-executable", None),
+    ("webbrowser_timeout", "webbrowser-timeout", None),
+    ("webbrowser_cdp_host", "webbrowser-cdp-host", None),
+    ("webbrowser_cdp_port", "webbrowser-cdp-port", None),
+    ("webbrowser_cdp_timeout", "webbrowser-cdp-timeout", None),
+    ("webbrowser_headless", "webbrowser-headless", None),
 ]
 
 
 def setup_session_options(session: Streamlink, args: argparse.Namespace):
     for arg, option, mapper in _ARGUMENT_TO_SESSIONOPTION:
         value = getattr(args, arg)
-        if value:
+        if value is not None:
             if mapper is not None:
                 value = mapper(value)
             session.set_option(option, value)

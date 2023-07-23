@@ -1,9 +1,10 @@
 import os
 import sys
-from typing import Dict, List, Tuple
+from typing import Dict, Iterator, List, Tuple
 from unittest.mock import patch
 
 import pytest
+import requests_mock as rm
 
 from streamlink.session import Streamlink
 
@@ -65,9 +66,20 @@ def _check_test_condition(item: pytest.Item):  # pragma: no cover
 
 
 @pytest.fixture()
-def session(request: pytest.FixtureRequest) -> Streamlink:
+def session(request: pytest.FixtureRequest) -> Iterator[Streamlink]:
     with patch.object(Streamlink, "load_builtin_plugins"):
         session = Streamlink()
         for key, value in getattr(request, "param", {}).items():
             session.set_option(key, value)
-        return session
+        yield session
+
+    Streamlink.resolve_url.cache_clear()
+
+
+@pytest.fixture()
+def requests_mock(requests_mock: rm.Mocker) -> rm.Mocker:  # noqa: PT004
+    """
+    Override of the default `requests_mock` fixture, with `InvalidRequest` raised on unknown requests
+    """
+    requests_mock.register_uri(rm.ANY, rm.ANY, exc=rm.exceptions.InvalidRequest)
+    return requests_mock
