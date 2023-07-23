@@ -20,9 +20,10 @@ include /usr/share/dpkg/pkg-info.mk
 export LC_ALL=C.UTF-8
 export LANGUAGE=C.UTF-8
 
-override_dh_auto_install:
+override_dh_auto_build:
 	PYTHONPATH=$(CURDIR)/src make --directory=docs html man
-	dh_auto_install
+	sed -i 's/^\.ft C$$/.ft CW/' docs/_build/man/streamlink.1
+	dh_auto_build
 
 # Explicitly uses CHANGELOG.md instead of docs/changelog.md (the default
 # file used by dh_installchangelogs)
