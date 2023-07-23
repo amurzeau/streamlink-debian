@@ -1,4 +1,3 @@
-import unittest
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple, Union
 
@@ -200,7 +199,7 @@ def test_parse_resolution(string: str, expected: Resolution):
     assert M3U8Parser.parse_resolution(string) == expected
 
 
-class TestHLSPlaylist(unittest.TestCase):
+class TestHLSPlaylist:
     def test_load(self):
         with text("hls/test_1.m3u8") as m3u8_fh:
             playlist = load(m3u8_fh.read(), "http://test.se/")
@@ -381,7 +380,7 @@ class TestHLSPlaylist(unittest.TestCase):
         delta_30 = timedelta(seconds=30, milliseconds=500)
         delta_60 = timedelta(seconds=60)
 
-        assert playlist.target_duration == 120
+        assert playlist.targetduration == 120
 
         assert list(playlist.dateranges) == [
             DateRange(

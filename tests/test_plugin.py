@@ -1,6 +1,7 @@
 import logging
 import re
 import time
+from operator import eq, gt, lt
 from typing import Type
 from unittest.mock import Mock, call, patch
 
@@ -8,6 +9,7 @@ import freezegun
 import pytest
 import requests.cookies
 
+from streamlink.options import Options
 from streamlink.plugin import (
     HIGH_PRIORITY,
     NORMAL_PRIORITY,
@@ -19,7 +21,7 @@ from streamlink.plugin import (
 )
 
 # noinspection PyProtectedMember
-from streamlink.plugin.plugin import _COOKIE_KEYS, Matcher
+from streamlink.plugin.plugin import _COOKIE_KEYS, Matcher, parse_params, stream_weight
 from streamlink.session import Streamlink
 
 
@@ -40,12 +42,6 @@ class CustomConstructorOnePlugin(FakePlugin):
 class CustomConstructorTwoPlugin(FakePlugin):
     def __init__(self, session, url):
         super().__init__(session, url)
-
-
-class DeprecatedPlugin(FakePlugin):
-    def __init__(self, url):
-        super().__init__(url)  # type: ignore[call-arg]
-        self.custom_attribute = url.upper()
 
 
 class TestPlugin:
@@ -77,34 +73,15 @@ class TestPlugin:
 
         assert mock_load_cookies.call_args_list == [call()]
 
-    def test_constructor_wrapper(self, recwarn: pytest.WarningsRecorder):
-        session = Mock()
-        with patch("streamlink.plugin.plugin.Cache") as mock_cache, \
-             patch.object(DeprecatedPlugin, "load_cookies") as mock_load_cookies:
-            plugin = DeprecatedPlugin(session, "http://localhost")  # type: ignore[call-arg]
+    def test_constructor_options(self):
+        one = FakePlugin(Mock(), "https://mocked", Options({"key": "val"}))
+        two = FakePlugin(Mock(), "https://mocked")
+        assert one.get_option("key") == "val"
+        assert two.get_option("key") is None
 
-        assert isinstance(plugin, DeprecatedPlugin)
-        assert plugin.custom_attribute == "HTTP://LOCALHOST"
-        assert [(record.category, str(record.message), record.filename) for record in recwarn.list] == [
-            (
-                FutureWarning,
-                "Initialized test_plugin plugin with deprecated constructor",
-                __file__,
-            ),
-        ]
-
-        assert plugin.session is session
-        assert plugin.url == "http://localhost"
-
-        assert plugin.module == "test_plugin"
-
-        assert isinstance(plugin.logger, logging.Logger)
-        assert plugin.logger.name == "tests.test_plugin"
-
-        assert mock_cache.call_args_list == [call(filename="plugin-cache.json", key_prefix="test_plugin")]
-        assert plugin.cache == mock_cache()
-
-        assert mock_load_cookies.call_args_list == [call()]
+        one.set_option("key", "other")
+        assert one.get_option("key") == "other"
+        assert two.get_option("key") is None
 
 
 class TestPluginMatcher:
@@ -273,26 +250,28 @@ def test_plugin_metadata(attr):
     assert getter() == "baz qux"
 
 
-# TODO: python 3.7 removal: move this as static method to the TestCookies class
-def _create_cookie_dict(name, value, expires=None):
-    return dict(
-        version=0,
-        name=name,
-        value=value,
-        port=None,
-        domain="test.se",
-        path="/",
-        secure=False,
-        expires=expires,
-        discard=True,
-        comment=None,
-        comment_url=None,
-        rest={"HttpOnly": None},
-        rfc2109=False,
-    )
-
-
 class TestCookies:
+    @staticmethod
+    def create_cookie_dict(name, value, expires=None):
+        return dict(
+            version=0,
+            name=name,
+            value=value,
+            port=None,
+            domain="test.se",
+            path="/",
+            secure=False,
+            expires=expires,
+            discard=True,
+            comment=None,
+            comment_url=None,
+            rest={"HttpOnly": None},
+            rfc2109=False,
+        )
+
+    # TODO: py39 support end: remove explicit dummy context binding of static method
+    _create_cookie_dict = create_cookie_dict.__get__(object)
+
     @pytest.fixture()
     def pluginclass(self):
         class MyPlugin(FakePlugin):
@@ -354,7 +333,7 @@ class TestCookies:
         plugin.save_cookies(lambda cookie: cookie.name == "test-name1", default_expires=3600)
         assert plugincache.set.call_args_list == [call(
             "__cookie:test-name1:test.se:80:/",
-            _create_cookie_dict("test-name1", "test-value1", None),
+            self.create_cookie_dict("test-name1", "test-value1", None),
             3600,
         )]
         assert logger.debug.call_args_list == [call("Saved cookies: test-name1")]
@@ -374,7 +353,7 @@ class TestCookies:
         plugin.save_cookies(default_expires=60)
         assert plugincache.set.call_args_list == [call(
             "__cookie:test-name:test.se:80:/",
-            _create_cookie_dict("test-name", "test-value", 3600),
+            self.create_cookie_dict("test-name", "test-value", 3600),
             3600,
         )]
 
@@ -411,3 +390,58 @@ class TestCookies:
         assert call("__cookie:test-name1:test.se:80:/", None, 0) not in plugincache.set.call_args_list
         assert call("__cookie:test-name2:test.se:80:/", None, 0) in plugincache.set.call_args_list
         assert tuple(session.http.cookies.keys()) == ("test-name1",)
+
+
+@pytest.mark.parametrize(("params", "expected"), [
+    (
+        None,
+        {},
+    ),
+    (
+        "foo=bar",
+        dict(foo="bar"),
+    ),
+    (
+        "verify=False",
+        dict(verify=False),
+    ),
+    (
+        "timeout=123.45",
+        dict(timeout=123.45),
+    ),
+    (
+        "verify=False params={'key': 'a value'}",
+        dict(verify=False, params=dict(key="a value")),
+    ),
+    (
+        "\"conn=['B:1', 'S:authMe', 'O:1', 'NN:code:1.23', 'NS:flag:ok', 'O:0']",
+        dict(conn=["B:1", "S:authMe", "O:1", "NN:code:1.23", "NS:flag:ok", "O:0"]),
+    ),
+])
+def test_parse_params(params, expected):
+    assert parse_params(params) == expected
+
+
+@pytest.mark.parametrize(("weight", "expected"), [
+    ("720p", (720, "pixels")),
+    ("720p+", (721, "pixels")),
+    ("720p60", (780, "pixels")),
+])
+def test_stream_weight_value(weight, expected):
+    assert stream_weight(weight) == expected
+
+
+@pytest.mark.parametrize(("weight_a", "operator", "weight_b"), [
+    ("720p+", gt, "720p"),
+    ("720p_3000k", gt, "720p_2500k"),
+    ("720p60_3000k", gt, "720p_3000k"),
+    ("3000k", gt, "2500k"),
+    ("720p", eq, "720p"),
+    ("720p_3000k", lt, "720p+_3000k"),
+    # with audio
+    ("720p+a256k", gt, "720p+a128k"),
+    ("720p+a256k", gt, "360p+a256k"),
+    ("720p+a128k", gt, "360p+a256k"),
+])
+def test_stream_weight(weight_a, weight_b, operator):
+    assert operator(stream_weight(weight_a), stream_weight(weight_b))

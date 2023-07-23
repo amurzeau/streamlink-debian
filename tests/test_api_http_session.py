@@ -1,10 +1,10 @@
-import unittest
-from unittest.mock import PropertyMock, call, patch
+from typing import Optional
+from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 import requests
 
-from streamlink.exceptions import PluginError
+from streamlink.exceptions import PluginError, StreamlinkDeprecationWarning
 from streamlink.plugin.api.http_session import HTTPSession
 from streamlink.plugin.api.useragents import FIREFOX
 
@@ -33,49 +33,62 @@ class TestUrllib3Overrides:
         assert prep.url == expected, assertion
 
 
-class TestPluginAPIHTTPSession(unittest.TestCase):
+class TestHTTPSession:
     def test_session_init(self):
         session = HTTPSession()
         assert session.headers.get("User-Agent") == FIREFOX
         assert session.timeout == 20.0
         assert "file://" in session.adapters.keys()
 
-    @patch("streamlink.plugin.api.http_session.time.sleep")
-    @patch("streamlink.plugin.api.http_session.Session.request", side_effect=requests.Timeout)
-    def test_read_timeout(self, mock_request, mock_sleep):
-        session = HTTPSession()
+    def test_read_timeout(self, monkeypatch: pytest.MonkeyPatch):
+        mock_sleep = Mock()
+        mock_request = Mock(side_effect=requests.Timeout)
+        monkeypatch.setattr("streamlink.plugin.api.http_session.time.sleep", mock_sleep)
+        monkeypatch.setattr("streamlink.plugin.api.http_session.Session.request", mock_request)
 
+        session = HTTPSession()
         with pytest.raises(PluginError, match=r"^Unable to open URL: http://localhost/"):
             session.get("http://localhost/", timeout=123, retries=3, retry_backoff=2, retry_max_backoff=5)
-        assert mock_request.mock_calls == [
+
+        assert mock_request.call_args_list == [
             call("GET", "http://localhost/", headers={}, params={}, timeout=123, proxies={}, allow_redirects=True),
             call("GET", "http://localhost/", headers={}, params={}, timeout=123, proxies={}, allow_redirects=True),
             call("GET", "http://localhost/", headers={}, params={}, timeout=123, proxies={}, allow_redirects=True),
             call("GET", "http://localhost/", headers={}, params={}, timeout=123, proxies={}, allow_redirects=True),
         ]
-        assert mock_sleep.mock_calls == [
+        assert mock_sleep.call_args_list == [
             call(2),
             call(4),
             call(5),
         ]
 
-    def test_json_encoding(self):
-        json_str = "{\"test\": \"Α and Ω\"}"
+    @pytest.mark.parametrize("encoding", ["UTF-32BE", "UTF-32LE", "UTF-16BE", "UTF-16LE", "UTF-8"])
+    def test_determine_json_encoding(self, recwarn: pytest.WarningsRecorder, encoding: str):
+        data = "Hello world, Γειά σου Κόσμε, こんにちは世界".encode(encoding)
+        assert HTTPSession.determine_json_encoding(data) == encoding
+        assert [(record.category, str(record.message)) for record in recwarn.list] == [
+            (StreamlinkDeprecationWarning, "Deprecated HTTPSession.determine_json_encoding() call"),
+        ]
 
-        # encode the json string with each encoding and assert that the correct one is detected
-        for encoding in ["UTF-32BE", "UTF-32LE", "UTF-16BE", "UTF-16LE", "UTF-8"]:
-            with patch("requests.Response.content", new_callable=PropertyMock) as mock_content:
-                mock_content.return_value = json_str.encode(encoding)
-                res = requests.Response()
+    @pytest.mark.parametrize(("encoding", "override"), [
+        ("utf-32-be", None),
+        ("utf-32-le", None),
+        ("utf-16-be", None),
+        ("utf-16-le", None),
+        ("utf-8", None),
+        # With byte order mark (BOM)
+        ("utf-16", None),
+        ("utf-32", None),
+        ("utf-8-sig", None),
+        # Override
+        ("utf-8", "utf-8"),
+        ("cp949", "cp949"),
+    ])
+    def test_json(self, monkeypatch: pytest.MonkeyPatch, encoding: str, override: Optional[str]):
+        mock_content = PropertyMock(return_value="{\"test\": \"Α and Ω\"}".encode(encoding))
+        monkeypatch.setattr("requests.Response.content", mock_content)
 
-                assert HTTPSession.json(res) == {"test": "Α and Ω"}
+        res = requests.Response()
+        res.encoding = override
 
-    def test_json_encoding_override(self):
-        json_text = "{\"test\": \"Α and Ω\"}".encode("cp949")
-
-        with patch("requests.Response.content", new_callable=PropertyMock) as mock_content:
-            mock_content.return_value = json_text
-            res = requests.Response()
-            res.encoding = "cp949"
-
-            assert HTTPSession.json(res) == {"test": "Α and Ω"}
+        assert HTTPSession.json(res) == {"test": "Α and Ω"}

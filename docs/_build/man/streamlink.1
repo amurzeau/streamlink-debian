@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "May 08, 2023" "5.5.1" "Streamlink"
+.TH "STREAMLINK" "1" "Jul 20, 2023" "6.0.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -271,92 +271,47 @@ Resolve address names to IPv6 only. This option overrides \fI\%\-\-ipv4\fP\&.
 .SS Player options
 .INDENT 0.0
 .TP
-.B \-p COMMAND
+.B \-p PATH
 .TP
-.B \-\-player COMMAND
-Player to feed stream data to. By default, VLC will be used if it can be
-found in its default location.
+.B \-\-player PATH
+The player executable that will be launched (unless a different output method was chosen).
 .sp
-This is a shell\-like syntax to support using a specific player:
+Either set an absolute or relative path to the player executable, or just set the executable\(aqs name
+if it can be resolved from the paths of the system\(aqs \fBPATH\fP environment variable.
+.sp
+In addition to setting the player executable path, custom player arguments can be set via \fI\%\-\-player\-args\fP\&.
+.sp
+\fBNOTE:\fP
 .INDENT 7.0
 .INDENT 3.5
-.sp
-.nf
-.ft C
-streamlink \-\-player=vlc <url> [stream]
-.ft P
-.fi
+In the past, \fI\%\-\-player\fP allowed defining additional player arguments, which as a consequence required wrapping
+player paths that contained spaces in quotation marks. This is unsupported since release \fB6.0.0\fP\&.
 .UNINDENT
 .UNINDENT
 .sp
-Absolute or relative paths can also be passed via this option in the
-event the player\(aqs executable can not be resolved:
-.INDENT 7.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-streamlink \-\-player=/path/to/vlc <url> [stream]
-streamlink \-\-player=./vlc\-player/vlc <url> [stream]
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.sp
-To use a player that is located in a path with spaces you must quote the
-parameter or its value:
-.INDENT 7.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-streamlink \(dq\-\-player=/path/with spaces/vlc\(dq <url> [stream]
-streamlink \-\-player \(dqC:\epath\ewith spaces\empc\-hc64.exe\(dq <url> [stream]
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.sp
-Options may also be passed to the player. For example:
-.INDENT 7.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-streamlink \-\-player \(dqvlc \-\-file\-caching=5000\(dq <url> [stream]
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.sp
-As an alternative to this, see the \fI\%\-\-player\-args\fP parameter, which does
-not log any custom player arguments.
+Default is: \fBVLC player, if available\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-a ARGUMENTS
 .TP
 .B \-\-player\-args ARGUMENTS
-This option allows you to customize the default arguments which are put
-together with the value of \fI\%\-\-player\fP to create a command to execute.
+This option allows the arguments which are used to launch the player process to be customized.
 .sp
-It\(aqs usually enough to only use \fI\%\-\-player\fP instead of this unless you need
-to add arguments after the player\(aqs input argument or if you don\(aqt want
-any of the player arguments to be logged.
+The value can contain formatting variables surrounded by curly braces, \fB{\fP and \fB}\fP\&.
+Curly brace characters can be escaped by doubling, e.g. \fB{{\fP and \fB}}\fP\&.
 .sp
-The value can contain formatting variables surrounded by curly braces,
-\fB{\fP and \fB}\fP\&. If you need to include a brace character, it can be escaped
-by doubling, e.g. \fB{{\fP and \fB}}\fP\&.
-.sp
-Formatting variables available:
+Available formatting variables:
 .INDENT 7.0
 .TP
-.B {playerinput}
-This is the input that the player will use. For standard input (stdin),
-it is \fB\-\fP (dash), but it can also be a URL, depending on the options used.
+.B \fB{playerinput}\fP
+This is the input argument that the player will receive. For standard input (stdin),
+it is \fB\-\fP (dash), but it can also be a file path or URL, depending on the options used.
+If unset, then the player input argument will be appended to the parsed player arguments list.
 .TP
-.B {filename}
-The old fallback variable name with the same functionality.
+.B \fB{playertitleargs}\fP
+The automatically generated player title arguments, if a supported player was found. See \fI\%\-\-title\fP for more.
+If unset, automatically generated player title arguments will be prepended to the parsed player arguments list.
 .UNINDENT
 .sp
 Example:
@@ -365,20 +320,13 @@ Example:
 .sp
 .nf
 .ft C
-streamlink \-p vlc \-a \(dq\-\-play\-and\-exit {playerinput}\(dq <url> [stream]
+streamlink \-p vlc \-a \(dq\-\-play\-and\-exit \-\-no\-one\-instance\(dq <url> [stream]
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
 .sp
-\fBNOTE:\fP
-.INDENT 7.0
-.INDENT 3.5
-When neither of the variables are found, \fB{playerinput}\fP
-will be appended to the whole parameter value, to ensure that the player
-always receives an input argument.
-.UNINDENT
-.UNINDENT
+Default is: \fB\(dq\(dq\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1137,6 +1085,63 @@ other options.
 .sp
 Default is: \fB20.0\fP\&.
 .UNINDENT
+.SS Web browser options
+.INDENT 0.0
+.TP
+.B \-\-webbrowser {yes,true,1,on,no,false,0,off}
+Enable or disable support for Streamlink\(aqs webbrowser API.
+.sp
+Streamlink\(aqs webbrowser API allows plugins which implement it to launch a web browser and extract data from websites
+which they otherwise couldn\(aqt do via the regular HTTP session in Python due to specific JavaScript restrictions.
+.sp
+The web browser is run isolated and in a clean environment without access to regular user data.
+.sp
+Streamlink currently only supports Chromium\-based web browsers using the Chrome Devtools Protocol (CDP).
+This includes Chromium itself, Google Chrome, Microsoft Edge, Brave, Vivaldi, and others, but full support for
+third party Chromium forks is not guaranteed. If you encounter any issues, please try Chromium or Google Chrome instead.
+.sp
+Default is: \fBtrue\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-webbrowser\-executable PATH
+Path to the web browser\(aqs executable.
+.sp
+By default, it is looked up automatically according to the rules of the used webbrowser API implementation.
+This usually involves a list of known executable names and fallback paths on all supported operating systems.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-webbrowser\-timeout TIME
+The maximum amount of time which the web browser can take to launch and execute.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-webbrowser\-cdp\-host HOST
+Host for the web browser\(aqs inter\-process communication interface (CDP specific).
+.sp
+Default is: \fB127.0.0.1\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-webbrowser\-cdp\-port PORT
+Port for the web browser\(aqs inter\-process communication interface (CDP specific).
+.sp
+Tries to find a free port by default.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-webbrowser\-cdp\-timeout TIME
+The maximum amount of time for waiting on a single CDP command response.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-webbrowser\-headless {yes,true,1,on,no,false,0,off}
+Whether to launch the web browser in headless mode or not.
+When enabled, it stays completely hidden and doesn\(aqt require a desktop environment to run.
+.sp
+Default is: \fBtrue\fP\&.
+.UNINDENT
 .SS Plugin options
 .SS Afreeca
 .INDENT 0.0
@@ -1348,6 +1353,11 @@ Useful for adding authentication data that can prevent ads. See the plugin\-spec
 A parameter to add to the API request for acquiring the streaming access token.
 .sp
 Can be repeated to add multiple parameters.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-twitch\-purge\-client\-integrity
+Purge cached Twitch client\-integrity token and acquire a new one.
 .UNINDENT
 .SS Ustreamtv
 .INDENT 0.0

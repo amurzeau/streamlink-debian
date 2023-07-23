@@ -1,18 +1,23 @@
-pip>=9
+pip >=21.0.0
+
 pytest >=6.0.0
 pytest-asyncio
 pytest-cov
+pytest-trio
 coverage[toml]
-mock ; python_version<"3.8"
 requests-mock
 freezegun>=1.0.0
 shtab
 versioningit >=2.0.0, <3
 
-ruff ==0.0.259
+# required by script/generate-cdp.py
+inflection
+
+ruff ==0.0.272
 
 mypy
 lxml-stubs
+trio-typing
 types-freezegun
 types-requests
 types-urllib3

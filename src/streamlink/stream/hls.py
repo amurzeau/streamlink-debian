@@ -6,22 +6,19 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
 from urllib.parse import urlparse
 
-# noinspection PyPackageRequirements
-from Crypto.Cipher import AES
-
-# noinspection PyPackageRequirements
-from Crypto.Util.Padding import unpad
 from requests import Response
 from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError, InvalidSchema
 
 from streamlink.buffers import RingBuffer
 from streamlink.exceptions import StreamError
+from streamlink.session import Streamlink
 from streamlink.stream.ffmpegmux import FFMPEGMuxer, MuxedStream
 from streamlink.stream.filtered import FilteredStream
 from streamlink.stream.hls_playlist import M3U8, ByteRange, Key, Map, Media, Segment, load as load_hls_playlist
 from streamlink.stream.http import HTTPStream
 from streamlink.stream.segmented import SegmentedStreamReader, SegmentedStreamWorker, SegmentedStreamWriter
 from streamlink.utils.cache import LRUCache
+from streamlink.utils.crypto import AES, unpad
 from streamlink.utils.formatter import Formatter
 from streamlink.utils.times import now
 
@@ -292,13 +289,17 @@ class HLSStreamWorker(SegmentedStreamWorker):
     writer: "HLSStreamWriter"
     stream: "HLSStream"
 
+    SEGMENT_QUEUE_TIMING_THRESHOLD_FACTOR = 2
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.playlist_changed = False
         self.playlist_end: Optional[int] = None
+        self.playlist_targetduration: float = 0
         self.playlist_sequence: int = -1
         self.playlist_sequences: List[Sequence] = []
+        self.playlist_sequences_last: datetime = now()
         self.playlist_reload_last: datetime = now()
         self.playlist_reload_time: float = 6
         self.playlist_reload_time_override = self.session.options.get("hls-playlist-reload-time")
@@ -353,6 +354,7 @@ class HLSStreamWorker(SegmentedStreamWorker):
         sequences = [Sequence(media_sequence + i, s)
                      for i, s in enumerate(playlist.segments)]
 
+        self.playlist_targetduration = playlist.targetduration or 0
         self.playlist_reload_time = self._playlist_reload_time(playlist, sequences)
 
         if sequences:
@@ -365,8 +367,8 @@ class HLSStreamWorker(SegmentedStreamWorker):
             return sum(s.segment.duration for s in sequences[-max(1, self.live_edge - 1):])
         if type(self.playlist_reload_time_override) is float and self.playlist_reload_time_override > 0:
             return self.playlist_reload_time_override
-        if playlist.target_duration:
-            return playlist.target_duration
+        if playlist.targetduration:
+            return playlist.targetduration
         if sequences:
             return sum(s.segment.duration for s in sequences[-max(1, self.live_edge - 1):])
 
@@ -398,6 +400,14 @@ class HLSStreamWorker(SegmentedStreamWorker):
     def valid_sequence(self, sequence: Sequence) -> bool:
         return sequence.num >= self.playlist_sequence
 
+    def _segment_queue_timing_threshold_reached(self) -> bool:
+        threshold = self.playlist_targetduration * self.SEGMENT_QUEUE_TIMING_THRESHOLD_FACTOR
+        if now() <= self.playlist_sequences_last + timedelta(seconds=threshold):
+            return False
+
+        log.warning(f"No new segments in playlist for more than {threshold:.2f}s. Stopping...")
+        return True
+
     @staticmethod
     def duration_to_sequence(duration: float, sequences: List[Sequence]) -> int:
         d = 0.0
@@ -415,7 +425,10 @@ class HLSStreamWorker(SegmentedStreamWorker):
         return default
 
     def iter_segments(self):
-        self.playlist_reload_last = now()
+        self.playlist_reload_last \
+            = self.playlist_sequences_last \
+            = now()
+
         try:
             self.reload_playlist()
         except StreamError as err:
@@ -446,9 +459,12 @@ class HLSStreamWorker(SegmentedStreamWorker):
 
         total_duration = 0
         while not self.closed:
+            queued = False
             for sequence in filter(self.valid_sequence, self.playlist_sequences):
                 log.debug(f"Adding segment {sequence.num} to queue")
                 yield sequence
+                queued = True
+
                 total_duration += sequence.segment.duration
                 if self.duration_limit and total_duration >= self.duration_limit:
                     log.info(f"Stopping stream early after {self.duration_limit}")
@@ -460,6 +476,11 @@ class HLSStreamWorker(SegmentedStreamWorker):
                     return
 
                 self.playlist_sequence = sequence.num + 1
+
+            if queued:
+                self.playlist_sequences_last = now()
+            elif self._segment_queue_timing_threshold_reached():
+                return
 
             # Exclude playlist fetch+processing time from the overall playlist reload time
             # and reload playlist in a strict time interval
@@ -510,24 +531,24 @@ class MuxedHLSStream(MuxedStream["HLSStream"]):
 
     def __init__(
         self,
-        session,
+        session: Streamlink,
         video: str,
         audio: Union[str, List[str]],
         url_master: Optional[str] = None,
         multivariant: Optional[M3U8] = None,
         force_restart: bool = False,
         ffmpeg_options: Optional[Dict[str, Any]] = None,
-        **args,
+        **kwargs,
     ):
         """
-        :param streamlink.Streamlink session: Streamlink session instance
+        :param session: Streamlink session instance
         :param video: Video stream URL
         :param audio: Audio stream URL or list of URLs
         :param url_master: The URL of the HLS playlist's multivariant playlist (deprecated)
         :param multivariant: The parsed multivariant playlist
         :param force_restart: Start from the beginning after reaching the playlist's end
         :param ffmpeg_options: Additional keyword arguments passed to :class:`ffmpegmux.FFMPEGMuxer`
-        :param args: Additional keyword arguments passed to :class:`HLSStream`
+        :param kwargs: Additional keyword arguments passed to :class:`HLSStream`
         """
 
         tracks = [video]
@@ -538,7 +559,7 @@ class MuxedHLSStream(MuxedStream["HLSStream"]):
             else:
                 tracks.append(audio)
         maps.extend(f"{i}:a" for i in range(1, len(tracks)))
-        substreams = [HLSStream(session, url, force_restart=force_restart, **args) for url in tracks]
+        substreams = [HLSStream(session, url, force_restart=force_restart, **kwargs) for url in tracks]
         ffmpeg_options = ffmpeg_options or {}
 
         super().__init__(session, *substreams, format="mpegts", maps=maps, **ffmpeg_options)
@@ -569,27 +590,27 @@ class HLSStream(HTTPStream):
 
     def __init__(
         self,
-        session_,
+        session: Streamlink,
         url: str,
         url_master: Optional[str] = None,
         multivariant: Optional[M3U8] = None,
         force_restart: bool = False,
         start_offset: float = 0,
         duration: Optional[float] = None,
-        **args,
+        **kwargs,
     ):
         """
-        :param streamlink.Streamlink session_: Streamlink session instance
+        :param session: Streamlink session instance
         :param url: The URL of the HLS playlist
         :param url_master: The URL of the HLS playlist's multivariant playlist (deprecated)
         :param multivariant: The parsed multivariant playlist
         :param force_restart: Start from the beginning after reaching the playlist's end
         :param start_offset: Number of seconds to be skipped from the beginning
         :param duration: Number of seconds until ending the stream
-        :param args: Additional keyword arguments passed to :meth:`requests.Session.request`
+        :param kwargs: Additional keyword arguments passed to :meth:`requests.Session.request`
         """
 
-        super().__init__(session_, url, **args)
+        super().__init__(session, url, **kwargs)
         self._url_master = url_master
         self.multivariant = multivariant if multivariant and multivariant.is_master else None
         self.force_restart = force_restart
@@ -632,8 +653,8 @@ class HLSStream(HTTPStream):
         return reader
 
     @classmethod
-    def _fetch_variant_playlist(cls, session, url: str, **request_params) -> Response:
-        res = session.http.get(url, exception=OSError, **request_params)
+    def _fetch_variant_playlist(cls, session, url: str, **request_args) -> Response:
+        res = session.http.get(url, exception=OSError, **request_args)
         res.encoding = "utf-8"
 
         return res
@@ -646,7 +667,7 @@ class HLSStream(HTTPStream):
     @classmethod
     def parse_variant_playlist(
         cls,
-        session_,
+        session: Streamlink,
         url: str,
         name_key: str = "name",
         name_prefix: str = "",
@@ -655,12 +676,12 @@ class HLSStream(HTTPStream):
         name_fmt: Optional[str] = None,
         start_offset: float = 0,
         duration: Optional[float] = None,
-        **request_params,
+        **kwargs,
     ) -> Dict[str, Union["HLSStream", "MuxedHLSStream"]]:
         """
         Parse a variant playlist and return its streams.
 
-        :param streamlink.Streamlink session_: Streamlink session instance
+        :param session: Streamlink session instance
         :param url: The URL of the variant playlist
         :param name_key: Prefer to use this key as stream name, valid keys are: name, pixels, bitrate
         :param name_prefix: Add this prefix to the stream names
@@ -669,14 +690,15 @@ class HLSStream(HTTPStream):
         :param name_fmt: A format string for the name, allowed format keys are: name, pixels, bitrate
         :param start_offset: Number of seconds to be skipped from the beginning
         :param duration: Number of second until ending the stream
-        :param request_params: Additional keyword arguments passed to :class:`HLSStream`, :class:`MuxedHLSStream`,
-                               or :py:meth:`requests.Session.request`
+        :param kwargs: Additional keyword arguments passed to :class:`HLSStream`, :class:`MuxedHLSStream`,
+                       or :py:meth:`requests.Session.request`
         """
 
-        locale = session_.localization
-        audio_select = session_.options.get("hls-audio-select")
+        locale = session.localization
+        audio_select = session.options.get("hls-audio-select")
 
-        res = cls._fetch_variant_playlist(session_, url, **request_params)
+        request_args = session.http.valid_request_args(**kwargs)
+        res = cls._fetch_variant_playlist(session, url, **request_args)
 
         try:
             multivariant = cls._get_variant_playlist(res)
@@ -771,7 +793,7 @@ class HLSStream(HTTPStream):
             if check_streams:
                 # noinspection PyBroadException
                 try:
-                    session_.http.get(playlist.uri, **request_params)
+                    session.http.get(playlist.uri, **request_args)
                 except KeyboardInterrupt:
                     raise
                 except Exception:
@@ -779,7 +801,7 @@ class HLSStream(HTTPStream):
 
             external_audio = preferred_audio or default_audio or fallback_audio
 
-            if external_audio and FFMPEGMuxer.is_usable(session_):
+            if external_audio and FFMPEGMuxer.is_usable(session):
                 external_audio_msg = ", ".join([
                     f"(language={x.language}, name={x.name or 'N/A'})"
                     for x in external_audio
@@ -787,24 +809,24 @@ class HLSStream(HTTPStream):
                 log.debug(f"Using external audio tracks for stream {stream_name} {external_audio_msg}")
 
                 stream = MuxedHLSStream(
-                    session_,
+                    session,
                     video=playlist.uri,
                     audio=[x.uri for x in external_audio if x.uri],
                     multivariant=multivariant,
                     force_restart=force_restart,
                     start_offset=start_offset,
                     duration=duration,
-                    **request_params,
+                    **kwargs,
                 )
             else:
                 stream = cls(
-                    session_,
+                    session,
                     playlist.uri,
                     multivariant=multivariant,
                     force_restart=force_restart,
                     start_offset=start_offset,
                     duration=duration,
-                    **request_params,
+                    **kwargs,
                 )
 
             streams[stream_name] = stream
