@@ -11,10 +11,10 @@ Bug-Debian: https://bugs.debian.org/750502
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/streamlink_cli/argparser.py b/src/streamlink_cli/argparser.py
-index d63c8b2..89547f8 100644
+index 2f8adbd..67389ea 100644
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
-@@ -338,7 +338,7 @@ def build_parser():
+@@ -335,7 +335,7 @@ def build_parser():
          metavar="{yes,true,1,on,no,false,0,off}",
          default=False,
          help="""
@@ -24,10 +24,10 @@ index d63c8b2..89547f8 100644
          Default is "no".
          """,
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index ec1ad3d..f1ae7b0 100644
+index f24b60c..1b3c02e 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -898,7 +898,7 @@ def main():
+@@ -893,7 +893,7 @@ def main():
  
      setup_signals()
  

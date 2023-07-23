@@ -20,14 +20,14 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  3 files changed, 2 insertions(+), 12 deletions(-)
 
 diff --git a/docs/applications.rst b/docs/applications.rst
-index 477031e..0d78e54 100644
+index d69bb19..0d78e54 100644
 --- a/docs/applications.rst
 +++ b/docs/applications.rst
 @@ -8,14 +8,12 @@ Streamlink Applications
  Streamlink Twitch GUI
  ---------------------
  
--.. image:: https://user-images.githubusercontent.com/467294/151660267-97a8c0a3-62b3-4aa5-b960-c307da1b4fb2.png
+-.. image:: https://user-images.githubusercontent.com/467294/199009198-011d23f2-a884-4bf8-94d0-bb304ceecc08.jpg
 -    :alt: Streamlink Twitch GUI
 -
  :Description: A multi platform Twitch.tv browser for Streamlink
@@ -40,30 +40,16 @@ index 477031e..0d78e54 100644
  :Info: An NW.js based desktop web application. Browse Twitch.tv and watch multiple streams at once.
      Filter streams by language, receive desktop notifications when followed channels start
 diff --git a/docs/donate.rst b/docs/donate.rst
-index 8fe646e..4acb1bd 100644
+index 111c3b3..64441a2 100644
 --- a/docs/donate.rst
 +++ b/docs/donate.rst
-@@ -26,35 +26,30 @@ Team members
- 
-     .. grid-item-card::
-         :padding: 3
--        :img-top: https://github.com/back-to.png?size=100
-         :link: https://github.com/back-to
-         :link-alt: @back-to
-         :text-align: center
+@@ -26,21 +26,18 @@ Team members
  
      .. grid-item-card::
          :padding: 3
 -        :img-top: https://github.com/bastimeyer.png?size=100
          :link: https://github.com/bastimeyer
          :link-alt: @bastimeyer
-         :text-align: center
- 
-     .. grid-item-card::
-         :padding: 3
--        :img-top: https://github.com/beardypig.png?size=100
-         :link: https://github.com/beardypig
-         :link-alt: @beardypig
          :text-align: center
  
      .. grid-item-card::
@@ -78,6 +64,21 @@ index 8fe646e..4acb1bd 100644
 -        :img-top: https://github.com/mkbloke.png?size=100
          :link: https://github.com/mkbloke
          :link-alt: @mkbloke
+         :text-align: center
+@@ -55,14 +52,12 @@ Inactive / former
+ 
+     .. grid-item-card::
+         :padding: 3
+-        :img-top: https://github.com/back-to.png?size=100
+         :link: https://github.com/back-to
+         :link-alt: @back-to
+         :text-align: center
+ 
+     .. grid-item-card::
+         :padding: 3
+-        :img-top: https://github.com/beardypig.png?size=100
+         :link: https://github.com/beardypig
+         :link-alt: @beardypig
          :text-align: center
 diff --git a/docs/thirdparty.rst b/docs/thirdparty.rst
 index de2f5f5..a432bff 100644

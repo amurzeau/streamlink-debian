@@ -11,22 +11,21 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  dev-requirements.txt  | 1 -
  docs-requirements.txt | 1 -
  pyproject.toml        | 1 -
- setup.cfg             | 1 +
  setup.py              | 2 --
- 5 files changed, 1 insertion(+), 5 deletions(-)
+ 4 files changed, 5 deletions(-)
 
 diff --git a/dev-requirements.txt b/dev-requirements.txt
-index d0756e2..3804f21 100644
+index 9b3e21e..4e1bbc1 100644
 --- a/dev-requirements.txt
 +++ b/dev-requirements.txt
-@@ -7,7 +7,6 @@ mock ; python_version<"3.8"
+@@ -8,7 +8,6 @@ coverage[toml]
  requests-mock
  freezegun>=1.0.0
  shtab
 -versioningit >=2.0.0, <3
  
- ruff ==0.0.259
- 
+ # required by script/generate-cdp.py
+ inflection
 diff --git a/docs-requirements.txt b/docs-requirements.txt
 index d6cf287..78e878d 100644
 --- a/docs-requirements.txt
@@ -39,30 +38,19 @@ index d6cf287..78e878d 100644
  
  docutils-stubs
 diff --git a/pyproject.toml b/pyproject.toml
-index b06efc7..d8c32cb 100644
+index 99ce62c..fabd225 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -3,7 +3,6 @@ build-backend = "setuptools.build_meta"
  requires = [
-   "setuptools >=45",
+   "setuptools >=64",
    "wheel",
 -  "versioningit >=2.0.0, <3",
  ]
  
  
-diff --git a/setup.cfg b/setup.cfg
-index 2504571..024ad36 100644
---- a/setup.cfg
-+++ b/setup.cfg
-@@ -1,5 +1,6 @@
- [metadata]
- name = streamlink
-+version = attr:streamlink.__version__
- author = Streamlink
- author_email = streamlink@protonmail.com
- description = Streamlink is a command-line utility that extracts streams from various services and pipes them into a video player of choice.
 diff --git a/setup.py b/setup.py
-index 62ba06c..f552de7 100644
+index 2e01b69..2879d76 100644
 --- a/setup.py
 +++ b/setup.py
 @@ -74,10 +74,8 @@ data_files = [
