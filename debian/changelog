@@ -1,3 +1,11 @@
+streamlink (6.0.0-1) UNRELEASED; urgency=medium
+
+  * d/upstream/signing-key.asc: update upstream key
+  * d/gbp.conf: set debian-branch back to master for unstable
+  * New upstream version 6.0.0
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 23 Jul 2023 18:34:47 +0200
+
 streamlink (5.5.1-1~exp1) experimental; urgency=medium
 
   * New upstream version 5.5.1
