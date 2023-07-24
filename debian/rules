@@ -7,9 +7,6 @@ export PYBUILD_INSTALL_ARGS_python3 = --install-scripts usr/share/streamlink/
 export http_proxy=127.0.0.1:9
 export https_proxy=127.0.0.1:9
 
-# Provides DEB_VERSION
-include /usr/share/dpkg/pkg-info.mk
-
 %:
 	dh $@ --buildsystem=pybuild
 
