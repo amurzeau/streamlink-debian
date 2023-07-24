@@ -25,6 +25,7 @@ Build-Depends: debhelper-compat (= 13),
  python3-sphinx,
  furo,
  python3-sphinx-design,
+ jdupes,
 # Tests dependencies
  python3-freezegun,
  python3-pytest,

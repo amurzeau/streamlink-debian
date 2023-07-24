@@ -31,6 +31,10 @@ override_dh_installchangelogs:
 override_dh_compress:
 	dh_compress -X.html
 
+override_dh_link:
+	dh_link
+	jdupes -rl debian/python3-streamlink-doc/usr/share/doc/python3-streamlink/html
+
 # Needed to correctly include non-windows dependencies
 override_dh_python3:
 	dh_python3 --depends-section=':platform_system != "Windows"'
