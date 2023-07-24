@@ -5,8 +5,11 @@ streamlink (6.0.0-1) unstable; urgency=medium
   * d/patches: update patches
   * d/control: add new dependency python3-pytest-trio
   * d/rules: streamlink manpage: use CW font instead of C
+  * d/rules: remove unused inclusion of pkg-info.mk
+  * d/rules: fix duplicate doc assets
+  * Upload to unstable
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 23 Jul 2023 22:40:56 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 24 Jul 2023 23:56:25 +0200
 
 streamlink (5.5.1-1~exp1) experimental; urgency=medium
 
