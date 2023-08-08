@@ -47,7 +47,7 @@ gbp pq switch
 gbp dch -Ra --commit
 
 # Do test build with sbuild
-gbp buildpackage "--git-builder=sbuild -v -As -d unstable --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'"
+gbp buildpackage "--git-builder=sbuild -v -As -d unstable --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'"
 
 # Check for build warnings or errors
 grep -Pi 'error|warn' ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.build
@@ -93,7 +93,7 @@ git merge master
 gbp dch -Ra --bpo --commit
 
 # Do test build with sbuild
-gbp buildpackage "--git-builder=sbuild -v -As -d bullseye-backports --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
+gbp buildpackage "--git-builder=sbuild -v -As -d bullseye-backports --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
 
 # Check for build warnings or errors
 grep -Pi 'error|warn' ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.build
