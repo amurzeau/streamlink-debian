@@ -64,7 +64,7 @@ _shtab_streamlink_cli_options=(
 
         Windows\:
 
-          \%\%TEMP\%\%\\streamlink\\logs
+          \%TEMP\%\\streamlink\\logs
 
         macOS\:
 
@@ -142,7 +142,7 @@ _shtab_streamlink_cli_options=(
 
         Example\:
 
-          \%(prog)s -p vlc -a \"--play-and-exit --no-one-instance\" \<url\> \[stream\]
+          streamlink -p vlc -a \"--play-and-exit --no-one-instance\" \<url\> \[stream\]
 
         Default is \"\".
         ]:player_args:"
@@ -240,7 +240,7 @@ _shtab_streamlink_cli_options=(
 
         Example\:
 
-            \%(prog)s -p mpv --title \"\{author\} - \{category\} - \{title\}\" \<URL\> \[STREAM\]
+            streamlink -p mpv --title \"\{author\} - \{category\} - \{title\}\" \<URL\> \[STREAM\]
         ]:title:"
   {-o,--output}"[
         Write stream data to \`FILENAME\` instead of playing it. If \`FILENAME\` is set to \`-\` (dash), then the stream data will be
@@ -256,7 +256,7 @@ _shtab_streamlink_cli_options=(
 
         Example\:
 
-            \%(prog)s --output \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%\%Y\%\%m\%\%d\%\%H\%\%M\%\%S\}.ts\" \<URL\> \[STREAM\]
+            streamlink --output \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%Y\%m\%d\%H\%M\%S\}.ts\" \<URL\> \[STREAM\]
         ]:output:"
   {-O,--stdout}"[
         Write stream data to stdout instead of playing it.
@@ -275,7 +275,7 @@ _shtab_streamlink_cli_options=(
 
         Example\:
 
-            \%(prog)s --record \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%\%Y\%\%m\%\%d\%\%H\%\%M\%\%S\}.ts\" \<URL\> \[STREAM\]
+            streamlink --record \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%Y\%m\%d\%H\%M\%S\}.ts\" \<URL\> \[STREAM\]
         ]:record:"
   {-R,--record-and-pipe}"[
         Write stream data to stdout, while at the same time writing it to \`FILENAME\`.
@@ -290,7 +290,7 @@ _shtab_streamlink_cli_options=(
 
         Example\:
 
-            \%(prog)s --record-and-pipe \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%\%Y\%\%m\%\%d\%\%H\%\%M\%\%S\}.ts\" \<URL\> \[STREAM\]
+            streamlink --record-and-pipe \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%Y\%m\%d\%H\%M\%S\}.ts\" \<URL\> \[STREAM\]
         ]:record_and_pipe:"
   "--fs-safe-rules[
         The rules used to make formatting variables filesystem-safe are chosen
