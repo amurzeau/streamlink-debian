@@ -8,35 +8,21 @@ tarball.
 Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
- dev-requirements.txt  | 1 -
  docs-requirements.txt | 1 -
  pyproject.toml        | 1 -
  setup.py              | 2 --
- 4 files changed, 5 deletions(-)
+ 3 files changed, 4 deletions(-)
 
-diff --git a/dev-requirements.txt b/dev-requirements.txt
-index 9b3e21e..4e1bbc1 100644
---- a/dev-requirements.txt
-+++ b/dev-requirements.txt
-@@ -8,7 +8,6 @@ coverage[toml]
- requests-mock
- freezegun>=1.0.0
- shtab
--versioningit >=2.0.0, <3
- 
- # required by script/generate-cdp.py
- inflection
 diff --git a/docs-requirements.txt b/docs-requirements.txt
-index d6cf287..78e878d 100644
+index d158d96..78276c0 100644
 --- a/docs-requirements.txt
 +++ b/docs-requirements.txt
-@@ -2,6 +2,5 @@ sphinx >=5.0.0, <7
- furo ==2023.03.27
- myst-parser >=1.0.0, <2
- sphinx-design >=0.4.1, <1
--versioningit >=2.0.0, <3
+@@ -1,5 +1,4 @@
+ # setup
+-versioningit >=2.0.0,<3  # required for reading the version string when building from git
  
- docutils-stubs
+ # build
+ sphinx >=6.0.0,<8
 diff --git a/pyproject.toml b/pyproject.toml
 index 99ce62c..fabd225 100644
 --- a/pyproject.toml

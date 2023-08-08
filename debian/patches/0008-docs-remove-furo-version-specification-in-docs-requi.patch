@@ -12,13 +12,15 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/docs-requirements.txt b/docs-requirements.txt
-index 78e878d..cf154a3 100644
+index 78276c0..85bd71e 100644
 --- a/docs-requirements.txt
 +++ b/docs-requirements.txt
-@@ -1,5 +1,5 @@
- sphinx >=5.0.0, <7
--furo ==2023.03.27
+@@ -4,7 +4,7 @@
+ sphinx >=6.0.0,<8
+ 
+ # themes and extensions
+-furo ==2023.07.26
 +furo
- myst-parser >=1.0.0, <2
- sphinx-design >=0.4.1, <1
+ myst-parser >=1.0.0,<3
+ sphinx-design ==0.5.0
  
