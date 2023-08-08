@@ -1,3 +1,9 @@
+streamlink (6.0.1-1) UNRELEASED; urgency=medium
+
+  * New upstream version 6.0.1
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 08 Aug 2023 18:59:19 +0200
+
 streamlink (6.0.0-1) unstable; urgency=medium
 
   * d/upstream/signing-key.asc: update upstream key
