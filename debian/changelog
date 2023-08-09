@@ -7,11 +7,11 @@ streamlink (6.0.1-1) unstable; urgency=medium
   * d/rules: streamlink manpage: use CW font instead of C
   * d/rules: remove unused inclusion of pkg-info.mk
   * d/rules: fix duplicate doc assets
-  * d/control: remove unused dependency on rtmpdump
+  * d/control: remove depends on rtmpdump and add trio and typing-extensions
   * d/copyright: add src/streamlink/webbrowser/cdp/connection.py
   * Upload to unstable
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 09 Aug 2023 19:44:52 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 09 Aug 2023 20:07:05 +0200
 
 streamlink (5.5.1-1~exp1) experimental; urgency=medium
 
