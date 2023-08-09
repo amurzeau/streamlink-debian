@@ -9,16 +9,21 @@ Build-Depends: debhelper-compat (= 13),
  python3,
  pybuild-plugin-pyproject,
 # Streamlink dependencies
- python3-isodate,
- python3-pycountry,
- python3-pycryptodome,
- python3-requests,
+# https://streamlink.github.io/install.html#dependencies
  python3-setuptools,
  python3-wheel,
- python3-socks,
- python3-websocket,
- python3-lxml,
  python3-certifi,
+ python3-isodate,
+ python3-lxml,
+ python3-pycountry,
+ python3-pycryptodome,
+ python3-socks,
+ python3-requests,
+ python3-trio,
+ python3-trio-websocket,
+ python3-typing-extensions,
+ python3-urllib3,
+ python3-websocket,
 # Documentation dependencies
  python3-docutils,
  python3-myst-parser,
@@ -31,8 +36,7 @@ Build-Depends: debhelper-compat (= 13),
  python3-pytest,
  python3-pytest-asyncio,
  python3-pytest-trio,
- python3-requests-mock,
- python3-trio-websocket
+ python3-requests-mock
 Homepage: https://streamlink.github.io/
 Vcs-Git: https://salsa.debian.org/amurzeau/streamlink.git
 Vcs-Browser: https://salsa.debian.org/amurzeau/streamlink

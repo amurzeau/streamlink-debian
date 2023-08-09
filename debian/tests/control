@@ -5,8 +5,7 @@ Depends: streamlink,
  python3-pytest,
  python3-pytest-asyncio,
  python3-pytest-trio,
- python3-requests-mock,
- python3-trio-websocket
+ python3-requests-mock
 
 # Test streamlink against a generated on-disk HLS stream
 Test-Command: sh debian/tests/do-test.sh streamlink && sh debian/tests/check_manpage.sh streamlink

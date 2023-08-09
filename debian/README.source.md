@@ -20,6 +20,12 @@ gbp pq switch
 # Check licenses changes and update debian/copyright
 find . \( -path './.git' -o -path './debian' \) -prune -o -type f -print0 | xargs -0  grep -i '\bCopyright\b'
 
+# Check for new dependencies
+git diff upstream^..upstream docs-requirements.txt dev-requirements.txt pyproject.toml docs/install.rst
+
+# Check for new supported players
+git diff upstream^..upstream docs/players.rst
+
 # Check for important changes that may need other package changes (copyright, new patch, ...):
 #  `https://github.com/streamlink/streamlink/compare/<old_tag>...<new_tag>`
 
@@ -93,18 +99,6 @@ git push origin experimental master upstream pristine-tar bullseye-backports --t
 dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 
 ```
-
-# Changes checks
-
-- Check copyrights
-- Check dependencies in https://streamlink.github.io/install.html
-- Check doc dependencies:
-  - libjs-modernizr
-  - fonts-font-awesome
-  - fonts-lato
-  - fonts-inconsolata
-  - fonts-roboto-slab
-- Check supported players in https://streamlink.github.io/players.html
 
 # Building package from streamlink unreleased version
 
