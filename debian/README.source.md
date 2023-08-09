@@ -1,32 +1,6 @@
 # Build procedure
 
-Here are the commands to manage the package:
-- Import upstream version and update Debian branch with new upstream release:
-  - `gbp import-orig --uscan`
-
-- Refresh patches:
-  - `gbp pq rebase`
-
-- Check for important changes that may need other package changes (copyright, new patch, ...):
-  - `https://github.com/streamlink/streamlink/compare/<old_tag>...<new_tag>`
-
-- Build and test the package:
-  - `debuild`
-
-- Release version:
-  - `gbp dch -Ra --commit`
-
-- Build source package and tag Debian branch:
-  - `gbp buildpackage --git-tag --git-sign-tags -nc -S`
-
-- Build package using sbuild:
-  - `sbuild -As ../streamlink_<version>.dsc -d unstable`
-  - `gbp buildpackage "--git-builder=sbuild -v -As -d unstable --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'"`
-
-- Run lintian:
-  - `lintian -EviIL +pedantic  ./streamlink_<version>_amd64.changes`
-
-- Don't forget to push `master` and `upstream` branches along with new tags (`debian/<version>`, `upstream/<version>`)
+Here are the commands to manage the package
 
 ## For unstable
 
@@ -34,7 +8,7 @@ Here are the commands to manage the package:
 # Switch to master branch
 git checkout master
 
-# Import latest upstream release
+# Import upstream version and update Debian branch with new upstream release
 gbp import-orig --uscan
 
 # Update debian/patches
@@ -42,6 +16,12 @@ gbp pq rebase
 
 # Go back to master branch
 gbp pq switch
+
+# Check licenses changes and update debian/copyright
+find . \( -path './.git' -o -path './debian' \) -prune -o -type f -print0 | xargs -0  grep -i '\bCopyright\b'
+
+# Check for important changes that may need other package changes (copyright, new patch, ...):
+#  `https://github.com/streamlink/streamlink/compare/<old_tag>...<new_tag>`
 
 # Update debian/changelog
 gbp dch -Ra --commit
@@ -116,15 +96,15 @@ dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version
 
 # Changes checks
 
-Check copyrights
-Check dependencies in https://streamlink.github.io/install.html
-Check doc dependencies:
-	- libjs-modernizr
-	- fonts-font-awesome
-	- fonts-lato
-	- fonts-inconsolata
-	- fonts-roboto-slab
-Check supported players in https://streamlink.github.io/players.html
+- Check copyrights
+- Check dependencies in https://streamlink.github.io/install.html
+- Check doc dependencies:
+  - libjs-modernizr
+  - fonts-font-awesome
+  - fonts-lato
+  - fonts-inconsolata
+  - fonts-roboto-slab
+- Check supported players in https://streamlink.github.io/players.html
 
 # Building package from streamlink unreleased version
 
