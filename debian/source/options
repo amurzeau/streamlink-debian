@@ -1,0 +1,2 @@
+extend-diff-ignore = "^docs/_build"
+extend-diff-ignore = "^src/[^/]*[.]egg-info/"
