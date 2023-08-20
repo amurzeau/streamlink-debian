@@ -24,7 +24,7 @@ index d158d96..78276c0 100644
  # build
  sphinx >=6.0.0,<8
 diff --git a/pyproject.toml b/pyproject.toml
-index 99ce62c..fabd225 100644
+index c4097d8..2494e89 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -3,7 +3,6 @@ build-backend = "setuptools.build_meta"
