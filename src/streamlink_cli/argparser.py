@@ -9,26 +9,18 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from streamlink import __version__ as streamlink_version, logger
 from streamlink.session import Streamlink
 from streamlink.utils.args import boolean, comma_list, comma_list_filter, filesize, keyvalue, num
-from streamlink.utils.times import hours_minutes_seconds
+from streamlink.utils.times import hours_minutes_seconds_float
 from streamlink_cli.constants import STREAM_PASSTHROUGH
 from streamlink_cli.output.player import PlayerOutput
 from streamlink_cli.utils import find_default_player
 
 
-_printable_re = re.compile(r"[{0}]".format(printable))
-_option_re = re.compile(r"""
-    (?P<name>[A-z-]+) # A option name, valid characters are A to z and dash.
-    \s*
-    (?P<op>=)? # Separating the option and the value with a equals sign is
-               # common, but optional.
-    \s*
-    (?P<value>.*) # The value, anything goes.
-""", re.VERBOSE)
-
-
 class ArgumentParser(argparse.ArgumentParser):
     # noinspection PyUnresolvedReferences,PyProtectedMember
     NESTED_ARGUMENT_GROUPS: Dict[Optional[argparse._ArgumentGroup], List[argparse._ArgumentGroup]]
+
+    _RE_PRINTABLE = re.compile(fr"[{re.escape(printable)}]")
+    _RE_OPTION = re.compile(r"^(?P<name>[A-Za-z0-9-]+)(?:(?P<op>\s*=\s*|\s+)(?P<value>.*))?$")
 
     def __init__(self, *args, **kwargs):
         self.NESTED_ARGUMENT_GROUPS = {}
@@ -51,21 +43,22 @@ class ArgumentParser(argparse.ArgumentParser):
     def convert_arg_line_to_args(self, line):
         # Strip any non-printable characters that might be in the
         # beginning of the line (e.g. Unicode BOM marker).
-        match = _printable_re.search(line)
+        match = self._RE_PRINTABLE.search(line)
         if not match:
             return
         line = line[match.start():].strip()
 
         # Skip lines that do not start with a valid option (e.g. comments)
-        option = _option_re.match(line)
+        option = self._RE_OPTION.match(line)
         if not option:
             return
 
-        name, value = option.group("name", "value")
-        if name and value:
-            yield f"--{name}={value}"
-        elif name:
-            yield f"--{name}"
+        name, op, value = option.group("name", "op", "value")
+        prefix = self.prefix_chars[0] if len(name) == 1 else self.prefix_chars[0] * 2
+        if value or op:
+            yield f"{prefix}{name}={value}"
+        else:
+            yield f"{prefix}{name}"
 
     def _match_argument(self, action, arg_strings_pattern):
         # - https://github.com/streamlink/streamlink/issues/971
@@ -954,6 +947,24 @@ def build_parser():
         """,
     )
     transport_hls.add_argument(
+        "--hls-segment-queue-threshold",
+        metavar="FACTOR",
+        type=num(float, ge=0),
+        help="""
+        The multiplication factor of the HLS playlist's target duration after which the stream will be stopped early
+        if no new segments were queued after refreshing the playlist (multiple times). The target duration defines the
+        maximum duration a single segment can have, meaning new segments must be available during this time frame,
+        otherwise playback issues can occur.
+
+        The intention of this queue threshold is to be able to stop early when the end of a stream doesn't get
+        announced by the server, so Streamlink doesn't have to wait until a read-timeout occurs. See --stream-timeout.
+
+        Set to ``0`` to disable.
+
+        Default is 3.
+        """,
+    )
+    transport_hls.add_argument(
         "--hls-segment-ignore-names",
         metavar="NAMES",
         type=comma_list,
@@ -1010,21 +1021,19 @@ def build_parser():
     )
     transport_hls.add_argument(
         "--hls-start-offset",
-        type=hours_minutes_seconds,
-        metavar="[HH:]MM:SS",
-        default=None,
+        type=hours_minutes_seconds_float,
+        metavar="[[XX:]XX:]XX[.XX] | [XXh][XXm][XX[.XX]s]",
         help="""
         Amount of time to skip from the beginning of the stream. For live
         streams, this is a negative offset from the end of the stream (rewind).
 
-        Default is 00:00:00.
+        Default is 0.
         """,
     )
     transport_hls.add_argument(
         "--hls-duration",
-        type=hours_minutes_seconds,
-        metavar="[HH:]MM:SS",
-        default=None,
+        type=hours_minutes_seconds_float,
+        metavar="[[XX:]XX:]XX[.XX] | [XXh][XXm][XX[.XX]s]",
         help="""
         Limit the playback duration, useful for watching segments of a stream.
         The actual duration may be slightly longer, as it is rounded to the
@@ -1376,6 +1385,7 @@ _ARGUMENT_TO_SESSIONOPTION: List[Tuple[str, str, Optional[Callable[[Any], Any]]]
     ("hls_duration", "hls-duration", None),
     ("hls_playlist_reload_attempts", "hls-playlist-reload-attempts", None),
     ("hls_playlist_reload_time", "hls-playlist-reload-time", None),
+    ("hls_segment_queue_threshold", "hls-segment-queue-threshold", None),
     ("hls_segment_stream_data", "hls-segment-stream-data", None),
     ("hls_segment_ignore_names", "hls-segment-ignore-names", None),
     ("hls_segment_key_uri", "hls-segment-key-uri", None),
