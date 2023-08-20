@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Aug 02, 2023" "6.0.1" "Streamlink"
+.TH "STREAMLINK" "1" "Aug 16, 2023" "6.1.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -848,6 +848,21 @@ Default is: \fBdefault\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
+.B \-\-hls\-segment\-queue\-threshold FACTOR
+The multiplication factor of the HLS playlist\(aqs target duration after which the stream will be stopped early
+if no new segments were queued after refreshing the playlist (multiple times). The target duration defines the
+maximum duration a single segment can have, meaning new segments must be available during this time frame,
+otherwise playback issues can occur.
+.sp
+The intention of this queue threshold is to be able to stop early when the end of a stream doesn\(aqt get
+announced by the server, so Streamlink doesn\(aqt have to wait until a read\-timeout occurs. See \fI\%\-\-stream\-timeout\fP\&.
+.sp
+Set to \fB0\fP to disable.
+.sp
+Default is: \fB3\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B \-\-hls\-segment\-ignore\-names NAMES
 A comma\-delimited list of segment names that will get filtered out.
 .sp
@@ -923,15 +938,15 @@ exists.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-hls\-start\-offset [HH:]MM:SS
+.B \-\-hls\-start\-offset [[XX:]XX:]XX[.XX] | [XXh][XXm][XX[.XX]s]
 Amount of time to skip from the beginning of the stream. For live
 streams, this is a negative offset from the end of the stream (rewind).
 .sp
-Default is: \fB00:00:00\fP\&.
+Default is: \fB0\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-hls\-duration [HH:]MM:SS
+.B \-\-hls\-duration [[XX:]XX:]XX[.XX] | [XXh][XXm][XX[.XX]s]
 Limit the playback duration, useful for watching segments of a stream.
 The actual duration may be slightly longer, as it is rounded to the
 nearest HLS segment.
@@ -1245,10 +1260,10 @@ Purge cached Niconico credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-niconico\-timeshift\-offset [HH:]MM:SS
+.B \-\-niconico\-timeshift\-offset [[XX:]XX:]XX | [XXh][XXm][XXs]
 Amount of time to skip from the beginning of a stream.
 .sp
-Default is: \fB00:00:00\fP\&.
+Default is: \fB0\fP\&.
 .UNINDENT
 .SS Openrectv
 .INDENT 0.0
