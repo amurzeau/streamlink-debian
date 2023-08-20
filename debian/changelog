@@ -1,10 +1,12 @@
 streamlink (6.1.0-1) unstable; urgency=medium
 
   * d/clean: remove docs/_build directory (Closes: 1045365)
-  * d/source/options: add extend-diff-ignore to fix dpkg-source failure due to local changes (python package metadata regeneration)
+  * d/source/options: add extend-diff-ignore to fix dpkg-source failure
+    due to local changes (python package metadata regeneration)
   * New upstream version 6.1.0
+  * d/patches: fix screenshot link for Streamlink Twitch GUI
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 20 Aug 2023 12:06:49 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 20 Aug 2023 12:12:58 +0200
 
 streamlink (6.0.1-1) unstable; urgency=medium
 
