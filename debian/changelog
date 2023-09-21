@@ -1,8 +1,9 @@
-streamlink (6.2.0-1) UNRELEASED; urgency=medium
+streamlink (6.2.0-1) unstable; urgency=medium
 
   * New upstream version 6.2.0
+  * d/patches: update patches
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 21 Sep 2023 19:49:26 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 21 Sep 2023 19:54:32 +0200
 
 streamlink (6.1.0-1) unstable; urgency=medium
 
