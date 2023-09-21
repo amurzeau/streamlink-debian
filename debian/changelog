@@ -1,3 +1,9 @@
+streamlink (6.2.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 6.2.0
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 21 Sep 2023 19:49:26 +0200
+
 streamlink (6.1.0-1) unstable; urgency=medium
 
   * d/clean: remove docs/_build directory (Closes: 1045365)
