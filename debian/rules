@@ -18,7 +18,6 @@ export LC_ALL=C.UTF-8
 export LANGUAGE=C.UTF-8
 
 override_dh_auto_build:
-	PYTHONPATH=$(CURDIR)/src make --directory=docs html man
 	sed -i 's/^\.ft C$$/.ft CW/' docs/_build/man/streamlink.1
 	dh_auto_build
 
@@ -30,10 +29,6 @@ override_dh_installchangelogs:
 # Needed to prevent docs/changelog.html from being compressed
 override_dh_compress:
 	dh_compress -X.html
-
-override_dh_link:
-	dh_link
-	jdupes -rl debian/python3-streamlink-doc/usr/share/doc/python3-streamlink/html
 
 # Needed to correctly include non-windows dependencies
 override_dh_python3:
