@@ -6,3 +6,4 @@
 0007-Remove-dependency-on-versioningit.patch
 0008-Remove-intersphinx.patch
 0008-docs-remove-furo-version-specification-in-docs-requi.patch
+0009-Remove-webbrower-tests-which-require-pytest-trio.patch
