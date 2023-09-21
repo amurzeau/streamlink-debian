@@ -1,9 +1,10 @@
 streamlink (6.2.0-1~bpo12+1) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.
-  * d/salsa-ci: build for bookworm-backports
+  * d/control,rules: remove doc package because of missing dependencies
+  * d/patches: remove webbrowser tests which require pytest-trio
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 21 Sep 2023 20:17:45 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 22 Sep 2023 00:02:09 +0200
 
 streamlink (6.2.0-1) unstable; urgency=medium
 
