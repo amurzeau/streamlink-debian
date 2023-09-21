@@ -182,6 +182,7 @@ src/streamlink/plugins/oneplusone.py
 src/streamlink/plugins/onetv.py
 src/streamlink/plugins/openrectv.py
 src/streamlink/plugins/pandalive.py
+src/streamlink/plugins/piaulizaportal.py
 src/streamlink/plugins/picarto.py
 src/streamlink/plugins/piczel.py
 src/streamlink/plugins/pixiv.py
@@ -444,6 +445,7 @@ tests/plugins/test_oneplusone.py
 tests/plugins/test_onetv.py
 tests/plugins/test_openrectv.py
 tests/plugins/test_pandalive.py
+tests/plugins/test_piaulizaportal.py
 tests/plugins/test_picarto.py
 tests/plugins/test_piczel.py
 tests/plugins/test_pixiv.py

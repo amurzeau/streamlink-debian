@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: streamlink
-Version: 6.1.0
+Version: 6.2.0
 Summary: Streamlink is a command-line utility that extracts streams from various services and pipes them into a video player of choice.
 Author: Streamlink
 Author-email: streamlink@protonmail.com
@@ -30,6 +30,18 @@ Classifier: Topic :: Utilities
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Requires-Dist: certifi
+Requires-Dist: isodate
+Requires-Dist: lxml<6,>=4.6.4
+Requires-Dist: pycountry
+Requires-Dist: pycryptodome<4,>=3.4.3
+Requires-Dist: PySocks!=1.5.7,>=1.5.6
+Requires-Dist: requests<3,>=2.26.0
+Requires-Dist: trio<1,>=0.22.0
+Requires-Dist: trio-websocket<1,>=0.9.0
+Requires-Dist: typing-extensions>=4.0.0
+Requires-Dist: urllib3<3,>=1.26.0
+Requires-Dist: websocket-client<2,>=1.2.1
 
 <h1 align="center"><a href="https://streamlink.github.io/">Streamlink<br><img height="150" alt="Streamlink" src="https://raw.githubusercontent.com/streamlink/streamlink/master/icon.svg"></a></h1>
 

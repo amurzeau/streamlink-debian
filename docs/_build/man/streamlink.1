@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Aug 16, 2023" "6.1.0" "Streamlink"
+.TH "STREAMLINK" "1" "Sep 14, 2023" "6.2.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -330,6 +330,14 @@ Default is: \fB\(dq\(dq\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
+.B \-\-player\-env KEY=VALUE
+Add an additional environment variable to the spawned player process, in addition to the ones inherited from
+the Streamlink/Python parent process. This allows setting player environment variables in config files.
+.sp
+Can be repeated to add multiple environment variables.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B \-v
 .TP
 .B \-\-verbose\-player
@@ -439,7 +447,8 @@ This option will instead let the player decide when to exit.
 .B \-\-title TITLE
 Change the title of the video player\(aqs window.
 .sp
-Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
 .sp
 This option is only supported for the following players: mpv, potplayer, vlc
 .INDENT 7.0
@@ -480,7 +489,8 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -515,7 +525,8 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -542,7 +553,8 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp

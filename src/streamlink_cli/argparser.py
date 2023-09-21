@@ -428,6 +428,18 @@ def build_parser():
         """,
     )
     player.add_argument(
+        "--player-env",
+        metavar="KEY=VALUE",
+        type=keyvalue,
+        action="append",
+        help="""
+        Add an additional environment variable to the spawned player process, in addition to the ones inherited from
+        the Streamlink/Python parent process. This allows setting player environment variables in config files.
+
+        Can be repeated to add multiple environment variables.
+        """,
+    )
+    player.add_argument(
         "-v", "--verbose-player",
         action="store_true",
         help="""
@@ -553,7 +565,8 @@ def build_parser():
         help=f"""
         Change the title of the video player's window.
 
-        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables.
+        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables,
+        as well as the "Plugins" section for the list of metadata variables defined in each plugin.
 
         This option is only supported for the following players: {', '.join(sorted(PlayerOutput.PLAYERS.keys()))}
 
@@ -585,7 +598,8 @@ def build_parser():
 
         You will be prompted if the file already exists.
 
-        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables.
+        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables,
+        as well as the "Plugins" section for the list of metadata variables defined in each plugin.
 
         Unsupported characters in substituted variables will be replaced with an underscore.
 
@@ -612,7 +626,8 @@ def build_parser():
 
         You will be prompted if the file already exists.
 
-        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables.
+        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables,
+        as well as the "Plugins" section for the list of metadata variables defined in each plugin.
 
         Unsupported characters in substituted variables will be replaced with an underscore.
 
@@ -631,7 +646,8 @@ def build_parser():
 
         You will be prompted if the file already exists.
 
-        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables.
+        Please see the "Metadata variables" section of Streamlink's CLI documentation for all available metadata variables,
+        as well as the "Plugins" section for the list of metadata variables defined in each plugin.
 
         Unsupported characters in substituted variables will be replaced with an underscore.
 
