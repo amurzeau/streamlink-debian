@@ -14,7 +14,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  3 files changed, 4 deletions(-)
 
 diff --git a/docs-requirements.txt b/docs-requirements.txt
-index d158d96..78276c0 100644
+index 522fcef..388f23c 100644
 --- a/docs-requirements.txt
 +++ b/docs-requirements.txt
 @@ -1,5 +1,4 @@
