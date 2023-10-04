@@ -1,9 +1,10 @@
-streamlink (6.2.1-1) UNRELEASED; urgency=medium
+streamlink (6.2.1-1) unstable; urgency=medium
 
   * d/README.source: update license check and patches update instructions
   * New upstream version 6.2.1
+  * d/patches: update and remove useless patch about furo
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 04 Oct 2023 22:34:17 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 04 Oct 2023 22:35:26 +0200
 
 streamlink (6.2.0-1) unstable; urgency=medium
 
