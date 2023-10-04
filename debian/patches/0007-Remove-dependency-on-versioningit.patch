@@ -24,17 +24,17 @@ index 522fcef..388f23c 100644
  # build
  sphinx >=6.0.0,<8
 diff --git a/pyproject.toml b/pyproject.toml
-index c4097d8..2494e89 100644
+index 9bd0aab..b7217c3 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
-@@ -3,7 +3,6 @@ build-backend = "setuptools.build_meta"
+@@ -2,7 +2,6 @@
  requires = [
    "setuptools >=64",
    "wheel",
 -  "versioningit >=2.0.0, <3",
  ]
- 
- 
+ # setuptools build-backend override
+ # https://setuptools.pypa.io/en/stable/build_meta.html
 diff --git a/setup.py b/setup.py
 index 2e01b69..2879d76 100644
 --- a/setup.py

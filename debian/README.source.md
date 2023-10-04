@@ -8,17 +8,27 @@ Here are the commands to manage the package
 # Switch to master branch
 git checkout master
 
+# Update gbp branches from remote
+git fetch origin pristine-tar:pristine-tar upstream:upstream
+
+# Update current branch
+git pull
+
+# Import patches into gbp
+gbp pq import --force
+
+# Go back to master branch
+gbp pq switch
+
 # Import upstream version and update Debian branch with new upstream release
 gbp import-orig --uscan
 
 # Update debian/patches
 gbp pq rebase
-
-# Go back to master branch
-gbp pq switch
+gbp pq export
 
 # Check licenses changes and update debian/copyright
-find . \( -path './.git' -o -path './debian' \) -prune -o -type f -print0 | xargs -0  grep -i '\bCopyright\b'
+git diff --name-only $(git describe --tags --abbrev=0) HEAD | grep -v '^debian' | xargs grep -ni '\bCopyright\b'
 
 # Check for new dependencies
 git diff upstream^..upstream docs-requirements.txt dev-requirements.txt pyproject.toml docs/install.rst
@@ -69,8 +79,20 @@ The rest is identical to unstable.
 ## For backports
 
 ```sh
+# Switch to master branch to ensure it is updated
+git checkout master
+
+# Update master branch
+git pull
+
+# Update gbp branches from remote
+git fetch origin pristine-tar:pristine-tar upstream:upstream
+
 # Switch to backport branch
 git checkout <backport-branch>
+
+# Update current branch
+git pull
 
 # Merge master branch
 git merge master
