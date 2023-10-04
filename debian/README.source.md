@@ -79,8 +79,20 @@ The rest is identical to unstable.
 ## For backports
 
 ```sh
+# Switch to master branch to ensure it is updated
+git checkout master
+
+# Update master branch
+git pull
+
+# Update gbp branches from remote
+git fetch origin pristine-tar:pristine-tar upstream:upstream
+
 # Switch to backport branch
 git checkout <backport-branch>
+
+# Update current branch
+git pull
 
 # Merge master branch
 git merge master
@@ -89,7 +101,7 @@ git merge master
 gbp dch -Ra --bpo --commit
 
 # Do test build with sbuild
-gbp buildpackage "--git-builder=sbuild -v -As -d bullseye-backports --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
+gbp buildpackage "--git-builder=sbuild -v -As -d bookworm-backports --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot stable-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
 
 # Check for build warnings or errors
 grep -Pi 'error|warn' ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.build
@@ -103,7 +115,7 @@ diffoscope ../build-area/python3-streamlink-doc_$(dpkg-parsechangelog --show-fie
 gbp tag --sign-tags
 
 # Push to git repository
-git push origin experimental master upstream pristine-tar bullseye-backports --tags
+git push origin experimental master upstream pristine-tar bookworm-backports --tags
 
 # Push to mentors FTP
 dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
