@@ -14,7 +14,7 @@ pytest-cov
 coverage[toml]
 
 # code-linting
-ruff ==0.0.287
+ruff ==0.0.291
 
 # typing
 mypy
@@ -22,6 +22,7 @@ lxml-stubs
 trio-typing
 types-freezegun
 types-requests
+types-setuptools
 types-urllib3
 
 # scripts
