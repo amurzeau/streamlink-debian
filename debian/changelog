@@ -1,3 +1,11 @@
+streamlink (6.2.1-1~bpo12+1) bookworm-backports; urgency=medium
+
+  * Rebuild for bookworm-backports.
+  * d/control,patches: revert "remove webbrowser tests" as
+    python3-pytest-trio is now available in bookworm-backports.
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 09 Oct 2023 10:26:12 +0200
+
 streamlink (6.2.1-1) unstable; urgency=medium
 
   * d/README.source: update license check and patches update instructions
