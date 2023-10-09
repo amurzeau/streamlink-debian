@@ -4,6 +4,7 @@ Depends: streamlink,
  python3-freezegun,
  python3-pytest,
  python3-pytest-asyncio,
+ python3-pytest-trio,
  python3-requests-mock
 
 # Test streamlink against a generated on-disk HLS stream
