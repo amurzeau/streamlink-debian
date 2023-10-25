@@ -1,10 +1,11 @@
-streamlink (6.3.0-1) UNRELEASED; urgency=medium
+streamlink (6.3.0-1) unstable; urgency=medium
 
   * d/README: update backport instructions
   * d/README: update readme for building backported package
   * New upstream version 6.3.0
+  * d/patches: remove now unneeded patch that was removing versioningit
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 25 Oct 2023 21:27:25 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 25 Oct 2023 21:37:25 +0200
 
 streamlink (6.2.1-1) unstable; urgency=medium
 
