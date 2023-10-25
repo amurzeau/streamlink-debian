@@ -3,5 +3,4 @@
 0003-Use-pycrytodomex-instead-of-pycryptodome.patch
 0004-Remove-GitHub-Buttons-without-replacement.patch
 0005-Use-fork-awesome-a-Debian-doesn-t-have-font-awesome-.patch
-0007-Remove-dependency-on-versioningit.patch
 0008-Remove-intersphinx.patch
