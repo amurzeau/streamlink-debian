@@ -62,6 +62,8 @@ git push origin experimental master upstream pristine-tar bookworm-backports --t
 # Push to mentors FTP
 dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 
+# Check salsa-ci: https://salsa.debian.org/amurzeau/streamlink/-/pipelines
+
 # Generate RFS mail
 debian/create_rfs_mail.sh
 ```
