@@ -1,3 +1,9 @@
+streamlink (6.3.1-1~bpo12+1) bookworm-backports; urgency=medium
+
+  * Rebuild for bookworm-backports.
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 03 Nov 2023 23:19:55 +0100
+
 streamlink (6.3.1-1) unstable; urgency=medium
 
   * New upstream version 6.3.1
