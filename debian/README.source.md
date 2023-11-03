@@ -61,6 +61,11 @@ git push origin experimental master upstream pristine-tar bookworm-backports --t
 
 # Push to mentors FTP
 dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
+
+# Check salsa-ci: https://salsa.debian.org/amurzeau/streamlink/-/pipelines
+
+# Generate RFS mail
+debian/create_rfs_mail.sh
 ```
 
 ## For experimental
@@ -101,7 +106,7 @@ git merge master
 gbp dch -Ra --bpo --commit
 
 # Do test build with sbuild
-gbp buildpackage "--git-builder=sbuild -v -As -d bookworm-backports --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot stable-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
+gbp buildpackage "--git-builder=sbuild -v -As -d bookworm-backports --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
 
 # Check for build warnings or errors
 grep -Pi 'error|warn' ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.build
@@ -120,6 +125,8 @@ git push origin experimental master upstream pristine-tar bookworm-backports --t
 # Push to mentors FTP
 dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 
+# Generate RFS mail
+debian/create_rfs_mail.sh
 ```
 
 # Building package from streamlink unreleased version
