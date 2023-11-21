@@ -34,7 +34,6 @@ docs/ext_plugins.py
 docs/ext_releaseref.py
 docs/index.rst
 docs/install.rst
-docs/issues.rst
 docs/migrations.rst
 docs/players.rst
 docs/plugins.rst
@@ -60,7 +59,10 @@ docs/api/plugin.rst
 docs/api/session.rst
 docs/api/stream.rst
 docs/api/streamlink.rst
+docs/api/validate.rst
 docs/api/webbrowser.rst
+docs/api_guide/quickstart.rst
+docs/api_guide/validate.rst
 docs/cli/config.rst
 docs/cli/metadata.rst
 docs/cli/plugin-sideloading.rst
@@ -96,6 +98,7 @@ src/streamlink/plugin/__init__.py
 src/streamlink/plugin/plugin.py
 src/streamlink/plugin/api/__init__.py
 src/streamlink/plugin/api/http_session.py
+src/streamlink/plugin/api/http_session.pyi
 src/streamlink/plugin/api/useragents.py
 src/streamlink/plugin/api/websocket.py
 src/streamlink/plugin/api/validate/__init__.py
@@ -174,6 +177,7 @@ src/streamlink/plugins/mixcloud.py
 src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mrtmk.py
 src/streamlink/plugins/n13tv.py
+src/streamlink/plugins/nasaplus.py
 src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nicolive.py
 src/streamlink/plugins/nimotv.py
@@ -318,6 +322,7 @@ src/streamlink_cli/compat.py
 src/streamlink_cli/console.py
 src/streamlink_cli/constants.py
 src/streamlink_cli/main.py
+src/streamlink_cli/py.typed
 src/streamlink_cli/streamrunner.py
 src/streamlink_cli/output/__init__.py
 src/streamlink_cli/output/abc.py
@@ -442,6 +447,7 @@ tests/plugins/test_mixcloud.py
 tests/plugins/test_mjunoon.py
 tests/plugins/test_mrtmk.py
 tests/plugins/test_n13tv.py
+tests/plugins/test_nasaplus.py
 tests/plugins/test_nhkworld.py
 tests/plugins/test_nicolive.py
 tests/plugins/test_nimotv.py
@@ -534,6 +540,12 @@ tests/resources/dash/test_2.mpd
 tests/resources/dash/test_3.mpd
 tests/resources/dash/test_8.mpd
 tests/resources/dash/test_9.mpd
+tests/resources/dash/test_dynamic_segment_list_no_duration.mpd
+tests/resources/dash/test_dynamic_segment_list_p1.mpd
+tests/resources/dash/test_dynamic_segment_list_p2.mpd
+tests/resources/dash/test_dynamic_segment_list_p3.mpd
+tests/resources/dash/test_dynamic_segment_list_p4.mpd
+tests/resources/dash/test_dynamic_segment_list_p5.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p1.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p2.mpd
 tests/resources/dash/test_nested_baseurls.mpd
