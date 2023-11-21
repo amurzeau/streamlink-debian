@@ -1,3 +1,9 @@
+streamlink (6.4.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 6.4.0
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 21 Nov 2023 19:46:32 +0100
+
 streamlink (6.3.1-2) unstable; urgency=medium
 
   * No-change upload to rebuild python3-streamlink-doc against Sphinx 7.2
