@@ -15,7 +15,6 @@ build_backend/test_onbuild.py
 completions/bash/streamlink
 completions/zsh/_streamlink
 docs/Makefile
-docs/_applications.rst
 docs/_man.rst
 docs/api.rst
 docs/api_guide.rst
@@ -53,6 +52,7 @@ docs/_templates/base.html
 docs/_templates/page.html
 docs/_templates/sidebar/brand.html
 docs/_templates/sidebar/github-buttons.html
+docs/api/cache.rst
 docs/api/exceptions.rst
 docs/api/options.rst
 docs/api/plugin.rst
