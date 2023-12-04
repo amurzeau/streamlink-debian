@@ -20,10 +20,10 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  3 files changed, 2 insertions(+), 12 deletions(-)
 
 diff --git a/docs/applications.rst b/docs/applications.rst
-index d69bb19..14908c3 100644
+index 4da1f1c..cc3a865 100644
 --- a/docs/applications.rst
 +++ b/docs/applications.rst
-@@ -8,14 +8,12 @@ Streamlink Applications
+@@ -5,14 +5,12 @@ Streamlink Applications
  Streamlink Twitch GUI
  ---------------------
  
@@ -32,7 +32,7 @@ index d69bb19..14908c3 100644
 -
  :Description: A multi platform Twitch.tv browser for Streamlink
  :Type: Graphical User Interface
- :OS: |Windows| |MacOS| |Linux|
+ :OS: :fab:`windows;fa-xl` :fab:`apple;fa-xl` :fab:`linux;fa-xl`
  :Author: `Sebastian Meyer <https://github.com/bastimeyer>`_
  :Website: https://streamlink.github.io/streamlink-twitch-gui
 +:Screenshot: https://user-images.githubusercontent.com/467294/199009198-011d23f2-a884-4bf8-94d0-bb304ceecc08.jpg
@@ -81,10 +81,10 @@ index 111c3b3..64441a2 100644
          :link-alt: @beardypig
          :text-align: center
 diff --git a/docs/thirdparty.rst b/docs/thirdparty.rst
-index de2f5f5..a432bff 100644
+index 4ae2c1b..4377930 100644
 --- a/docs/thirdparty.rst
 +++ b/docs/thirdparty.rst
-@@ -55,15 +55,12 @@ LiveProxy
+@@ -50,15 +50,12 @@ LiveProxy
  Wtwitch
  -------
  
@@ -94,10 +94,10 @@ index de2f5f5..a432bff 100644
 -
  :Description: Browse Twitch streams; subscribe to streamers locally without an account
  :Type: TUI (terminal user interface)
- :OS: |Linux| |MacOS|
+ :OS: :fab:`apple;fa-xl` :fab:`linux;fa-xl`
  :Author: `Hunter Peavey <https://krathalan.net>`_
  :Website: https://git.sr.ht/~krathalan/wtwitch
 +:Screenshot: https://user-images.githubusercontent.com/25400030/97115072-6951e600-16ec-11eb-88f7-51939c0d0bc1.jpg
- :Info: wtwitch is a Bash program that lets you browse the top games on Twitch, the |br|
-   top streamers for a given game, and lets you check the status of streamers you |br|
-   subscribe to. Open streams easily with settings that save your preferred quality |br|
+ :Info: wtwitch is a Bash program that lets you browse the top games on Twitch, the
+   top streamers for a given game, and lets you check the status of streamers you
+   subscribe to. Open streams easily with settings that save your preferred quality
