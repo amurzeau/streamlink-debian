@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Oct 26, 2023" "6.3.1" "Streamlink"
+.TH "STREAMLINK" "1" "Nov 28, 2023" "6.4.2" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -1308,6 +1308,22 @@ Purge cached Pixiv credentials to initiate a new session and reauthenticate.
 .TP
 .B \-\-pixiv\-performer USER
 Select a co\-host stream instead of the owner stream.
+.UNINDENT
+.SS Raiplay
+.INDENT 0.0
+.TP
+.B \-\-raiplay\-email EMAIL
+The email used to register with raiplay.it.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-raiplay\-password PASSWORD
+A raiplay.it account password to use with \fI\%\-\-raiplay\-email\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-raiplay\-purge\-credentials
+Purge cached RaiPlay credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .SS Sbscokr
 .SS Steam

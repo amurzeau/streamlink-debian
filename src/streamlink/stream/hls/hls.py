@@ -155,17 +155,18 @@ class HLSStreamWriter(SegmentedStreamWriter[HLSSegment, Response]):
             self.queue(None, None)
             return
 
-        # always queue the segment's map first if it exists
+        # queue segment-map first
         if segment.map is not None:
-            cached_map_future = self.map_cache.get(segment.map.uri)
-            # use cached map request if not a stream discontinuity
-            # don't fetch multiple times when map request of previous segment is still pending
-            if cached_map_future is not None and not segment.discontinuity:
-                future = cached_map_future
-            else:
+            # get the cached segment-map, if available
+            future = self.map_cache.get(segment.map.uri)
+            if future and segment.discontinuity:
+                # special case: queue the cached segment map if it's set on a discontinuity segment
+                self.queue(segment, future, True)
+            elif not future:
+                # keep the segment-map in the cache, so we can check whether we've already queued it
                 future = self.executor.submit(self.fetch_map, segment)
                 self.map_cache.set(segment.map.uri, future)
-            self.queue(segment, future, True)
+                self.queue(segment, future, True)
 
         # regular segment request
         future = self.executor.submit(self.fetch, segment)
@@ -355,7 +356,7 @@ class HLSStreamWorker(SegmentedStreamWorker[HLSSegment, Response]):
             return playlist.segments[-1].duration
         if self.playlist_reload_time_override == "live-edge" and playlist.segments:
             return sum(s.duration for s in playlist.segments[-max(1, self.live_edge - 1):])
-        if type(self.playlist_reload_time_override) is float and self.playlist_reload_time_override > 0:  # noqa: E721
+        if type(self.playlist_reload_time_override) is float and self.playlist_reload_time_override > 0:
             return self.playlist_reload_time_override
         if playlist.targetduration:
             return playlist.targetduration

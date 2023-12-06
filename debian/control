@@ -60,7 +60,7 @@ Architecture: all
 Depends: ${misc:Depends},
   ${python3:Depends},
   python3-streamlink (= ${source:Version})
-Recommends: vlc | mpv | mplayer | omxplayer
+Recommends: vlc | mpv | mplayer
 Description: CLI for extracting video streams from various websites to a video player
  Streamlink is a CLI utility which pipes video streams from various services
  into a video player, such as VLC.

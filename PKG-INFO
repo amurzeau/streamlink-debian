@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: streamlink
-Version: 6.3.1
+Version: 6.4.2
 Summary: Streamlink is a command-line utility that extracts streams from various services and pipes them into a video player of choice.
 Author: Streamlink
 Author-email: streamlink@protonmail.com
@@ -51,7 +51,7 @@ Requires-Dist: websocket-client<2,>=1.2.1
   <a href="https://streamlink.github.io/changelog.html"><img alt="Latest release" src="https://img.shields.io/github/release/streamlink/streamlink.svg?style=flat-square&maxAge=86400"></a>
   <a href="https://github.com/streamlink/streamlink"><img alt="License" src="https://img.shields.io/github/license/streamlink/streamlink.svg?style=flat-square&maxAge=86400"></a>
   <a href="https://github.com/streamlink/streamlink/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/streamlink/streamlink.svg?style=flat-square&maxAge=86400"></a>
-  <a href="https://github.com/streamlink/streamlink/actions?query=event%3Apush"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/streamlink/streamlink/main.yml?branch=master&event=push&style=flat-square&maxAge=86400"></a>
+  <a href="https://github.com/streamlink/streamlink/actions?query=event%3Apush"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/streamlink/streamlink/test.yml?branch=master&event=push&style=flat-square&maxAge=86400"></a>
   <a href="https://codecov.io/github/streamlink/streamlink?branch=master"><img alt="Overall code coverage" src="https://img.shields.io/codecov/c/github/streamlink/streamlink.svg?branch=master&style=flat-square&maxAge=86400"></a>
 </p>
 

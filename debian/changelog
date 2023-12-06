@@ -1,3 +1,18 @@
+streamlink (6.4.2-1) unstable; urgency=medium
+
+  * New upstream version 6.4.2
+  * d/control: remove obsolete omxplayer from recommends
+  * d/rules: remove now useless pybuild flag --install-scripts
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 04 Dec 2023 20:17:11 +0100
+
+streamlink (6.3.1-2) unstable; urgency=medium
+
+  * No-change upload to rebuild python3-streamlink-doc against Sphinx 7.2
+    (Closes: 1055443).
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 06 Nov 2023 20:44:50 +0100
+
 streamlink (6.3.1-1~bpo12+1) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.

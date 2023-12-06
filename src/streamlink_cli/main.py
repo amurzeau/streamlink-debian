@@ -50,11 +50,11 @@ def get_formatter(plugin: Plugin):
         {
             "url": lambda: args.url,
             "plugin": lambda: plugin.module,
-            "id": lambda: plugin.get_id(),
-            "author": lambda: plugin.get_author(),
-            "category": lambda: plugin.get_category(),
-            "game": lambda: plugin.get_category(),
-            "title": lambda: plugin.get_title(),
+            "id": plugin.get_id,
+            "author": plugin.get_author,
+            "category": plugin.get_category,
+            "game": plugin.get_category,
+            "title": plugin.get_title,
             "time": lambda: datetime.now(tz=LOCALTIMEZONE),
         },
         {
@@ -675,7 +675,7 @@ def setup_config_args(parser, ignore_unknown=False):
     if streamlink and args.url:
         # Only load first available plugin config
         with suppress(NoPluginError):
-            pluginname, pluginclass, resolved_url = streamlink.resolve_url(args.url)
+            pluginname, _pluginclass, _resolved_url = streamlink.resolve_url(args.url)
             for config_file in CONFIG_FILES:  # pragma: no branch
                 config_file = config_file.with_name(f"{config_file.name}.{pluginname}")
                 if not config_file.is_file():

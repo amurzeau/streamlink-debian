@@ -1,7 +1,6 @@
 #!/bin/sh
 
 NEW_VERSION=$(sed -nr 's/streamlink \((.*)\).*/\1/p' debian/changelog | sed -n '1 p')
-OLD_VERSION=$(sed -nr 's/streamlink \((.*)\) unstable.*/\1/p' debian/changelog | sed -n '2 p')
 NEW_VERSION_UPSTREAM=$(echo "$NEW_VERSION" | sed -r 's/(.*)-.*/\1/')
 
 RFS_INTROLINE="for a new
@@ -16,11 +15,11 @@ to a video player
 "
 
 CHANGELOG_INTROLINE="Changes since the last upload to unstable:"
-CHANGELOG=$(sed -r "/^streamlink \($OLD_VERSION\)/,\$d" debian/changelog)
 
 
 if git symbolic-ref HEAD | grep -q backports; then
     DISTRIBUTION=$(git symbolic-ref HEAD | sed -r 's#refs/heads/(.*)-backports#\1#')
+    OLD_VERSION=$(sed -nr "s/streamlink \((.*)\) ${DISTRIBUTION}-backports.*/\1/p" debian/changelog | sed -n '2 p')
     ADDITIONAL_FIELDS="X-Debbugs-CC: debian-backports@lists.debian.org"
     RFS_INTROLINE="into Debian
 ${DISTRIBUTION}-backports repository"
@@ -38,9 +37,13 @@ various websites
 to a video player
 "
 else
+    OLD_VERSION=$(sed -nr 's/streamlink \((.*)\) unstable.*/\1/p' debian/changelog | sed -n '2 p')
     ADDITIONAL_FIELDS=""
     CHANGELOG_BACKPORT=""
 fi
+
+ESCAPED_OLD_VERSION=$(echo "$OLD_VERSION" | sed -r 's/([][+\()*/])/\\\1/g')
+CHANGELOG=$(sed -r "/^streamlink \($ESCAPED_OLD_VERSION\)/,\$d" debian/changelog)
 
 MAIL_SUBJECT="RFS: streamlink/${NEW_VERSION} -- CLI for extracting video streams from various websites to a video player"
 MAIL_BODY="Package: sponsorship-requests
