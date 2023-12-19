@@ -246,7 +246,6 @@ src/streamlink/plugins/vinhlongtv.py
 src/streamlink/plugins/vk.py
 src/streamlink/plugins/vkplay.py
 src/streamlink/plugins/vtvgo.py
-src/streamlink/plugins/wasd.py
 src/streamlink/plugins/webtv.py
 src/streamlink/plugins/welt.py
 src/streamlink/plugins/wwenetwork.py
@@ -516,7 +515,6 @@ tests/plugins/test_vinhlongtv.py
 tests/plugins/test_vk.py
 tests/plugins/test_vkplay.py
 tests/plugins/test_vtvgo.py
-tests/plugins/test_wasd.py
 tests/plugins/test_webtv.py
 tests/plugins/test_welt.py
 tests/plugins/test_wwenetwork.py
