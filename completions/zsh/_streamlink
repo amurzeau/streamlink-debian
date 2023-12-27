@@ -755,7 +755,6 @@ _shtab_streamlink_cli_options=(
         Skip embedded advertisement segments at the beginning or during a stream.
         Will cause these segments to be missing from the output.
     ]"
-  "--twitch-disable-reruns[Do not open the stream if the target channel is currently broadcasting a rerun.]"
   "--twitch-low-latency[
         Enables low latency streaming by prefetching HLS segments.
         Sets --hls-segment-stream-data to true and --hls-live-edge to \`2\`, if it is higher.
