@@ -1,3 +1,9 @@
+streamlink (6.5.1-1) UNRELEASED; urgency=medium
+
+  * New upstream version 6.5.1
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 22 Jan 2024 20:08:21 +0100
+
 streamlink (6.5.0-1) unstable; urgency=medium
 
   * New upstream version 6.5.0
