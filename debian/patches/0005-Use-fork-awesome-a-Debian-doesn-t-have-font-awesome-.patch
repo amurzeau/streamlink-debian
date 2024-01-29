@@ -27,7 +27,7 @@ index 4c74cee..5a30f23 100644
    text-decoration: none;
  }
 diff --git a/docs/conf.py b/docs/conf.py
-index 24d9a73..0a98873 100644
+index 68b1395..001ebd9 100644
 --- a/docs/conf.py
 +++ b/docs/conf.py
 @@ -163,9 +163,8 @@ html_static_path = ['_static']

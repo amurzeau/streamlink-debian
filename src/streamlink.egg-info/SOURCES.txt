@@ -354,6 +354,7 @@ tests/cli/test_cmdline.py
 tests/cli/test_cmdline_title.py
 tests/cli/test_console.py
 tests/cli/test_main.py
+tests/cli/test_main_check_file_output.py
 tests/cli/test_main_formatter.py
 tests/cli/test_main_setup_config_args.py
 tests/cli/test_plugin_args_and_options.py
