@@ -408,7 +408,9 @@ _shtab_streamlink_cli_options=(
 
         ]:stream_sorting_excludes:"
   "--ringbuffer-size[
-        The maximum size of the ringbuffer. Mega- or kilobytes can be specified via the M or K suffix respectively.
+        The maximum size of the ringbuffer.
+
+        Mebibytes or kibibytes (base 2) can be specified via the M or K suffix respectively.
 
         The ringbuffer is used as a temporary storage between the stream and the player.
         This allows Streamlink to download the stream faster than the player which reads the data from the ringbuffer.
@@ -421,9 +423,6 @@ _shtab_streamlink_cli_options=(
         background as long as the ringbuffer doesn\'t get full.
 
         Default is \"16M\".
-
-        Note\: A smaller size is recommended on lower end systems (such as Raspberry Pi) when playing stream types that require
-        some extra processing to avoid unnecessary background processing.
         ]:ringbuffer_size:"
   "--stream-segment-attempts[
         How many attempts should be done to download each segment before giving up.
@@ -757,7 +756,7 @@ _shtab_streamlink_cli_options=(
     ]"
   "--twitch-low-latency[
         Enables low latency streaming by prefetching HLS segments.
-        Sets --hls-segment-stream-data to true and --hls-live-edge to \`2\`, if it is higher.
+        Sets --hls-segment-stream-data to true and --hls-live-edge to 2, if it is higher.
         Reducing --hls-live-edge to \`1\` will result in the lowest latency possible, but will most likely cause buffering.
 
         In order to achieve true low latency streaming during playback, the player\'s caching\/buffering settings will
@@ -795,7 +794,7 @@ _shtab_streamlink_cli_options=(
   "--zattoo-stream-types[
         A comma-delimited list of stream types which should be used.
 
-        The following types are allowed\: dash,hls7
+        The following types are allowed\: dash, hls7
 
         Default is \"dash\".
     ]:zattoo_stream_types:"

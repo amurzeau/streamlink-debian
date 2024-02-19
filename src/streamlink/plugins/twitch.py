@@ -44,7 +44,6 @@ from streamlink.stream.hls import (
     parse_tag,
 )
 from streamlink.stream.http import HTTPStream
-from streamlink.utils.args import keyvalue
 from streamlink.utils.parse import parse_json, parse_qsd
 from streamlink.utils.random import CHOICES_ALPHA_NUM, random_token
 from streamlink.utils.times import fromtimestamp, hours_minutes_seconds_float
@@ -638,9 +637,9 @@ class TwitchClientIntegrity:
 @pluginargument(
     "low-latency",
     action="store_true",
-    help=f"""
+    help="""
         Enables low latency streaming by prefetching HLS segments.
-        Sets --hls-segment-stream-data to true and --hls-live-edge to `{LOW_LATENCY_MAX_LIVE_EDGE}`, if it is higher.
+        Sets --hls-segment-stream-data to true and --hls-live-edge to 2, if it is higher.
         Reducing --hls-live-edge to `1` will result in the lowest latency possible, but will most likely cause buffering.
 
         In order to achieve true low latency streaming during playback, the player's caching/buffering settings will
@@ -655,7 +654,7 @@ class TwitchClientIntegrity:
 @pluginargument(
     "api-header",
     metavar="KEY=VALUE",
-    type=keyvalue,
+    type="keyvalue",
     action="append",
     help="""
         A header to add to each Twitch API HTTP request.
@@ -668,7 +667,7 @@ class TwitchClientIntegrity:
 @pluginargument(
     "access-token-param",
     metavar="KEY=VALUE",
-    type=keyvalue,
+    type="keyvalue",
     action="append",
     help="""
         A parameter to add to the API request for acquiring the streaming access token.

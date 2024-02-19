@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Jan 16, 2024" "6.5.1" "Streamlink"
+.TH "STREAMLINK" "1" "Feb 17, 2024" "6.6.1" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -742,7 +742,9 @@ For example this will exclude streams from two quality types:
 .INDENT 0.0
 .TP
 .B \-\-ringbuffer\-size SIZE
-The maximum size of the ringbuffer. Mega\- or kilobytes can be specified via the M or K suffix respectively.
+The maximum size of the ringbuffer.
+.sp
+Mebibytes or kibibytes (base 2) can be specified via the M or K suffix respectively.
 .sp
 The ringbuffer is used as a temporary storage between the stream and the player.
 This allows Streamlink to download the stream faster than the player which reads the data from the ringbuffer.
@@ -755,14 +757,6 @@ If the player stops reading data while playback is paused, Streamlink will conti
 background as long as the ringbuffer doesn\(aqt get full.
 .sp
 Default is: \fB\(dq16M\(dq\fP\&.
-.sp
-\fBNOTE:\fP
-.INDENT 7.0
-.INDENT 3.5
-A smaller size is recommended on lower end systems (such as Raspberry Pi) when playing stream types that require
-some extra processing to avoid unnecessary background processing.
-.UNINDENT
-.UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1325,7 +1319,6 @@ A raiplay.it account password to use with \fI\%\-\-raiplay\-email\fP\&.
 .B \-\-raiplay\-purge\-credentials
 Purge cached RaiPlay credentials to initiate a new session and reauthenticate.
 .UNINDENT
-.SS Sbscokr
 .SS Steam
 .INDENT 0.0
 .TP
@@ -1360,7 +1353,7 @@ Will cause these segments to be missing from the output.
 .TP
 .B \-\-twitch\-low\-latency
 Enables low latency streaming by prefetching HLS segments.
-Sets \fI\%\-\-hls\-segment\-stream\-data\fP to true and \fI\%\-\-hls\-live\-edge\fP to \fB2\fP, if it is higher.
+Sets \fI\%\-\-hls\-segment\-stream\-data\fP to true and \fI\%\-\-hls\-live\-edge\fP to 2, if it is higher.
 Reducing \fI\%\-\-hls\-live\-edge\fP to \fB1\fP will result in the lowest latency possible, but will most likely cause buffering.
 .sp
 In order to achieve true low latency streaming during playback, the player\(aqs caching/buffering settings will
@@ -1462,7 +1455,7 @@ Purge cached zattoo credentials to initiate a new session and reauthenticate.
 .B \-\-zattoo\-stream\-types TYPES
 A comma\-delimited list of stream types which should be used.
 .sp
-The following types are allowed: dash,hls7
+The following types are allowed: dash, hls7
 .sp
 Default is: \fB\(dqdash\(dq\fP\&.
 .UNINDENT

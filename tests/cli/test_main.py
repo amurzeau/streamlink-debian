@@ -494,8 +494,8 @@ class _TestCLIMainLogging(unittest.TestCase):
 
     @classmethod
     def subject(cls, argv, **kwargs):
-        session = Streamlink()
-        session.load_plugins(str(Path(tests.__path__[0]) / "plugin"))
+        session = Streamlink(plugins_builtin=False)
+        session.plugins.load_path(Path(tests.__path__[0]) / "plugin")
 
         with patch("streamlink_cli.main.os.geteuid", create=True, new=Mock(return_value=kwargs.get("euid", 1000))), \
              patch("streamlink_cli.main.streamlink", session), \
@@ -504,7 +504,6 @@ class _TestCLIMainLogging(unittest.TestCase):
              patch("streamlink_cli.main.setup_streamlink"), \
              patch("streamlink_cli.main.setup_plugins"), \
              patch("streamlink_cli.argparser.find_default_player"), \
-             patch("streamlink.session.Streamlink.load_builtin_plugins"), \
              patch("sys.argv") as mock_argv:
             mock_argv.__getitem__.side_effect = lambda x: argv[x]
             try:
@@ -835,11 +834,10 @@ class TestCLIMainLoggingLogfileWindows(_TestCLIMainLogging):
 
 class TestCLIMainPrint(unittest.TestCase):
     def subject(self):
-        with patch.object(Streamlink, "load_builtin_plugins"), \
-             patch.object(Streamlink, "resolve_url") as mock_resolve_url, \
+        with patch.object(Streamlink, "resolve_url") as mock_resolve_url, \
              patch.object(Streamlink, "resolve_url_no_redirect") as mock_resolve_url_no_redirect:
-            session = Streamlink()
-            session.load_plugins(str(Path(tests.__path__[0]) / "plugin"))
+            session = Streamlink(plugins_builtin=False)
+            session.plugins.load_path(Path(tests.__path__[0]) / "plugin")
             with patch("streamlink_cli.main.os.geteuid", create=True, new=Mock(return_value=1000)), \
                  patch("streamlink_cli.main.streamlink", session), \
                  patch("streamlink_cli.main.CONFIG_FILES", []), \
@@ -891,7 +889,7 @@ class TestCLIMainPrint(unittest.TestCase):
     @patch("sys.argv", ["streamlink", "--plugins"])
     def test_print_plugins(self, mock_stdout):
         self.subject()
-        assert self.get_stdout(mock_stdout) == "Loaded plugins: testplugin\n"
+        assert self.get_stdout(mock_stdout) == "Available plugins: testplugin\n"
 
     @patch("sys.stdout")
     @patch("sys.argv", ["streamlink", "--plugins", "--json"])
