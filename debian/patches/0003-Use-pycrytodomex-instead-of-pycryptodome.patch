@@ -17,7 +17,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/pyproject.toml b/pyproject.toml
-index a4589e1..03fdd69 100644
+index fefb02e..574e2c5 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -59,7 +59,7 @@ dependencies = [

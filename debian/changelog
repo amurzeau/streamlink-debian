@@ -1,3 +1,15 @@
+streamlink (6.6.2-1) unstable; urgency=medium
+
+  * New upstream version 6.6.2
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 21 Feb 2024 21:05:19 +0100
+
+streamlink (6.6.1-1) unstable; urgency=medium
+
+  * New upstream version 6.6.1
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 19 Feb 2024 20:41:54 +0100
+
 streamlink (6.5.1-1~bpo12+1) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.

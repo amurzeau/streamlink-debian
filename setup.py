@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 from os import path
 from sys import argv, exit, version_info
 from textwrap import dedent
@@ -73,18 +74,21 @@ data_files = [
 
 
 if __name__ == "__main__":
-    from setuptools import setup  # type: ignore[import]
+    sys.path.insert(0, path.dirname(__file__))
+
+    from build_backend.commands import cmdclass
+    from setuptools import setup
 
     try:
         # versioningit is only required when building from git (see pyproject.toml)
         from versioningit import get_cmdclasses
     except ImportError:  # pragma: no cover
-        def get_cmdclasses():  # type: ignore
-            return {}
+        def get_cmdclasses(_):  # type: ignore[misc]
+            return _
 
     setup(
-        cmdclass=get_cmdclasses(),
+        cmdclass=get_cmdclasses(cmdclass),
         entry_points=entry_points,
         data_files=data_files,
-        version="6.5.1",
+        version="6.6.2",
     )

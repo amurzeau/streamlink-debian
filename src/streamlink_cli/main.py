@@ -602,20 +602,19 @@ def handle_url():
 def print_plugins():
     """Outputs a list of all plugins Streamlink has loaded."""
 
-    pluginlist = list(streamlink.get_plugins().keys())
-    pluginlist_formatted = ", ".join(sorted(pluginlist))
+    pluginlist = streamlink.plugins.get_names()
 
     if args.json:
         console.msg_json(pluginlist)
     else:
-        console.msg(f"Loaded plugins: {pluginlist_formatted}")
+        console.msg(f"Available plugins: {', '.join(pluginlist)}")
 
 
 def load_plugins(dirs: List[Path], showwarning: bool = True):
     """Attempts to load plugins from a list of directories."""
     for directory in dirs:
         if directory.is_dir():
-            success = streamlink.load_plugins(str(directory))
+            success = streamlink.plugins.load_path(directory)
             if success and type(directory) is DeprecatedPath:
                 warnings.warn(
                     f"Loaded plugins from deprecated path, see CLI docs for how to migrate: {directory}",
@@ -724,10 +723,10 @@ def setup_plugin_args(session: Streamlink, parser: ArgumentParser):
     """Adds plugin argument data to the argument parser."""
 
     plugin_args = parser.add_argument_group("Plugin options")
-    for pname, plugin in session.plugins.items():
+    for pname, arguments in session.plugins.iter_arguments():
         group = parser.add_argument_group(pname.capitalize(), parent=plugin_args)
 
-        for parg in plugin.arguments or []:
+        for parg in arguments:
             group.add_argument(parg.argument_name(pname), **parg.options)
 
 
@@ -744,7 +743,7 @@ def setup_plugin_options(pluginname: str, pluginclass: Type[Plugin]) -> Options:
     for parg in pluginclass.arguments:
         defaults[parg.dest] = parg.default
 
-        if parg.options.get("help") == argparse.SUPPRESS:
+        if parg.help == argparse.SUPPRESS:
             continue
 
         value = getattr(args, parg.namespace_dest(pluginname))
@@ -819,8 +818,8 @@ def log_current_arguments(session: Streamlink, parser: argparse.ArgumentParser):
         return
 
     sensitive = set()
-    for pname, plugin in session.plugins.items():
-        for parg in plugin.arguments or []:
+    for pname, arguments in session.plugins.iter_arguments():
+        for parg in arguments:
             if parg.sensitive:
                 sensitive.add(parg.argument_name(pname))
 
@@ -953,10 +952,3 @@ def main():
         )
 
     sys.exit(error_code)
-
-
-def parser_helper():
-    session = Streamlink()
-    parser = build_parser()
-    setup_plugin_args(session, parser)
-    return parser
