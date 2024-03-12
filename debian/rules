@@ -4,6 +4,14 @@
 export http_proxy=127.0.0.1:9
 export https_proxy=127.0.0.1:9
 
+# Fix pytest order which need rootdir to be set where the tests folder is
+# as pytest's nodeid is relative to the rootdir and upstream use that to order
+# tests.
+# Also a cache is created in the rootdir, explicitly keep it at the original
+# location.
+# See also: https://github.com/streamlink/streamlink/pull/5888
+export PYBUILD_TEST_ARGS=--rootdir=. -o cache_dir=$(CURDIR)/.pytest_cache
+
 %:
 	dh $@ --buildsystem=pybuild
 
