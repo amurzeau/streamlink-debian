@@ -20,10 +20,13 @@ _shtab_streamlink_cli_options=(
   "--plugins[
         Print a list of all currently installed plugins.
         ]"
-  "--plugin-dirs[
-        Attempts to load plugins from these directories.
+  "*--plugin-dir[
+        Load plugins from this directory.
 
-        Multiple directories can be used by separating them with a comma.
+        Can be set multiple times to load plugins from multiple directories.
+        ]:plugin_dirs:"
+  "*--plugin-dirs[
+        Load plugins from a list of comma-separated directories. (deprecated)
         ]:plugin_dirs:"
   "--can-handle-url[
         Check if Streamlink has a plugin that can handle the specified URL.
