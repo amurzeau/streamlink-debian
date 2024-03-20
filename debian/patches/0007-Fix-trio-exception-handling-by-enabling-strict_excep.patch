@@ -1,0 +1,133 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Wed, 20 Mar 2024 21:27:49 +0100
+Subject: Fix trio exception handling by enabling strict_exception_groups
+
+strict_exception_groups is true since trio v0.25 which upstream uses.
+This option was added in 0.22 but defaulted to false before 0.25.
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ src/streamlink/webbrowser/cdp/client.py     | 4 ++--
+ src/streamlink/webbrowser/cdp/connection.py | 2 +-
+ src/streamlink/webbrowser/webbrowser.py     | 2 +-
+ tests/webbrowser/cdp/test_client.py         | 4 ++++
+ tests/webbrowser/cdp/test_connection.py     | 5 ++++-
+ tests/webbrowser/conftest.py                | 3 +++
+ tests/webbrowser/test_webbrowser.py         | 3 +++
+ 7 files changed, 18 insertions(+), 5 deletions(-)
+
+diff --git a/src/streamlink/webbrowser/cdp/client.py b/src/streamlink/webbrowser/cdp/client.py
+index 33eff81..f3984aa 100644
+--- a/src/streamlink/webbrowser/cdp/client.py
++++ b/src/streamlink/webbrowser/cdp/client.py
+@@ -166,7 +166,7 @@ class CDPClient:
+             ) as cdp_client:
+                 return await runner(cdp_client)
+ 
+-        return trio.run(run_wrapper)
++        return trio.run(run_wrapper, strict_exception_groups=True)
+ 
+     @classmethod
+     @asynccontextmanager
+@@ -265,7 +265,7 @@ class CDPClientSession:
+             )
+         ]
+ 
+-        async with trio.open_nursery() as nursery:
++        async with trio.open_nursery(strict_exception_groups=True) as nursery:
+             nursery.start_soon(self._on_target_detached_from_target)
+ 
+             if request_patterns:
+diff --git a/src/streamlink/webbrowser/cdp/connection.py b/src/streamlink/webbrowser/cdp/connection.py
+index a521f34..8c7bbce 100644
+--- a/src/streamlink/webbrowser/cdp/connection.py
++++ b/src/streamlink/webbrowser/cdp/connection.py
+@@ -293,7 +293,7 @@ class CDPConnection(CDPBase, trio.abc.AsyncResource):
+         :return:
+         """
+ 
+-        async with trio.open_nursery() as nursery:
++        async with trio.open_nursery(strict_exception_groups=True) as nursery:
+             websocket = await connect_websocket_url(nursery, url, max_message_size=MAX_MESSAGE_SIZE)
+             cdp_connection = cls(websocket, timeout or CMD_TIMEOUT)
+             nursery.start_soon(cdp_connection._task_reader)
+diff --git a/src/streamlink/webbrowser/webbrowser.py b/src/streamlink/webbrowser/webbrowser.py
+index 3e6f57b..303a7f5 100644
+--- a/src/streamlink/webbrowser/webbrowser.py
++++ b/src/streamlink/webbrowser/webbrowser.py
+@@ -86,7 +86,7 @@ class _WebbrowserLauncher:
+         with catch({  # type: ignore[dict-item]  # bug in exceptiongroup==1.2.0
+             (KeyboardInterrupt, SystemExit): handle_baseexception,  # type: ignore[dict-item]  # bug in exceptiongroup==1.2.0
+         }):
+-            async with trio.open_nursery() as nursery:
++            async with trio.open_nursery(strict_exception_groups=True) as nursery:
+                 log.info(f"Launching web browser: {self.executable}")
+                 # the process is run in a separate task
+                 run_process = partial(
+diff --git a/tests/webbrowser/cdp/test_client.py b/tests/webbrowser/cdp/test_client.py
+index dca13b7..7ea3103 100644
+--- a/tests/webbrowser/cdp/test_client.py
++++ b/tests/webbrowser/cdp/test_client.py
+@@ -4,6 +4,10 @@ from unittest.mock import ANY, AsyncMock, Mock, call
+ 
+ import pytest
+ import trio
++import functools
++
++trio.run = functools.partial(trio.run, strict_exception_groups=True)
++
+ from exceptiongroup import ExceptionGroup
+ from trio.testing import wait_all_tasks_blocked
+ 
+diff --git a/tests/webbrowser/cdp/test_connection.py b/tests/webbrowser/cdp/test_connection.py
+index 397ccdd..5ca5a2e 100644
+--- a/tests/webbrowser/cdp/test_connection.py
++++ b/tests/webbrowser/cdp/test_connection.py
+@@ -7,6 +7,10 @@ from unittest.mock import AsyncMock
+ 
+ import pytest
+ import trio
++import functools
++
++trio.run = functools.partial(trio.run, strict_exception_groups=True)
++
+ from exceptiongroup import ExceptionGroup
+ from trio.testing import MockClock, wait_all_tasks_blocked
+ from trio_websocket import CloseReason, ConnectionClosed, ConnectionTimeout  # type: ignore[import]
+@@ -17,7 +21,6 @@ from streamlink.webbrowser.cdp.devtools.util import T_JSON_DICT
+ from streamlink.webbrowser.cdp.exceptions import CDPError
+ from tests.webbrowser.cdp import FakeWebsocketConnection
+ 
+-
+ EPSILON = 0.1
+ 
+ 
+diff --git a/tests/webbrowser/conftest.py b/tests/webbrowser/conftest.py
+index 7299d03..f35812b 100644
+--- a/tests/webbrowser/conftest.py
++++ b/tests/webbrowser/conftest.py
+@@ -6,6 +6,9 @@ from unittest.mock import Mock
+ 
+ import pytest
+ import trio
++import functools
++
++trio.run = functools.partial(trio.run, strict_exception_groups=True)
+ 
+ from streamlink.webbrowser.webbrowser import Webbrowser
+ 
+diff --git a/tests/webbrowser/test_webbrowser.py b/tests/webbrowser/test_webbrowser.py
+index 8322d93..6ee4422 100644
+--- a/tests/webbrowser/test_webbrowser.py
++++ b/tests/webbrowser/test_webbrowser.py
+@@ -7,6 +7,9 @@ from typing import List, Optional
+ 
+ import pytest
+ import trio
++import functools
++
++trio.run = functools.partial(trio.run, strict_exception_groups=True)
+ 
+ from streamlink.compat import is_win32
+ from streamlink.webbrowser.exceptions import WebbrowserError
