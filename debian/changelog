@@ -1,13 +1,9 @@
-streamlink (6.7.1-1) UNRELEASED; urgency=medium
+streamlink (6.7.1-1) unstable; urgency=medium
 
   * New upstream version 6.7.1
-
- -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 20 Mar 2024 20:45:52 +0100
-
-streamlink (6.7.0-1) unstable; urgency=medium
-
-  * New upstream version 6.7.0
-  * Fix tests by setting rootdir when calling pytest
+  * d/patches: update patches
+  * d/control: update dependencies (add python3-exceptiongroup)
+  * Fix tests by setting rootdir when calling pytest (Closes: 1066783)
 
  -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 13 Mar 2024 00:39:57 +0100
 
