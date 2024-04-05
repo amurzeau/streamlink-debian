@@ -2,6 +2,7 @@ streamlink (6.7.2-1) unstable; urgency=medium
 
   * New upstream version 6.7.2
   * d/patches: remove trio 0.22 fix which is now also fixed upstream
+  * d/patches: fix tests on testing
 
  -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 05 Apr 2024 23:37:30 +0200
 
