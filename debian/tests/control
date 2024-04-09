@@ -1,11 +1,12 @@
 # Run unit tests against installed streamlink package
-Test-Command: PYTHONPATH=/usr/share/streamlink pytest-3 tests
+Test-Command: PYTHONPATH=/usr/share/streamlink pytest-3
 Depends: streamlink,
  python3-freezegun,
  python3-pytest,
  python3-pytest-asyncio,
  python3-pytest-trio,
- python3-requests-mock
+ python3-requests-mock,
+ python3-setuptools
 
 # Test streamlink against a generated on-disk HLS stream
 Test-Command: sh debian/tests/do-test.sh streamlink && sh debian/tests/check_manpage.sh streamlink
