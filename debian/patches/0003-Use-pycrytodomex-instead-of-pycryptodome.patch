@@ -17,10 +17,10 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/pyproject.toml b/pyproject.toml
-index fefb02e..574e2c5 100644
+index 6b73f4f..5b4393f 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
-@@ -59,7 +59,7 @@ dependencies = [
+@@ -60,7 +60,7 @@ dependencies = [
    "isodate",
    "lxml >=4.6.4,<6",
    "pycountry",
@@ -30,10 +30,10 @@ index fefb02e..574e2c5 100644
    "requests >=2.26.0,<3",
    "trio >=0.22.0,<1",
 diff --git a/src/streamlink.egg-info/requires.txt b/src/streamlink.egg-info/requires.txt
-index 2d0269e..fa0a781 100644
+index a7e2306..f04bef0 100644
 --- a/src/streamlink.egg-info/requires.txt
 +++ b/src/streamlink.egg-info/requires.txt
-@@ -2,7 +2,7 @@ certifi
+@@ -3,7 +3,7 @@ exceptiongroup
  isodate
  lxml<6,>=4.6.4
  pycountry

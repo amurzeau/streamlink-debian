@@ -1,4 +1,5 @@
 certifi
+exceptiongroup
 isodate
 lxml<6,>=4.6.4
 pycountry

@@ -1,5 +1,49 @@
 # Changelog
 
+## streamlink 6.7.2 (2024-03-23)
+
+Patch release:
+
+- Build: reverted `trio` version requirement bump ([#5902](https://github.com/streamlink/streamlink/pull/5902))
+- Build: fixed incorrect `pytest` version requirement ([#5901](https://github.com/streamlink/streamlink/pull/5901))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/6.7.1...6.7.2)
+
+
+## streamlink 6.7.1 (2024-03-19)
+
+Patch release:
+
+- Fixed: CLI download progress missing the last data chunk ([#5887](https://github.com/streamlink/streamlink/pull/5887))
+- Fixed: compatibility with `trio>=0.25` ([#5895](https://github.com/streamlink/streamlink/pull/5895))
+- Updated plugins:
+  - tv3cat: fixed plugin and added VODs ([#5890](https://github.com/streamlink/streamlink/pull/5890))
+  - vimeo: fixed event streams and embedded player URLs ([#5892](https://github.com/streamlink/streamlink/pull/5892), [#5899](https://github.com/streamlink/streamlink/pull/5899))
+- Build: bumped `trio` dependency version requirement to `>=0.25,<1` ([#5895](https://github.com/streamlink/streamlink/pull/5895))
+- Build: added `exceptiongroup` dependency ([#5895](https://github.com/streamlink/streamlink/pull/5895))
+- Tests: fixed root logger level not being reset ([#5888](https://github.com/streamlink/streamlink/pull/5888), [#5897](https://github.com/streamlink/streamlink/pull/5897))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/6.7.0...6.7.1)
+
+
+## streamlink 6.7.0 (2024-03-09)
+
+Release highlights:
+
+- Added: repeatable `--plugin-dir` CLI argument ([#5866](https://github.com/streamlink/streamlink/pull/5866))
+- Deprecated: `--plugin-dirs` CLI argument with comma separated paths ([#5866](https://github.com/streamlink/streamlink/pull/5866))
+- Fixed: independent encryption status of HLS initialization sections ([#5861](https://github.com/streamlink/streamlink/pull/5861))
+- Fixed: objects of default session options being shared between sessions ([#5875](https://github.com/streamlink/streamlink/pull/5875))
+- Updated plugins:
+  - bloomberg: fixed data regex ([#5869](https://github.com/streamlink/streamlink/pull/5869))
+  - ltv_lsm_lv: fixed player ID retrieval, removed custom HLS implementation ([#5858](https://github.com/streamlink/streamlink/pull/5858))
+  - mangomolo: new plugin ([#5852](https://github.com/streamlink/streamlink/pull/5852))
+  - ustvnow: updated matcher ([#5881](https://github.com/streamlink/streamlink/pull/5881))
+  - vimeo: fixed optional DASH streams of live events ([#5854](https://github.com/streamlink/streamlink/pull/5854))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/6.6.2...6.7.0)
+
+
 ## streamlink 6.6.2 (2024-02-20)
 
 Patch release:

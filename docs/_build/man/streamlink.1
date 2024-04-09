@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Feb 20, 2024" "6.6.2" "Streamlink"
+.TH "STREAMLINK" "1" "Mar 23, 2024" "6.7.2" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -116,10 +116,15 @@ Print a list of all currently installed plugins.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-plugin\-dirs DIRECTORY
-Attempts to load plugins from these directories.
+.B \-\-plugin\-dir DIRECTORY
+Load plugins from this directory.
 .sp
-Multiple directories can be used by separating them with a comma.
+Can be set multiple times to load plugins from multiple directories.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-plugin\-dirs DIRECTORY
+Load plugins from a list of comma\-separated directories. (deprecated)
 .UNINDENT
 .INDENT 0.0
 .TP

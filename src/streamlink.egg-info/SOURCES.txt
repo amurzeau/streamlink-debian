@@ -168,6 +168,7 @@ src/streamlink/plugins/livestream.py
 src/streamlink/plugins/lnk.py
 src/streamlink/plugins/lrt.py
 src/streamlink/plugins/ltv_lsm_lv.py
+src/streamlink/plugins/mangomolo.py
 src/streamlink/plugins/mdstrm.py
 src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/mediavitrina.py
@@ -361,6 +362,7 @@ tests/cli/test_console.py
 tests/cli/test_main.py
 tests/cli/test_main_check_file_output.py
 tests/cli/test_main_formatter.py
+tests/cli/test_main_logging.py
 tests/cli/test_main_setup_config_args.py
 tests/cli/test_plugin_args_and_options.py
 tests/cli/test_streamrunner.py
@@ -442,6 +444,7 @@ tests/plugins/test_livestream.py
 tests/plugins/test_lnk.py
 tests/plugins/test_lrt.py
 tests/plugins/test_ltv_lsm_lv.py
+tests/plugins/test_mangomolo.py
 tests/plugins/test_mdstrm.py
 tests/plugins/test_mediaklikk.py
 tests/plugins/test_mediavitrina.py

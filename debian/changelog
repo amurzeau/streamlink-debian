@@ -1,3 +1,20 @@
+streamlink (6.7.2-1) unstable; urgency=medium
+
+  * New upstream version 6.7.2
+  * d/patches: remove trio 0.22 fix which is now also fixed upstream
+  * d/patches: fix tests on testing
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 05 Apr 2024 23:37:30 +0200
+
+streamlink (6.7.1-1) unstable; urgency=medium
+
+  * New upstream version 6.7.1
+  * d/patches: update patches
+  * d/control: update dependencies (add python3-exceptiongroup)
+  * Fix tests by setting rootdir when calling pytest (Closes: 1066783)
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 13 Mar 2024 00:39:57 +0100
+
 streamlink (6.6.2-1~bpo12+1) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.

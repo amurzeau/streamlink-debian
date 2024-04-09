@@ -4,7 +4,7 @@ setuptools >=64.0.0  # required for being able to run editable installs
 versioningit >=2.0.0,<4  # required for being able to run editable installs
 
 # tests
-pytest >=6.0.0
+pytest >=8.0.0
 pytest-asyncio
 pytest-trio
 requests-mock
@@ -15,7 +15,7 @@ pytest-cov
 coverage[toml]
 
 # code-linting
-ruff ==0.2.2
+ruff ==0.3.2
 
 # typing
 mypy ==1.8.0
