@@ -1,3 +1,13 @@
+streamlink (6.7.3-1) UNRELEASED; urgency=medium
+
+  * .gitignore: add generated files and .vscode/.devcontainer
+  * d/create_rfs_mail.sh: fix testing version in backports RFS mail
+  * tests: also run build_backend tests
+  * d/source/options: ignore .devcontainer and .vscode
+  * New upstream version 6.7.3
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 15 Apr 2024 15:18:06 +0200
+
 streamlink (6.7.2-1) unstable; urgency=medium
 
   * New upstream version 6.7.2
