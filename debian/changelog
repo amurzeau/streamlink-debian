@@ -1,3 +1,11 @@
+streamlink (6.7.3-1) unstable; urgency=medium
+
+  * tests: also run build_backend tests
+  * d/source/options: ignore .devcontainer and .vscode
+  * New upstream version 6.7.3
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 15 Apr 2024 15:49:45 +0200
+
 streamlink (6.7.2-1~bpo12+1) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.

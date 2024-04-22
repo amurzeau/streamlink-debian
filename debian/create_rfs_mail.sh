@@ -20,14 +20,16 @@ CHANGELOG_INTROLINE="Changes since the last upload to unstable:"
 if git symbolic-ref HEAD | grep -q backports; then
     DISTRIBUTION=$(git symbolic-ref HEAD | sed -r 's#refs/heads/(.*)-backports#\1#')
     OLD_VERSION=$(sed -nr "s/streamlink \((.*)\) ${DISTRIBUTION}-backports.*/\1/p" debian/changelog | sed -n '2 p')
+    TESTING_VERSION=$(sed -nr "s/streamlink \((.*)\) unstable.*/\1/p" debian/changelog | sed -n '1 p')
     ADDITIONAL_FIELDS="X-Debbugs-CC: debian-backports@lists.debian.org"
     RFS_INTROLINE="into Debian
 ${DISTRIBUTION}-backports repository"
     CHANGELOG_INTROLINE="Changes since the previous backported version in ${DISTRIBUTION}:"
     CHANGELOG_BACKPORT="
-Differences from testing package ($OLD_VERSION):
+Differences from testing package ($TESTING_VERSION):
   * d/control,rules: remove doc package because of missing dependencies
     on ${DISTRIBUTION}.
+  * d/patches: fix tests with exceptiongroup v1.1.0.
 
 "
     PACKAGES_LIST="

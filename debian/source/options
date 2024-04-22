@@ -1,2 +1,4 @@
 extend-diff-ignore = "^docs/_build"
 extend-diff-ignore = "^src/[^/]*[.]egg-info/"
+extend-diff-ignore = "^\.devcontainer/"
+extend-diff-ignore = "^\.vscode/"
