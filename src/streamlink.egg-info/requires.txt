@@ -1,5 +1,4 @@
 certifi
-exceptiongroup
 isodate
 lxml<6,>=4.6.4
 pycountry
@@ -11,3 +10,6 @@ trio-websocket<1,>=0.9.0
 typing-extensions>=4.0.0
 urllib3<3,>=1.26.0
 websocket-client<2,>=1.2.1
+
+[:python_version < "3.11"]
+exceptiongroup

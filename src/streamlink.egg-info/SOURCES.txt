@@ -131,6 +131,7 @@ src/streamlink/plugins/btv.py
 src/streamlink/plugins/cbsnews.py
 src/streamlink/plugins/cdnbg.py
 src/streamlink/plugins/ceskatelevize.py
+src/streamlink/plugins/chzzk.py
 src/streamlink/plugins/cinergroup.py
 src/streamlink/plugins/clubbingtv.py
 src/streamlink/plugins/cmmedia.py
@@ -183,7 +184,6 @@ src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nicolive.py
 src/streamlink/plugins/nimotv.py
 src/streamlink/plugins/nos.py
-src/streamlink/plugins/nownews.py
 src/streamlink/plugins/nowtvtr.py
 src/streamlink/plugins/nrk.py
 src/streamlink/plugins/okru.py
@@ -327,6 +327,7 @@ src/streamlink_cli/argparser.py
 src/streamlink_cli/compat.py
 src/streamlink_cli/console.py
 src/streamlink_cli/constants.py
+src/streamlink_cli/exceptions.py
 src/streamlink_cli/main.py
 src/streamlink_cli/py.typed
 src/streamlink_cli/streamrunner.py
@@ -407,6 +408,7 @@ tests/plugins/test_btv.py
 tests/plugins/test_cbsnews.py
 tests/plugins/test_cdnbg.py
 tests/plugins/test_ceskatelevize.py
+tests/plugins/test_chzzk.py
 tests/plugins/test_cinergroup.py
 tests/plugins/test_clubbingtv.py
 tests/plugins/test_cmmedia.py
@@ -459,7 +461,6 @@ tests/plugins/test_nhkworld.py
 tests/plugins/test_nicolive.py
 tests/plugins/test_nimotv.py
 tests/plugins/test_nos.py
-tests/plugins/test_nownews.py
 tests/plugins/test_nowtvtr.py
 tests/plugins/test_nrk.py
 tests/plugins/test_okru.py
