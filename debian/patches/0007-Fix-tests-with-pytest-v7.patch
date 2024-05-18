@@ -14,9 +14,9 @@ Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
  tests/webbrowser/cdp/pytest_7_support.py | 90 ++++++++++++++++++++++++++++++++
- tests/webbrowser/cdp/test_client.py      |  8 +++
+ tests/webbrowser/cdp/test_client.py      |  5 ++
  tests/webbrowser/cdp/test_connection.py  |  5 ++
- 3 files changed, 103 insertions(+)
+ 3 files changed, 100 insertions(+)
  create mode 100644 tests/webbrowser/cdp/pytest_7_support.py
 
 diff --git a/tests/webbrowser/cdp/pytest_7_support.py b/tests/webbrowser/cdp/pytest_7_support.py
@@ -116,13 +116,13 @@ index 0000000..78d643b
 +    return self._group_contains(self.value, expected_exception, match, depth)
 +
 diff --git a/tests/webbrowser/cdp/test_client.py b/tests/webbrowser/cdp/test_client.py
-index dca13b7..dbe117f 100644
+index 1c63dc6..a374225 100644
 --- a/tests/webbrowser/cdp/test_client.py
 +++ b/tests/webbrowser/cdp/test_client.py
-@@ -5,8 +5,13 @@ from unittest.mock import ANY, AsyncMock, Mock, call
+@@ -4,8 +4,13 @@ from unittest.mock import ANY, AsyncMock, Mock, call
+ 
  import pytest
  import trio
- from exceptiongroup import ExceptionGroup
 +from tests.webbrowser.cdp import pytest_7_support
  from trio.testing import wait_all_tasks_blocked
  
@@ -130,27 +130,17 @@ index dca13b7..dbe117f 100644
 +    pytest.ExceptionInfo._group_contains = pytest_7_support._group_contains
 +    pytest.ExceptionInfo.group_contains = pytest_7_support.group_contains
 +
+ from streamlink.compat import ExceptionGroup
  from streamlink.session import Streamlink
  from streamlink.webbrowser.cdp.client import CDPClient, CDPClientSession, RequestPausedHandler
- from streamlink.webbrowser.cdp.connection import CDPConnection, CDPSession
-@@ -16,6 +21,9 @@ from streamlink.webbrowser.cdp.exceptions import CDPError
- from tests.webbrowser.cdp import FakeWebsocketConnection
- 
- 
-+
-+
-+
- def async_handler(*args, **kwargs):
-     return cast(Union[AsyncMock, Callable[[CDPClientSession, RequestPaused], Awaitable]], AsyncMock(*args, **kwargs))
- 
 diff --git a/tests/webbrowser/cdp/test_connection.py b/tests/webbrowser/cdp/test_connection.py
-index 397ccdd..ec4bc9b 100644
+index 4ad8a5b..e6a5dcb 100644
 --- a/tests/webbrowser/cdp/test_connection.py
 +++ b/tests/webbrowser/cdp/test_connection.py
-@@ -8,9 +8,14 @@ from unittest.mock import AsyncMock
+@@ -7,9 +7,14 @@ from unittest.mock import AsyncMock
+ 
  import pytest
  import trio
- from exceptiongroup import ExceptionGroup
 +from tests.webbrowser.cdp import pytest_7_support
  from trio.testing import MockClock, wait_all_tasks_blocked
  from trio_websocket import CloseReason, ConnectionClosed, ConnectionTimeout  # type: ignore[import]
@@ -159,6 +149,6 @@ index 397ccdd..ec4bc9b 100644
 +    pytest.ExceptionInfo._group_contains = pytest_7_support._group_contains
 +    pytest.ExceptionInfo.group_contains = pytest_7_support.group_contains
 +
+ from streamlink.compat import ExceptionGroup
  from streamlink.webbrowser.cdp.connection import CDPConnection, CDPEventListener, CDPSession
  from streamlink.webbrowser.cdp.devtools.target import SessionID, TargetID
- from streamlink.webbrowser.cdp.devtools.util import T_JSON_DICT
