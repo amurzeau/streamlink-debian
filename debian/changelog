@@ -1,3 +1,9 @@
+streamlink (6.7.4-1~bpo12+1) bookworm-backports; urgency=medium
+
+  * Rebuild for bookworm-backports.
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 27 May 2024 20:26:17 +0200
+
 streamlink (6.7.4-1) unstable; urgency=medium
 
   * d/create_rfs_mail: remove upstreamed diff about exceptiongroup
