@@ -706,6 +706,7 @@ _shtab_streamlink_cli_options=(
   "--afreeca-username[The username used to register with afreecatv.com.]:afreeca_username:"
   "--afreeca-password[A afreecatv.com account password to use with --afreeca-username.]:afreeca_password:"
   "--afreeca-purge-credentials[Purge cached AfreecaTV credentials to initiate a new session and reauthenticate.]"
+  "--afreeca-stream-password[The password for the stream.]:afreeca_stream_password:"
   "--bbciplayer-username[The username used to register with bbc.co.uk.]:bbciplayer_username:"
   "--bbciplayer-password[A bbc.co.uk account password to use with --bbciplayer-username.]:bbciplayer_password:"
   "--bbciplayer-hd[Prefer HD streams over local SD streams, some live programmes may not be broadcast in HD.]"

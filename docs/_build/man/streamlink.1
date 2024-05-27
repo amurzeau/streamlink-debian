@@ -27,26 +27,23 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Apr 14, 2024" "6.7.3" "Streamlink"
+.TH "STREAMLINK" "1" "May 12, 2024" "6.7.4" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 streamlink [OPTIONS] <URL> [STREAM]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .SH EXAMPLES
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 streamlink \-\-loglevel debug youtu.be/VIDEO\-ID best
 streamlink \-\-player mpv \-\-player\-args \(aq\-\-no\-border \-\-no\-keepaspect\-window\(aq twitch.tv/CHANNEL 1080p60
 streamlink \-\-player\-external\-http \-\-player\-external\-http\-port 8888 URL STREAM
@@ -55,8 +52,7 @@ streamlink \-\-stdout URL STREAM | ffmpeg \-i pipe:0 ...
 streamlink \-\-http\-header \(aqAuthorization=OAuth TOKEN\(aq \-\-http\-header \(aqReferer=URL\(aq URL STREAM
 streamlink \-\-hls\-live\-edge 5 \-\-stream\-segment\-threads 5 \(aqhls://https://host/playlist.m3u8\(aq best
 streamlink \-\-twitch\-low\-latency \-p mpv \-a \(aq\-\-cache=yes \-\-demuxer\-max\-back\-bytes=2G\(aq twitch.tv/CHANNEL best
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .SH OPTIONS
@@ -83,11 +79,9 @@ Fallback streams can be specified by using a comma\-separated list:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \(dq720p,480p,best\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -181,11 +175,9 @@ Windows:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 %TEMP%\estreamlink\elogs
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -193,11 +185,9 @@ macOS:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ${HOME}/Library/Logs/streamlink
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -205,11 +195,9 @@ Linux/BSD:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ${XDG_STATE_HOME:\-${HOME}/.local/state}/streamlink/logs
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -323,11 +311,9 @@ Example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 streamlink \-p vlc \-a \(dq\-\-play\-and\-exit \-\-no\-one\-instance\(dq <url> [stream]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -452,15 +438,15 @@ This option will instead let the player decide when to exit.
 .B \-\-title TITLE
 Change the title of the video player\(aqs window.
 .sp
-Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
-as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
+Please see the \(dq\X'tty: link #variables'\fI\%Metadata variables\fP\X'tty: link'\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\X'tty: link #plugins'\fI\%Plugins\fP\X'tty: link'\(dq section for the list of metadata variables defined in each plugin.
 .sp
 This option is only supported for the following players: mpv, potplayer, vlc
 .INDENT 7.0
 .TP
 .B VLC specific information:
 VLC does support special formatting variables on its own:
-\fI\%https://wiki.videolan.org/Documentation:Format_String/\fP
+\X'tty: link https://wiki.videolan.org/Documentation:Format_String/'\fI\%https://wiki.videolan.org/Documentation:Format_String/\fP\X'tty: link'
 .sp
 These variables are accessible in the \fI\%\-\-title\fP option by adding a backslash
 in front of the dollar sign which VLC uses as its formatting character.
@@ -473,11 +459,9 @@ Example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 streamlink \-p mpv \-\-title \(dq{author} \- {category} \- {title}\(dq <URL> [STREAM]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -494,8 +478,8 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
-as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
+Please see the \(dq\X'tty: link #variables'\fI\%Metadata variables\fP\X'tty: link'\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\X'tty: link #plugins'\fI\%Plugins\fP\X'tty: link'\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -503,11 +487,9 @@ Example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 streamlink \-\-output \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts\(dq <URL> [STREAM]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -530,8 +512,8 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
-as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
+Please see the \(dq\X'tty: link #variables'\fI\%Metadata variables\fP\X'tty: link'\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\X'tty: link #plugins'\fI\%Plugins\fP\X'tty: link'\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -539,11 +521,9 @@ Example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 streamlink \-\-record \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts\(dq <URL> [STREAM]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -558,8 +538,8 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
-as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
+Please see the \(dq\X'tty: link #variables'\fI\%Metadata variables\fP\X'tty: link'\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\X'tty: link #plugins'\fI\%Plugins\fP\X'tty: link'\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -567,11 +547,9 @@ Example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 streamlink \-\-record\-and\-pipe \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts\(dq <URL> [STREAM]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -637,11 +615,9 @@ Fallback streams can be specified by using a comma\-separated list:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \(dq720p,480p,best\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -706,11 +682,9 @@ Uses a filter expression in the format:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 [operator]<value>
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -721,11 +695,9 @@ For example this will exclude streams ranked higher than \(dq480p\(dq:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-stream\-sorting\-excludes \(dq>480p\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -735,11 +707,9 @@ For example this will exclude streams from two quality types:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-stream\-sorting\-excludes \(dq>480p,>medium\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -893,11 +863,9 @@ replaced with their respective part from the source segment URI:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 {url} {scheme} {netloc} {path} {query}
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -905,13 +873,11 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-hls\-segment\-key\-uri \(dqhttps://example.com/hls/encryption_key\(dq
 \-\-hls\-segment\-key\-uri \(dq{scheme}://1.2.3.4{path}{query}\(dq
 \-\-hls\-segment\-key\-uri \(dq{scheme}://{netloc}/custom/path/to/key\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -928,13 +894,11 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-hls\-audio\-select \(dqEnglish,German\(dq
 \-\-hls\-audio\-select \(dqen,de\(dq
 \-\-hls\-audio\-select \(dq*\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1184,6 +1148,11 @@ A afreecatv.com account password to use with \fI\%\-\-afreeca\-username\fP\&.
 .TP
 .B \-\-afreeca\-purge\-credentials
 Purge cached AfreecaTV credentials to initiate a new session and reauthenticate.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-afreeca\-stream\-password STREAM_PASSWORD
+The password for the stream.
 .UNINDENT
 .SS Bbciplayer
 .INDENT 0.0
@@ -1468,17 +1437,17 @@ Default is: \fB\(dqdash\(dq\fP\&.
 .sp
 Please open a new issue on Streamlink\(aqs issue tracker on GitHub and use the appropriate issue forms:
 .sp
-\fI\%https://github.com/streamlink/streamlink/issues\fP
+\X'tty: link https://github.com/streamlink/streamlink/issues'\fI\%https://github.com/streamlink/streamlink/issues\fP\X'tty: link'
 .SH SEE ALSO
 .sp
 For more detailed information about config files, plugin sideloading, streaming protocols, proxy support, metadata,
 or plugin specific stuff, please see Streamlink\(aqs online CLI documentation here:
 .sp
-\fI\%https://streamlink.github.io/cli.html\fP
+\X'tty: link https://streamlink.github.io/cli.html'\fI\%https://streamlink.github.io/cli.html\fP\X'tty: link'
 .sp
 The list of available plugins and their descriptions can be found here:
 .sp
-\fI\%https://streamlink.github.io/plugins.html\fP
+\X'tty: link https://streamlink.github.io/plugins.html'\fI\%https://streamlink.github.io/plugins.html\fP\X'tty: link'
 .SH AUTHOR
 Streamlink Contributors
 .SH COPYRIGHT

@@ -4,9 +4,9 @@ from unittest.mock import ANY, AsyncMock, Mock, call
 
 import pytest
 import trio
-from exceptiongroup import ExceptionGroup
 from trio.testing import wait_all_tasks_blocked
 
+from streamlink.compat import ExceptionGroup
 from streamlink.session import Streamlink
 from streamlink.webbrowser.cdp.client import CDPClient, CDPClientSession, RequestPausedHandler
 from streamlink.webbrowser.cdp.connection import CDPConnection, CDPSession
@@ -42,7 +42,7 @@ async def cdp_client(session: Streamlink, chromium_webbrowser: Mock, websocket_c
 
 
 @pytest.fixture()
-async def cdp_client_session(request: pytest.FixtureRequest, cdp_client: CDPClient):
+def cdp_client_session(request: pytest.FixtureRequest, cdp_client: CDPClient):
     target_id = TargetID("01234")
     session_id = SessionID("56789")
     session = cdp_client.cdp_connection.sessions[session_id] = CDPSession(

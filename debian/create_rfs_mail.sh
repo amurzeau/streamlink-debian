@@ -29,7 +29,6 @@ ${DISTRIBUTION}-backports repository"
 Differences from testing package ($TESTING_VERSION):
   * d/control,rules: remove doc package because of missing dependencies
     on ${DISTRIBUTION}.
-  * d/patches: fix tests with exceptiongroup v1.1.0.
 
 "
     PACKAGES_LIST="
