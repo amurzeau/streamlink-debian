@@ -135,6 +135,7 @@ src/streamlink/plugins/chzzk.py
 src/streamlink/plugins/cinergroup.py
 src/streamlink/plugins/clubbingtv.py
 src/streamlink/plugins/cmmedia.py
+src/streamlink/plugins/cnbce.py
 src/streamlink/plugins/cnews.py
 src/streamlink/plugins/crunchyroll.py
 src/streamlink/plugins/dailymotion.py
@@ -163,6 +164,7 @@ src/streamlink/plugins/huya.py
 src/streamlink/plugins/idf1.py
 src/streamlink/plugins/indihometv.py
 src/streamlink/plugins/invintus.py
+src/streamlink/plugins/kick.py
 src/streamlink/plugins/kugou.py
 src/streamlink/plugins/linelive.py
 src/streamlink/plugins/livestream.py
@@ -412,6 +414,7 @@ tests/plugins/test_chzzk.py
 tests/plugins/test_cinergroup.py
 tests/plugins/test_clubbingtv.py
 tests/plugins/test_cmmedia.py
+tests/plugins/test_cnbce.py
 tests/plugins/test_cnews.py
 tests/plugins/test_crunchyroll.py
 tests/plugins/test_dailymotion.py
@@ -440,6 +443,7 @@ tests/plugins/test_huya.py
 tests/plugins/test_idf1.py
 tests/plugins/test_indihometv.py
 tests/plugins/test_invintus.py
+tests/plugins/test_kick.py
 tests/plugins/test_kugou.py
 tests/plugins/test_linelive.py
 tests/plugins/test_livestream.py
