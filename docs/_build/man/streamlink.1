@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "May 12, 2024" "6.7.4" "Streamlink"
+.TH "STREAMLINK" "1" "Jun 17, 2024" "6.8.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -1309,6 +1309,22 @@ A Steam account password to use with \fI\%\-\-steam\-email\fP\&.
 .TP
 .B \-\-streann\-url URL
 Source URL where the iframe is located, only required for direct URLs of ott.streann.com
+.UNINDENT
+.SS Tf1
+.INDENT 0.0
+.TP
+.B \-\-tf1\-email EMAIL
+The email address used to register with tf1.fr.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-tf1\-password PASSWORD
+A tf1.fr account password to use with \-\-tf1\-username.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-tf1\-purge\-credentials
+Purge cached tf1.fr credentials to initiate a new session and reauthenticate.
 .UNINDENT
 .SS Twitcasting
 .INDENT 0.0
