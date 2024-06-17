@@ -1,3 +1,9 @@
+streamlink (6.8.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 6.8.0
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 17 Jun 2024 20:14:33 +0200
+
 streamlink (6.7.4-1) unstable; urgency=medium
 
   * d/create_rfs_mail: remove upstreamed diff about exceptiongroup
