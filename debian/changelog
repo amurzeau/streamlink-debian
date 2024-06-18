@@ -1,9 +1,9 @@
-streamlink (6.8.0-1) UNRELEASED; urgency=medium
+streamlink (6.8.1-1) unstable; urgency=medium
 
   * d/patches: remove patch for pytest 7
   * New upstream version 6.8.1
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 18 Jun 2024 19:58:52 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 18 Jun 2024 20:18:04 +0200
 
 streamlink (6.7.4-1) unstable; urgency=medium
 
