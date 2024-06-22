@@ -2,7 +2,7 @@ Source: streamlink
 Maintainer: Alexis Murzeau <amubtdx@gmail.com>
 Section: python
 Priority: optional
-Standards-Version: 4.6.2
+Standards-Version: 4.7.0
 Build-Depends: debhelper-compat (= 13),
  dh-sequence-python3,
  dh-sequence-sphinxdoc,
@@ -69,7 +69,6 @@ Multi-Arch: foreign
 Depends: ${sphinxdoc:Depends},
   ${misc:Depends},
   fonts-fork-awesome
-Built-Using: ${sphinxdoc:Built-Using}
 Suggests: python3-streamlink
 Description: CLI for extracting video streams from various websites (documentation)
  Streamlink is a CLI utility which pipes video streams from various services
