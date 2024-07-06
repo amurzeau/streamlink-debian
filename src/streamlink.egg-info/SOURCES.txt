@@ -145,6 +145,7 @@ src/streamlink/plugins/deutschewelle.py
 src/streamlink/plugins/dlive.py
 src/streamlink/plugins/dogan.py
 src/streamlink/plugins/dogus.py
+src/streamlink/plugins/douyin.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
 src/streamlink/plugins/euronews.py
@@ -424,6 +425,7 @@ tests/plugins/test_deutschewelle.py
 tests/plugins/test_dlive.py
 tests/plugins/test_dogan.py
 tests/plugins/test_dogus.py
+tests/plugins/test_douyin.py
 tests/plugins/test_drdk.py
 tests/plugins/test_earthcam.py
 tests/plugins/test_euronews.py
