@@ -1,10 +1,12 @@
-streamlink (6.8.2-1) UNRELEASED; urgency=medium
+streamlink (6.8.2-1) unstable; urgency=medium
 
   * d/control: bump standard version to 4.7.0, no change required
   * d/copyright: fix naming of Apache 2.0 license
   * New upstream version 6.8.2
+  * d/control: change video players to Suggests instead of Recommends as
+    they are not strongly needed.
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 07 Jul 2024 01:14:21 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 08 Jul 2024 22:10:02 +0200
 
 streamlink (6.8.1-1) unstable; urgency=medium
 
