@@ -225,6 +225,7 @@ src/streamlink/plugins/swisstxt.py
 src/streamlink/plugins/telefe.py
 src/streamlink/plugins/telemadrid.py
 src/streamlink/plugins/tf1.py
+src/streamlink/plugins/tiktok.py
 src/streamlink/plugins/trovo.py
 src/streamlink/plugins/turkuvaz.py
 src/streamlink/plugins/tv360.py
@@ -505,6 +506,7 @@ tests/plugins/test_swisstxt.py
 tests/plugins/test_telefe.py
 tests/plugins/test_telemadrid.py
 tests/plugins/test_tf1.py
+tests/plugins/test_tiktok.py
 tests/plugins/test_trovo.py
 tests/plugins/test_turkuvaz.py
 tests/plugins/test_tv360.py
