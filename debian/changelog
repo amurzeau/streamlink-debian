@@ -1,6 +1,7 @@
 streamlink (6.8.3-1~bpo12+1) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.
+  * d/patches: reintroduce pytest 7 patch
 
  -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 20 Jul 2024 15:22:50 +0200
 
