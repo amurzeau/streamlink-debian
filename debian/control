@@ -2,7 +2,7 @@ Source: streamlink
 Maintainer: Alexis Murzeau <amubtdx@gmail.com>
 Section: python
 Priority: optional
-Standards-Version: 4.6.2
+Standards-Version: 4.7.0
 Build-Depends: debhelper-compat (= 13),
  dh-sequence-python3,
  dh-sequence-sphinxdoc,
@@ -61,7 +61,7 @@ Architecture: all
 Depends: ${misc:Depends},
   ${python3:Depends},
   python3-streamlink (= ${source:Version})
-Recommends: vlc | mpv | mplayer
+Suggests: vlc | mpv | mplayer
 Description: CLI for extracting video streams from various websites to a video player
  Streamlink is a CLI utility which pipes video streams from various services
  into a video player, such as VLC.

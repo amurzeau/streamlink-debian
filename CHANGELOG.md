@@ -1,5 +1,60 @@
 # Changelog
 
+## streamlink 6.8.3 (2024-07-11)
+
+Patch release:
+
+- Updated plugins:
+  - tiktok: new plugin ([#6073](https://github.com/streamlink/streamlink/pull/6073))
+  - twitch: fixed channel names with uppercase characters ([#6071](https://github.com/streamlink/streamlink/pull/6071))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/6.8.2...6.8.3)
+
+
+## streamlink 6.8.2 (2024-07-04)
+
+Patch release:
+
+- Updated plugins:
+  - douyin: new plugin ([#6059](https://github.com/streamlink/streamlink/pull/6059))
+  - huya: fixed stream URLs ([#6058](https://github.com/streamlink/streamlink/pull/6058))
+  - pluzz: fixed API URL, stream tokens and validation schemas ([#6048](https://github.com/streamlink/streamlink/pull/6048))
+  - twitch: added info log messages about ad break durations ([#6051](https://github.com/streamlink/streamlink/pull/6051))
+  - twitch: fixed clip URLs ([#6045](https://github.com/streamlink/streamlink/pull/6045))
+  - twitch: fixed discontinuity warning spam in certain circumstances ([#6022](https://github.com/streamlink/streamlink/pull/6022))
+  - vidio: fixed stream tokens, added metadata ([#6057](https://github.com/streamlink/streamlink/pull/6057))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/6.8.1...6.8.2)
+
+
+## streamlink 6.8.1 (2024-06-18)
+
+Patch release:
+
+- Fixed: failed HTTPAdapter tests on some OpenSSL configurations ([#6040](https://github.com/streamlink/streamlink/pull/6040), [#6042](https://github.com/streamlink/streamlink/pull/6042))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/6.8.0...6.8.1)
+
+
+## streamlink 6.8.0 (2024-06-17)
+
+Release highlights:
+
+- Added: sha256 checksum to log message when side-loading plugins ([#6023](https://github.com/streamlink/streamlink/pull/6023))
+- Added: `SSLContextAdapter` to `streamlink.session.http` ([#6024](https://github.com/streamlink/streamlink/pull/6024))
+- Deprecated: [old re-exports in `streamlink.plugins` package](https://streamlink.github.io/deprecations.html#streamlink-plugins-re-exports) ([#6005](https://github.com/streamlink/streamlink/pull/6005))
+- Updated plugins:
+  - bilibili: fixed validation schema for offline channels ([#6032](https://github.com/streamlink/streamlink/pull/6032))
+  - chzzk: fixed channels without content ([#6002](https://github.com/streamlink/streamlink/pull/6002))
+  - cnbce: new plugin ([#6029](https://github.com/streamlink/streamlink/pull/6029))
+  - kick: new plugin ([#6012](https://github.com/streamlink/streamlink/pull/6012), [#6021](https://github.com/streamlink/streamlink/pull/6021), [#6024](https://github.com/streamlink/streamlink/pull/6024))
+  - tf1: added authentication via `--tf1-email` and `--tf1-password` ([#5983](https://github.com/streamlink/streamlink/pull/5983))
+  - tvp: fixed live streams ([#6037](https://github.com/streamlink/streamlink/pull/6037))
+  - welt: fixed live streams ([#6011](https://github.com/streamlink/streamlink/pull/6011))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/6.7.4...6.8.0)
+
+
 ## streamlink 6.7.4 (2024-05-12)
 
 Patch release:
