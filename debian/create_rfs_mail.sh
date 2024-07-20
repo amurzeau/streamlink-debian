@@ -29,6 +29,8 @@ ${DISTRIBUTION}-backports repository"
 Differences from testing package ($TESTING_VERSION):
   * d/control,rules: remove doc package because of missing dependencies
     on ${DISTRIBUTION}.
+  * d/patches: reintroduce pytest 7 patch to add missing
+    ExceptionInfo.group_contains method.
 
 "
     PACKAGES_LIST="
