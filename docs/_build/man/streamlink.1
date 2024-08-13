@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Jul 11, 2024" "6.8.3" "Streamlink"
+.TH "STREAMLINK" "1" "Aug 12, 2024" "6.9.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -438,8 +438,8 @@ This option will instead let the player decide when to exit.
 .B \-\-title TITLE
 Change the title of the video player\(aqs window.
 .sp
-Please see the \(dq\X'tty: link #variables'\fI\%Metadata variables\fP\X'tty: link'\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
-as well as the \(dq\X'tty: link #plugins'\fI\%Plugins\fP\X'tty: link'\(dq section for the list of metadata variables defined in each plugin.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
 .sp
 This option is only supported for the following players: mpv, potplayer, vlc
 .INDENT 7.0
@@ -478,8 +478,8 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the \(dq\X'tty: link #variables'\fI\%Metadata variables\fP\X'tty: link'\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
-as well as the \(dq\X'tty: link #plugins'\fI\%Plugins\fP\X'tty: link'\(dq section for the list of metadata variables defined in each plugin.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -512,8 +512,8 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the \(dq\X'tty: link #variables'\fI\%Metadata variables\fP\X'tty: link'\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
-as well as the \(dq\X'tty: link #plugins'\fI\%Plugins\fP\X'tty: link'\(dq section for the list of metadata variables defined in each plugin.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -538,8 +538,8 @@ Non\-existent directories and subdirectories will be created if they do not exis
 .sp
 You will be prompted if the file already exists.
 .sp
-Please see the \(dq\X'tty: link #variables'\fI\%Metadata variables\fP\X'tty: link'\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
-as well as the \(dq\X'tty: link #plugins'\fI\%Plugins\fP\X'tty: link'\(dq section for the list of metadata variables defined in each plugin.
+Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
+as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Unsupported characters in substituted variables will be replaced with an underscore.
 .sp
@@ -1130,7 +1130,9 @@ The maximum amount of time for waiting on a single CDP command response.
 Whether to launch the web browser in headless mode or not.
 When enabled, it stays completely hidden and doesn\(aqt require a desktop environment to run.
 .sp
-Default is: \fBtrue\fP\&.
+Please be aware that headless mode might be blocked by websites which implement bot detections.
+.sp
+Default is: \fBfalse\fP\&.
 .UNINDENT
 .SS Plugin options
 .SS Afreeca
@@ -1374,6 +1376,11 @@ Useful for adding authentication data that can prevent ads. See the plugin\-spec
 A parameter to add to the API request for acquiring the streaming access token.
 .sp
 Can be repeated to add multiple parameters.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-twitch\-force\-client\-integrity
+Don\(aqt attempt requesting the streaming access token without a client\-integrity token.
 .UNINDENT
 .INDENT 0.0
 .TP

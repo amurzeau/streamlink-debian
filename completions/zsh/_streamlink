@@ -701,7 +701,9 @@ _shtab_streamlink_cli_options=(
         Whether to launch the web browser in headless mode or not.
         When enabled, it stays completely hidden and doesn\'t require a desktop environment to run.
 
-        Default is true.
+        Please be aware that headless mode might be blocked by websites which implement bot detections.
+
+        Default is false.
         ]:webbrowser_headless:"
   "--afreeca-username[The username used to register with afreecatv.com.]:afreeca_username:"
   "--afreeca-password[A afreecatv.com account password to use with --afreeca-username.]:afreeca_password:"
@@ -786,6 +788,7 @@ _shtab_streamlink_cli_options=(
 
         Can be repeated to add multiple parameters.
     ]:twitch_access_token_param:"
+  "--twitch-force-client-integrity[Don\'t attempt requesting the streaming access token without a client-integrity token.]"
   "--twitch-purge-client-integrity[Purge cached Twitch client-integrity token and acquire a new one.]"
   "--ustream-password[A password to access password protected UStream.tv channels.]:ustream_password:"
   "--ustvnow-username[Your USTV Now account username]:ustvnow_username:"
