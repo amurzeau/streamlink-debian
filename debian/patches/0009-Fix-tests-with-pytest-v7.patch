@@ -116,7 +116,7 @@ index 0000000..78d643b
 +    return self._group_contains(self.value, expected_exception, match, depth)
 +
 diff --git a/tests/webbrowser/cdp/test_client.py b/tests/webbrowser/cdp/test_client.py
-index 1c63dc6..a374225 100644
+index 18cfb6f..e060da0 100644
 --- a/tests/webbrowser/cdp/test_client.py
 +++ b/tests/webbrowser/cdp/test_client.py
 @@ -4,8 +4,13 @@ from unittest.mock import ANY, AsyncMock, Mock, call
@@ -134,7 +134,7 @@ index 1c63dc6..a374225 100644
  from streamlink.session import Streamlink
  from streamlink.webbrowser.cdp.client import CDPClient, CDPClientSession, RequestPausedHandler
 diff --git a/tests/webbrowser/cdp/test_connection.py b/tests/webbrowser/cdp/test_connection.py
-index 4ad8a5b..e6a5dcb 100644
+index 1af39d3..b0902c8 100644
 --- a/tests/webbrowser/cdp/test_connection.py
 +++ b/tests/webbrowser/cdp/test_connection.py
 @@ -7,9 +7,14 @@ from unittest.mock import AsyncMock
@@ -150,5 +150,5 @@ index 4ad8a5b..e6a5dcb 100644
 +    pytest.ExceptionInfo.group_contains = pytest_7_support.group_contains
 +
  from streamlink.compat import ExceptionGroup
- from streamlink.webbrowser.cdp.connection import CDPConnection, CDPEventListener, CDPSession
+ from streamlink.webbrowser.cdp.connection import MAX_BUFFER_SIZE, CDPConnection, CDPEventListener, CDPSession
  from streamlink.webbrowser.cdp.devtools.target import SessionID, TargetID
