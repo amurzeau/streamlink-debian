@@ -1,3 +1,11 @@
+streamlink (6.9.0-1~bpo12+1) bookworm-backports; urgency=medium
+
+  * Rebuild for bookworm-backports.
+  * d/control: reintroduce python3-streamlink-doc package as
+    python3-sphinx-design is now available on bookworm-backports.
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 19 Aug 2024 23:08:03 +0200
+
 streamlink (6.9.0-1) unstable; urgency=medium
 
   * d/create_rfs_mail.sh: add new difference between backported and testing
