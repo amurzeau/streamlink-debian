@@ -12,3 +12,8 @@ Depends: streamlink,
 Test-Command: sh debian/tests/do-test.sh streamlink && sh debian/tests/check_manpage.sh streamlink
 Depends: streamlink, openssl, bsdmainutils, man-db
 Restrictions: allow-stderr
+
+# Test doc package
+Test-Command: bash debian/tests/check_docs.sh
+Depends: bash, python3-streamlink-doc, doc-base
+Restrictions: allow-stderr

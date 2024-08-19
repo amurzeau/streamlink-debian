@@ -1,0 +1,13 @@
+usr/share/fonts-fork-awesome/css/v5-compat.css               usr/share/doc/python3-streamlink/html/_static/styles/v5-compat.css
+usr/share/fonts-fork-awesome/css/fork-awesome.css            usr/share/doc/python3-streamlink/html/_static/styles/fork-awesome.css
+
+# Note: using a symlink to a directory (like fonts => usr/share/fonts-fork-awesome/fonts)
+# won't work as dpkg can't properly replace an actual directory (from th
+# previous package version) to a symlink.
+# So create one symlink per font file instead.
+# See: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=626203
+usr/share/fonts-fork-awesome/fonts/forkawesome-webfont.eot   usr/share/doc/python3-streamlink/html/_static/fonts/forkawesome-webfont.eot
+usr/share/fonts-fork-awesome/fonts/forkawesome-webfont.svg   usr/share/doc/python3-streamlink/html/_static/fonts/forkawesome-webfont.svg
+usr/share/fonts-fork-awesome/fonts/forkawesome-webfont.ttf   usr/share/doc/python3-streamlink/html/_static/fonts/forkawesome-webfont.ttf
+usr/share/fonts-fork-awesome/fonts/forkawesome-webfont.woff  usr/share/doc/python3-streamlink/html/_static/fonts/forkawesome-webfont.woff
+usr/share/fonts-fork-awesome/fonts/forkawesome-webfont.woff2 usr/share/doc/python3-streamlink/html/_static/fonts/forkawesome-webfont.woff2
