@@ -11,7 +11,7 @@ Bug-Debian: https://bugs.debian.org/750502
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/streamlink_cli/argparser.py b/src/streamlink_cli/argparser.py
-index d9b7245..36a95e0 100644
+index cd56b7a..4c15de7 100644
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
 @@ -338,7 +338,7 @@ def build_parser():

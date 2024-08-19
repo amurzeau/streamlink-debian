@@ -30,6 +30,9 @@ gbp pq export
 # Check licenses changes and update debian/copyright
 git diff --name-only $(git describe --tags --abbrev=0) HEAD | grep -v '^debian' | xargs grep -ni '\bCopyright\b'
 
+# Check licenses using licenserecon
+lrc
+
 # Check for new dependencies
 git diff upstream^..upstream docs-requirements.txt dev-requirements.txt pyproject.toml docs/install.rst
 
