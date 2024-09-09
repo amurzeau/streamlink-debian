@@ -33,12 +33,6 @@ Differences from testing package ($TESTING_VERSION):
     ExceptionInfo.group_contains method.
 
 "
-    PACKAGES_LIST="
-  python3-streamlink - Python module for extracting video streams from
-various websites
-  streamlink - CLI for extracting video streams from various websites
-to a video player
-"
 else
     OLD_VERSION=$(sed -nr 's/streamlink \((.*)\) unstable.*/\1/p' debian/changelog | sed -n '2 p')
     ADDITIONAL_FIELDS=""
