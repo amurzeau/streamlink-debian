@@ -1,9 +1,10 @@
-streamlink (6.10.0-1) UNRELEASED; urgency=medium
+streamlink (6.10.0-1) unstable; urgency=medium
 
-  * d/create_rfs_mail: remove difference in package list for backports
+  * d/patches: refresh and remove backported patch from upstream
+    0007-webbrowser.chromium-skip-proxy-on-WS-URL-request.patch
   * New upstream version 6.10.0
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 09 Sep 2024 20:49:46 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 09 Sep 2024 20:56:23 +0200
 
 streamlink (6.9.0-1) unstable; urgency=medium
 
