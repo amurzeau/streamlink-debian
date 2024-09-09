@@ -57,6 +57,25 @@ _shtab_streamlink_cli_options=(
 
         Default is \"info\".
         ]:loglevel:(none critical error warning info debug trace all)"
+  "--logformat[
+        Set a custom logging format.
+
+        See the Python standard library\'s \`logging.Formatter\` docs for more information about the logging format
+        and the available \`LogRecord\` attributes. Streamlink\'s formatter uses the curly brace style.
+
+        The default format depends on the chosen log level (may include the \`asctime\` attribute).
+
+        Default is \"\[\{name\}\]\[\{levelname\}\] \{message\}\".
+        ]:logformat:"
+  "--logdateformat[
+        Set a custom logging date format.
+
+        This formats the \`LogRecord\`\'s \`asctime\` attribute via \`strftime()\`.
+
+        The default date format depends on the chosen log level (may include fractions).
+
+        Default is \"\%H\:\%M\:\%S\".
+        ]:logdateformat:"
   "--logfile[
         Append log output to \`FILE\` instead of writing to stdout\/stderr.
 
@@ -583,6 +602,13 @@ _shtab_streamlink_cli_options=(
   "--ffmpeg-verbose-path[
         Path to write the output from the ffmpeg console.
         ]:ffmpeg_verbose_path:"
+  "--ffmpeg-loglevel[
+        Change FFmpeg\'s \`-loglevel\` value to \`LOGLEVEL\`.
+
+        Unless --ffmpeg-verbose or --ffmpeg-verbose-path is set, changing the log level won\'t have any effect.
+
+        Default is \"info\".
+        ]:ffmpeg_loglevel:"
   "--ffmpeg-fout[
         When muxing streams, set the output format to \`OUTFORMAT\`.
 
