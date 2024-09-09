@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Aug 12, 2024" "6.9.0" "Streamlink"
+.TH "STREAMLINK" "1" "Sep 06, 2024" "6.10.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -160,6 +160,29 @@ Valid levels are, in order of increasing verbosity:
 \fBnone\fP, \fBcritical\fP, \fBerror\fP, \fBwarning\fP, \fBinfo\fP, \fBdebug\fP, \fBtrace\fP, \fBall\fP
 .sp
 Default is: \fB\(dqinfo\(dq\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-logformat FORMAT
+Set a custom logging format.
+.sp
+See the Python standard library\(aqs \fBlogging.Formatter\fP docs for more information about the logging format
+and the available \fBLogRecord\fP attributes. Streamlink\(aqs formatter uses the curly brace style.
+.sp
+The default format depends on the chosen log level (may include the \fBasctime\fP attribute).
+.sp
+Default is: \fB\(dq[{name}][{levelname}] {message}\(dq\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-logdateformat DATEFORMAT
+Set a custom logging date format.
+.sp
+This formats the \fBLogRecord\fP\(aqs \fBasctime\fP attribute via \fBstrftime()\fP\&.
+.sp
+The default date format depends on the chosen log level (may include fractions).
+.sp
+Default is: \fB\(dq%H:%M:%S\(dq\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -965,6 +988,15 @@ Write the console output from ffmpeg to the console.
 .TP
 .B \-\-ffmpeg\-verbose\-path PATH
 Path to write the output from the ffmpeg console.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-ffmpeg\-loglevel LOGLEVEL
+Change FFmpeg\(aqs \fB\-loglevel\fP value to \fBLOGLEVEL\fP\&.
+.sp
+Unless \fI\%\-\-ffmpeg\-verbose\fP or \fI\%\-\-ffmpeg\-verbose\-path\fP is set, changing the log level won\(aqt have any effect.
+.sp
+Default is: \fB\(dqinfo\(dq\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP

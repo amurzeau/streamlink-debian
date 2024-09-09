@@ -291,6 +291,33 @@ def build_parser():
         """,
     )
     general.add_argument(
+        "--logformat",
+        metavar="FORMAT",
+        help="""
+        Set a custom logging format.
+
+        See the Python standard library's `logging.Formatter` docs for more information about the logging format
+        and the available `LogRecord` attributes. Streamlink's formatter uses the curly brace style.
+
+        The default format depends on the chosen log level (may include the `asctime` attribute).
+
+        Default is "[{name}][{levelname}] {message}".
+        """,
+    )
+    general.add_argument(
+        "--logdateformat",
+        metavar="DATEFORMAT",
+        help="""
+        Set a custom logging date format.
+
+        This formats the `LogRecord`'s `asctime` attribute via `strftime()`.
+
+        The default date format depends on the chosen log level (may include fractions).
+
+        Default is "%%H:%%M:%%S".
+        """,
+    )
+    general.add_argument(
         "--logfile",
         metavar="FILE",
         help="""
@@ -1129,6 +1156,18 @@ def build_parser():
         """,
     )
     transport_ffmpeg.add_argument(
+        "--ffmpeg-loglevel",
+        type=str,
+        metavar="LOGLEVEL",
+        help="""
+        Change FFmpeg's `-loglevel` value to `LOGLEVEL`.
+
+        Unless --ffmpeg-verbose or --ffmpeg-verbose-path is set, changing the log level won't have any effect.
+
+        Default is "info".
+        """,
+    )
+    transport_ffmpeg.add_argument(
         "--ffmpeg-fout",
         type=str,
         metavar="OUTFORMAT",
@@ -1422,6 +1461,7 @@ _ARGUMENT_TO_SESSIONOPTION: List[Tuple[str, str, Optional[Callable[[Any], Any]]]
     ("ffmpeg_no_validation", "ffmpeg-no-validation", None),
     ("ffmpeg_verbose", "ffmpeg-verbose", None),
     ("ffmpeg_verbose_path", "ffmpeg-verbose-path", None),
+    ("ffmpeg_loglevel", "ffmpeg-loglevel", None),
     ("ffmpeg_fout", "ffmpeg-fout", None),
     ("ffmpeg_video_transcode", "ffmpeg-video-transcode", None),
     ("ffmpeg_audio_transcode", "ffmpeg-audio-transcode", None),
