@@ -127,7 +127,6 @@ src/streamlink/plugins/bigo.py
 src/streamlink/plugins/bilibili.py
 src/streamlink/plugins/blazetv.py
 src/streamlink/plugins/bloomberg.py
-src/streamlink/plugins/booyah.py
 src/streamlink/plugins/brightcove.py
 src/streamlink/plugins/btv.py
 src/streamlink/plugins/cbsnews.py
@@ -153,7 +152,6 @@ src/streamlink/plugins/earthcam.py
 src/streamlink/plugins/euronews.py
 src/streamlink/plugins/facebook.py
 src/streamlink/plugins/filmon.py
-src/streamlink/plugins/galatasaraytv.py
 src/streamlink/plugins/goltelevision.py
 src/streamlink/plugins/goodgame.py
 src/streamlink/plugins/googledrive.py
@@ -164,12 +162,10 @@ src/streamlink/plugins/http.py
 src/streamlink/plugins/htv.py
 src/streamlink/plugins/huajiao.py
 src/streamlink/plugins/huya.py
-src/streamlink/plugins/idf1.py
 src/streamlink/plugins/indihometv.py
 src/streamlink/plugins/invintus.py
 src/streamlink/plugins/kick.py
 src/streamlink/plugins/kugou.py
-src/streamlink/plugins/linelive.py
 src/streamlink/plugins/livestream.py
 src/streamlink/plugins/lnk.py
 src/streamlink/plugins/lrt.py
@@ -408,7 +404,6 @@ tests/plugins/test_bigo.py
 tests/plugins/test_bilibili.py
 tests/plugins/test_blazetv.py
 tests/plugins/test_bloomberg.py
-tests/plugins/test_booyah.py
 tests/plugins/test_brightcove.py
 tests/plugins/test_btv.py
 tests/plugins/test_cbsnews.py
@@ -434,7 +429,6 @@ tests/plugins/test_earthcam.py
 tests/plugins/test_euronews.py
 tests/plugins/test_facebook.py
 tests/plugins/test_filmon.py
-tests/plugins/test_galatasaraytv.py
 tests/plugins/test_goltelevision.py
 tests/plugins/test_goodgame.py
 tests/plugins/test_googledrive.py
@@ -445,12 +439,10 @@ tests/plugins/test_http.py
 tests/plugins/test_htv.py
 tests/plugins/test_huajiao.py
 tests/plugins/test_huya.py
-tests/plugins/test_idf1.py
 tests/plugins/test_indihometv.py
 tests/plugins/test_invintus.py
 tests/plugins/test_kick.py
 tests/plugins/test_kugou.py
-tests/plugins/test_linelive.py
 tests/plugins/test_livestream.py
 tests/plugins/test_lnk.py
 tests/plugins/test_lrt.py

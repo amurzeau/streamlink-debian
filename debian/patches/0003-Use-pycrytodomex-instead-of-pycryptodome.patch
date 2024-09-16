@@ -17,10 +17,10 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/pyproject.toml b/pyproject.toml
-index 8469432..b038c06 100644
+index 848154b..7c0e67f 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
-@@ -60,7 +60,7 @@ dependencies = [
+@@ -61,7 +61,7 @@ dependencies = [
    "isodate",
    "lxml >=4.6.4,<6",
    "pycountry",
