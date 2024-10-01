@@ -1,8 +1,10 @@
-streamlink (6.11.0-1) UNRELEASED; urgency=medium
+streamlink (6.11.0-1) unstable; urgency=medium
 
   * New upstream version 6.11.0
+  * d/patches: update patches
+  * d/control: update with removed build dependency python3-pytest-asyncio
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 01 Oct 2024 22:56:02 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 01 Oct 2024 23:03:00 +0200
 
 streamlink (6.10.0-1) unstable; urgency=medium
 
