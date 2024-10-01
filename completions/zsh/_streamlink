@@ -271,13 +271,16 @@ _shtab_streamlink_cli_options=(
 
             streamlink -p mpv --title \"\{author\} - \{category\} - \{title\}\" \<URL\> \[STREAM\]
         ]:title:"
+  {-O,--stdout}"[
+        Write stream data to \`stdout\` instead of playing it in the --player.
+        ]"
   {-o,--output}"[
-        Write stream data to \`FILENAME\` instead of playing it. If \`FILENAME\` is set to \`-\` (dash), then the stream data will be
-        written to stdout, similar to the --stdout argument.
+        Write stream data to \`FILENAME\` instead of playing it in the --player.
+        If \`FILENAME\` is set to \`-\` (dash), then the stream data will be written to \`stdout\`, similar to the --stdout argument.
 
         Non-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 
-        You will be prompted if the file already exists.
+        Unless --force is set, Streamlink will ask for confirmation before writing if \`FILENAME\` already exists.
 
         Please see the \"Metadata variables\" section of Streamlink\'s CLI documentation for all available metadata variables,
         as well as the \"Plugins\" section for the list of metadata variables defined in each plugin.
@@ -288,16 +291,14 @@ _shtab_streamlink_cli_options=(
 
             streamlink --output \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%Y\%m\%d\%H\%M\%S\}.ts\" \<URL\> \[STREAM\]
         ]:output:"
-  {-O,--stdout}"[
-        Write stream data to stdout instead of playing it.
-        ]"
   {-r,--record}"[
-        Open the stream in the player, while at the same time writing it to \`FILENAME\`. If \`FILENAME\` is set to \`-\` (dash),
-        then the stream data will be written to stdout, similar to the --stdout argument, while still opening the player.
+        Write stream data to \`FILENAME\` while at the same time allowing playback in the --player or writing it to --stdout.
+        If \`FILENAME\` is set to \`-\` (dash), then the stream data will be written to \`stdout\`, similar to the --stdout argument,
+        while still opening the player.
 
         Non-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 
-        You will be prompted if the file already exists.
+        Unless --force is set, Streamlink will ask for confirmation before writing if \`FILENAME\` already exists.
 
         Please see the \"Metadata variables\" section of Streamlink\'s CLI documentation for all available metadata variables,
         as well as the \"Plugins\" section for the list of metadata variables defined in each plugin.
@@ -309,20 +310,7 @@ _shtab_streamlink_cli_options=(
             streamlink --record \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%Y\%m\%d\%H\%M\%S\}.ts\" \<URL\> \[STREAM\]
         ]:record:"
   {-R,--record-and-pipe}"[
-        Write stream data to stdout, while at the same time writing it to \`FILENAME\`.
-
-        Non-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
-
-        You will be prompted if the file already exists.
-
-        Please see the \"Metadata variables\" section of Streamlink\'s CLI documentation for all available metadata variables,
-        as well as the \"Plugins\" section for the list of metadata variables defined in each plugin.
-
-        Unsupported characters in substituted variables will be replaced with an underscore.
-
-        Example\:
-
-            streamlink --record-and-pipe \"\~\/recordings\/\{author\}\/\{category\}\/\{id\}-\{time\:\%Y\%m\%d\%H\%M\%S\}.ts\" \<URL\> \[STREAM\]
+        Deprecated in favor of --stdout --record\=FILENAME.
         ]:record_and_pipe:"
   "--fs-safe-rules[
         The rules used to make formatting variables filesystem-safe are chosen
@@ -740,22 +728,6 @@ _shtab_streamlink_cli_options=(
   "--bbciplayer-hd[Prefer HD streams over local SD streams, some live programmes may not be broadcast in HD.]"
   "--clubbingtv-username[The username used to register with Clubbing TV.]:clubbingtv_username:"
   "--clubbingtv-password[A Clubbing TV account password to use with --clubbingtv-username.]:clubbingtv_password:"
-  "--crunchyroll-username[A Crunchyroll username to allow access to restricted streams.]:crunchyroll_username:"
-  "--crunchyroll-password[
-        A Crunchyroll password for use with --crunchyroll-username.
-
-        If left blank you will be prompted.
-    ]:crunchyroll_password:"
-  "--crunchyroll-purge-credentials[Purge cached Crunchyroll credentials to initiate a new session and reauthenticate.]"
-  "--crunchyroll-session-id[
-        Set a specific session ID for crunchyroll, can be used to bypass
-        region restrictions. If using an authenticated session ID, it is
-        recommended that the authentication parameters be omitted as the
-        session ID is account specific.
-
-        Note\: The session ID will be overwritten if authentication is used
-        and the session ID does not match the account.
-    ]:crunchyroll_session_id:"
   "--niconico-email[The email or phone number associated with your Niconico account]:niconico_email:"
   "--niconico-password[The password of your Niconico account]:niconico_password:"
   "--niconico-user-session[

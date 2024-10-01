@@ -73,7 +73,6 @@ docs/cli/plugins.rst
 docs/cli/protocols.rst
 docs/cli/proxy.rst
 docs/cli/tutorial.rst
-docs/cli/plugins/crunchyroll.rst
 docs/cli/plugins/twitch.rst
 script/build-shell-completions.sh
 src/streamlink/__init__.py
@@ -138,7 +137,6 @@ src/streamlink/plugins/clubbingtv.py
 src/streamlink/plugins/cmmedia.py
 src/streamlink/plugins/cnbce.py
 src/streamlink/plugins/cnews.py
-src/streamlink/plugins/crunchyroll.py
 src/streamlink/plugins/dailymotion.py
 src/streamlink/plugins/dash.py
 src/streamlink/plugins/delfi.py
@@ -150,7 +148,6 @@ src/streamlink/plugins/douyin.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
 src/streamlink/plugins/euronews.py
-src/streamlink/plugins/facebook.py
 src/streamlink/plugins/filmon.py
 src/streamlink/plugins/goltelevision.py
 src/streamlink/plugins/goodgame.py
@@ -174,7 +171,6 @@ src/streamlink/plugins/mangomolo.py
 src/streamlink/plugins/mdstrm.py
 src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/mediavitrina.py
-src/streamlink/plugins/mildom.py
 src/streamlink/plugins/mitele.py
 src/streamlink/plugins/mixcloud.py
 src/streamlink/plugins/mjunoon.py
@@ -234,8 +230,6 @@ src/streamlink/plugins/tv999.py
 src/streamlink/plugins/tvibo.py
 src/streamlink/plugins/tviplayer.py
 src/streamlink/plugins/tvp.py
-src/streamlink/plugins/tvrby.py
-src/streamlink/plugins/tvrplus.py
 src/streamlink/plugins/tvtoya.py
 src/streamlink/plugins/twitcasting.py
 src/streamlink/plugins/twitch.py
@@ -247,7 +241,6 @@ src/streamlink/plugins/vinhlongtv.py
 src/streamlink/plugins/vk.py
 src/streamlink/plugins/vkplay.py
 src/streamlink/plugins/vtvgo.py
-src/streamlink/plugins/webtv.py
 src/streamlink/plugins/welt.py
 src/streamlink/plugins/wwenetwork.py
 src/streamlink/plugins/youtube.py
@@ -255,8 +248,6 @@ src/streamlink/plugins/yupptv.py
 src/streamlink/plugins/zattoo.py
 src/streamlink/plugins/zdf_mediathek.py
 src/streamlink/plugins/zeenews.py
-src/streamlink/plugins/zengatv.py
-src/streamlink/plugins/zhanqi.py
 src/streamlink/session/__init__.py
 src/streamlink/session/http.py
 src/streamlink/session/http.pyi
@@ -359,16 +350,24 @@ tests/test_plugins.py
 tests/test_streamlink_api.py
 tests/cli/__init__.py
 tests/cli/test_argparser.py
-tests/cli/test_cmdline.py
-tests/cli/test_cmdline_title.py
+tests/cli/test_compat.py
 tests/cli/test_console.py
-tests/cli/test_main.py
-tests/cli/test_main_check_file_output.py
-tests/cli/test_main_formatter.py
-tests/cli/test_main_logging.py
-tests/cli/test_main_setup_config_args.py
 tests/cli/test_plugin_args_and_options.py
 tests/cli/test_streamrunner.py
+tests/cli/main/__init__.py
+tests/cli/main/conftest.py
+tests/cli/main/test_can_handle_url.py
+tests/cli/main/test_check_file_output.py
+tests/cli/main/test_create_output.py
+tests/cli/main/test_formatter.py
+tests/cli/main/test_handle_url.py
+tests/cli/main/test_logging.py
+tests/cli/main/test_output_stream.py
+tests/cli/main/test_output_stream_passthrough.py
+tests/cli/main/test_player_argv.py
+tests/cli/main/test_resolve_stream_name.py
+tests/cli/main/test_setup_config_args.py
+tests/cli/main/test_version_check.py
 tests/cli/output/__init__.py
 tests/cli/output/test_file.py
 tests/cli/output/test_player.py
@@ -415,7 +414,6 @@ tests/plugins/test_clubbingtv.py
 tests/plugins/test_cmmedia.py
 tests/plugins/test_cnbce.py
 tests/plugins/test_cnews.py
-tests/plugins/test_crunchyroll.py
 tests/plugins/test_dailymotion.py
 tests/plugins/test_dash.py
 tests/plugins/test_delfi.py
@@ -427,7 +425,6 @@ tests/plugins/test_douyin.py
 tests/plugins/test_drdk.py
 tests/plugins/test_earthcam.py
 tests/plugins/test_euronews.py
-tests/plugins/test_facebook.py
 tests/plugins/test_filmon.py
 tests/plugins/test_goltelevision.py
 tests/plugins/test_goodgame.py
@@ -451,7 +448,6 @@ tests/plugins/test_mangomolo.py
 tests/plugins/test_mdstrm.py
 tests/plugins/test_mediaklikk.py
 tests/plugins/test_mediavitrina.py
-tests/plugins/test_mildom.py
 tests/plugins/test_mitele.py
 tests/plugins/test_mixcloud.py
 tests/plugins/test_mjunoon.py
@@ -511,8 +507,6 @@ tests/plugins/test_tv999.py
 tests/plugins/test_tvibo.py
 tests/plugins/test_tviplayer.py
 tests/plugins/test_tvp.py
-tests/plugins/test_tvrby.py
-tests/plugins/test_tvrplus.py
 tests/plugins/test_tvtoya.py
 tests/plugins/test_twitcasting.py
 tests/plugins/test_twitch.py
@@ -524,7 +518,6 @@ tests/plugins/test_vinhlongtv.py
 tests/plugins/test_vk.py
 tests/plugins/test_vkplay.py
 tests/plugins/test_vtvgo.py
-tests/plugins/test_webtv.py
 tests/plugins/test_welt.py
 tests/plugins/test_wwenetwork.py
 tests/plugins/test_youtube.py
@@ -532,8 +525,6 @@ tests/plugins/test_yupptv.py
 tests/plugins/test_zattoo.py
 tests/plugins/test_zdf_mediathek.py
 tests/plugins/test_zeenews.py
-tests/plugins/test_zengatv.py
-tests/plugins/test_zhanqi.py
 tests/resources/__init__.py
 tests/resources/cli/config/custom
 tests/resources/cli/config/primary
