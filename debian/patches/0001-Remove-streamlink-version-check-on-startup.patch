@@ -6,15 +6,16 @@ Forwarded: not-needed
 Author: Stefan Breunig <stefan-debian@yrden.de>
 Bug-Debian: https://bugs.debian.org/750502
 ---
- src/streamlink_cli/argparser.py | 2 +-
- src/streamlink_cli/main.py      | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ src/streamlink_cli/argparser.py      |  2 +-
+ src/streamlink_cli/main.py           |  2 +-
+ tests/cli/main/test_version_check.py | 14 --------------
+ 3 files changed, 2 insertions(+), 16 deletions(-)
 
 diff --git a/src/streamlink_cli/argparser.py b/src/streamlink_cli/argparser.py
-index 13c81a1..923252b 100644
+index 0431964..1bfae26 100644
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
-@@ -365,7 +365,7 @@ def build_parser():
+@@ -366,7 +366,7 @@ def build_parser():
          metavar="{yes,true,1,on,no,false,0,off}",
          default=False,
          help="""
@@ -24,15 +25,40 @@ index 13c81a1..923252b 100644
          Default is "no".
          """,
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index 646c867..920a975 100644
+index d3dfeab..e0cf0fc 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -926,7 +926,7 @@ def setup(parser: ArgumentParser) -> None:
+@@ -1002,7 +1002,7 @@ def setup(parser: ArgumentParser) -> None:
  def run(parser: ArgumentParser) -> int:
-     error_code = 0
+     exit_code = 0
  
 -    if args.version_check or args.auto_version_check:
 +    if args.version_check:
-         try:
-             check_version(force=args.version_check)
-         except KeyboardInterrupt:
+         exit_code = check_version_wrapper()
+ 
+     if args.version_check:
+diff --git a/tests/cli/main/test_version_check.py b/tests/cli/main/test_version_check.py
+index cae8394..2d593c7 100644
+--- a/tests/cli/main/test_version_check.py
++++ b/tests/cli/main/test_version_check.py
+@@ -29,20 +29,6 @@ import streamlink_cli.main
+             1,
+             id="outdated",
+         ),
+-        pytest.param(
+-            ["--auto-version-check=True"],
+-            True,
+-            False,
+-            0,
+-            id="auto-latest",
+-        ),
+-        pytest.param(
+-            ["--auto-version-check=True"],
+-            False,
+-            False,
+-            0,
+-            id="auto-outdated",
+-        ),
+     ],
+     indirect=["argv"],
+ )
