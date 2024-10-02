@@ -62,13 +62,20 @@ gbp tag --sign-tags
 # Push to git repository
 git push origin experimental master upstream pristine-tar bookworm-backports --tags
 
-# Push to ftp-master FTP
-dput ftp-master ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
-
 # Check salsa-ci: https://salsa.debian.org/amurzeau/streamlink/-/pipelines
 
-# Generate RFS mail
+# If needed, generate RFS mail
 debian/create_rfs_mail.sh
+
+# If not uploading to NEW, upload source-only to ftp-master FTP
+dput ftp-master ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_source.changes
+
+# If uploading to NEW, upload binary packages instead
+dput ftp-master ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
+
+# If need to cancel upload (choose either one):
+dcut ftp-master cancel -f streamlink_$(dpkg-parsechangelog --show-field Version)_source.changes
+dcut ftp-master cancel -f streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 ```
 
 ## For experimental
@@ -125,11 +132,20 @@ gbp tag --sign-tags
 # Push to git repository
 git push origin experimental master upstream pristine-tar bookworm-backports --tags
 
-# Push to ftp-master FTP
+# Check salsa-ci: https://salsa.debian.org/amurzeau/streamlink/-/pipelines
+
+# If needed, generate RFS mail
+debian/create_rfs_mail.sh
+
+# If not uploading to NEW, upload source-only to ftp-master FTP
+dput ftp-master ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_source.changes
+
+# If uploading to NEW, upload binary packages instead
 dput ftp-master ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 
-# Generate RFS mail
-debian/create_rfs_mail.sh
+# If need to cancel upload (choose either one):
+dcut ftp-master cancel -f streamlink_$(dpkg-parsechangelog --show-field Version)_source.changes
+dcut ftp-master cancel -f streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 ```
 
 # Building package from streamlink unreleased version
