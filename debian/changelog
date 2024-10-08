@@ -1,3 +1,9 @@
+streamlink (6.11.0-2~bpo12+1) bookworm-backports; urgency=medium
+
+  * Rebuild for bookworm-backports.
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 08 Oct 2024 19:51:16 +0200
+
 streamlink (6.11.0-2) unstable; urgency=medium
 
   * Source-only upload.
