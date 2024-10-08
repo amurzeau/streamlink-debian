@@ -1,0 +1,136 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Tue, 8 Oct 2024 20:06:32 +0200
+Subject: Fix trio typing with python3-trio 0.22.0
+
+With trio < 0.22.1 (Bookworm has 0.22.0), trio.MemorySendChannel and
+trio.MemoryReceiveChannel are not generic types.
+Importing code that use them in type annotation as generic types will
+fail with a TypeError ...  is not a generic class import error.
+
+The fix is to not use these types as generic types.
+
+trio.MemorySendChannel and trio.MemoryReceiveChannel were changed to
+generic types in
+https://github.com/python-trio/trio/commit/798e87a126e391073c00c54dc2a8f466986cd7f3.
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ src/streamlink/plugin/api/webbrowser/aws_waf.py | 4 ++--
+ src/streamlink/utils/processoutput.py           | 4 ++--
+ src/streamlink/webbrowser/cdp/connection.py     | 6 +++---
+ tests/utils/test_processoutput.py               | 8 ++++----
+ tests/webbrowser/cdp/__init__.py                | 4 ++--
+ tests/webbrowser/conftest.py                    | 4 ++--
+ 6 files changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/src/streamlink/plugin/api/webbrowser/aws_waf.py b/src/streamlink/plugin/api/webbrowser/aws_waf.py
+index fd7e84f..61f9977 100644
+--- a/src/streamlink/plugin/api/webbrowser/aws_waf.py
++++ b/src/streamlink/plugin/api/webbrowser/aws_waf.py
+@@ -28,8 +28,8 @@ class AWSWAF:
+         self.session = session
+ 
+     def acquire(self, url: str) -> bool:
+-        send: trio.MemorySendChannel[Optional[str]]
+-        receive: trio.MemoryReceiveChannel[Optional[str]]
++        send: trio.MemorySendChannel
++        receive: trio.MemoryReceiveChannel
+ 
+         data = None
+         send, receive = trio.open_memory_channel(1)
+diff --git a/src/streamlink/utils/processoutput.py b/src/streamlink/utils/processoutput.py
+index c82ff25..edb3c8f 100644
+--- a/src/streamlink/utils/processoutput.py
++++ b/src/streamlink/utils/processoutput.py
+@@ -8,8 +8,8 @@ import trio
+ 
+ 
+ class ProcessOutput:
+-    _send_channel: trio.MemorySendChannel[bool]
+-    _receive_channel: trio.MemoryReceiveChannel[bool]
++    _send_channel: trio.MemorySendChannel
++    _receive_channel: trio.MemoryReceiveChannel
+ 
+     def __init__(
+         self,
+diff --git a/src/streamlink/webbrowser/cdp/connection.py b/src/streamlink/webbrowser/cdp/connection.py
+index 6483c03..b724434 100644
+--- a/src/streamlink/webbrowser/cdp/connection.py
++++ b/src/streamlink/webbrowser/cdp/connection.py
+@@ -32,7 +32,7 @@ CMD_TIMEOUT = 2
+ 
+ TCmdResponse = TypeVar("TCmdResponse")
+ TEvent = TypeVar("TEvent")
+-TEventChannels: TypeAlias = "Dict[Type[TEvent], Set[trio.MemorySendChannel[TEvent]]]"
++TEventChannels: TypeAlias = "Dict[Type[TEvent], Set[trio.MemorySendChannel]]"
+ 
+ 
+ class CDPEventListener(Generic[TEvent]):
+@@ -57,8 +57,8 @@ class CDPEventListener(Generic[TEvent]):
+                 ...
+     """
+ 
+-    _sender: trio.MemorySendChannel[TEvent]
+-    _receiver: trio.MemoryReceiveChannel[TEvent]
++    _sender: trio.MemorySendChannel
++    _receiver: trio.MemoryReceiveChannel
+ 
+     def __init__(self, event_channels: TEventChannels, event: Type[TEvent], max_buffer_size: Optional[int] = None):
+         max_buffer_size = MAX_BUFFER_SIZE if max_buffer_size is None else max_buffer_size
+diff --git a/tests/utils/test_processoutput.py b/tests/utils/test_processoutput.py
+index 5a1016c..bcaaf57 100644
+--- a/tests/utils/test_processoutput.py
++++ b/tests/utils/test_processoutput.py
+@@ -34,8 +34,8 @@ class FakeProcessOutput(ProcessOutput):
+     onstdout: Mock
+     onstderr: Mock
+ 
+-    onoutput_sender: trio.MemorySendChannel[Tuple[str, str]]
+-    onoutput_receiver: trio.MemoryReceiveChannel[Tuple[str, str]]
++    onoutput_sender: trio.MemorySendChannel
++    onoutput_receiver: trio.MemoryReceiveChannel
+ 
+     def __init__(self, *args, ignoresigterm: bool = False, **kwargs):
+         command = [sys.executable, "-c", CODE]
+@@ -76,8 +76,8 @@ def get_process(monkeypatch: pytest.MonkeyPatch, _max_test_time) -> Callable[[],
+     trio_run_process = trio.run_process
+ 
+     # use a memory channel, so we can wait until the process has launched
+-    sender: trio.MemorySendChannel[trio.Process]
+-    receiver: trio.MemoryReceiveChannel[trio.Process]
++    sender: trio.MemorySendChannel
++    receiver: trio.MemoryReceiveChannel
+     sender, receiver = trio.open_memory_channel(1)
+ 
+     async def get_process() -> trio.Process:
+diff --git a/tests/webbrowser/cdp/__init__.py b/tests/webbrowser/cdp/__init__.py
+index 094745b..cce5ab9 100644
+--- a/tests/webbrowser/cdp/__init__.py
++++ b/tests/webbrowser/cdp/__init__.py
+@@ -8,8 +8,8 @@ from trio_websocket import CloseReason, ConnectionClosed  # type: ignore[import]
+ 
+ 
+ class FakeWebsocketConnection:
+-    sender: trio.MemorySendChannel[str]
+-    receiver: trio.MemoryReceiveChannel[str]
++    sender: trio.MemorySendChannel
++    receiver: trio.MemoryReceiveChannel
+ 
+     def __init__(self) -> None:
+         self.sender, self.receiver = trio.open_memory_channel(10)
+diff --git a/tests/webbrowser/conftest.py b/tests/webbrowser/conftest.py
+index dab5a42..27dfe17 100644
+--- a/tests/webbrowser/conftest.py
++++ b/tests/webbrowser/conftest.py
+@@ -28,8 +28,8 @@ def webbrowser_launch(monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCapture
+     trio_run_process = trio.run_process
+ 
+     # use a memory channel, so we can wait until the process has launched
+-    sender: trio.MemorySendChannel[trio.Process]
+-    receiver: trio.MemoryReceiveChannel[trio.Process]
++    sender: trio.MemorySendChannel
++    receiver: trio.MemoryReceiveChannel
+     sender, receiver = trio.open_memory_channel(1)
+ 
+     async def fake_trio_run_process(*args, task_status, **kwargs):
