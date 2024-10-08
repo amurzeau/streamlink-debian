@@ -1,6 +1,7 @@
 streamlink (6.11.0-2~bpo12+1) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.
+  * d/patches: fix compatibility with python3-trio 0.22.0.
 
  -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 08 Oct 2024 19:51:16 +0200
 
