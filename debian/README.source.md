@@ -46,7 +46,7 @@ git diff upstream^..upstream docs/players.rst
 gbp dch -Ra --commit
 
 # Do test build with sbuild
-gbp buildpackage "--git-builder=sbuild -v -As -d unstable --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'"
+gbp buildpackage "--git-builder=sbuild -v -As -d unstable --no-clean-source --source-only-changes --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'"
 
 # Check for build warnings or errors
 grep -Pi 'error|warn' ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.build
@@ -62,13 +62,20 @@ gbp tag --sign-tags
 # Push to git repository
 git push origin experimental master upstream pristine-tar bookworm-backports --tags
 
-# Push to mentors FTP
-dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
-
 # Check salsa-ci: https://salsa.debian.org/amurzeau/streamlink/-/pipelines
 
-# Generate RFS mail
+# If needed, generate RFS mail
 debian/create_rfs_mail.sh
+
+# If not uploading to NEW, upload source-only to ftp-master FTP
+dput ftp-master ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_source.changes
+
+# If uploading to NEW, upload binary packages instead
+dput ftp-master ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
+
+# If need to cancel upload (choose either one):
+dcut ftp-master cancel -f streamlink_$(dpkg-parsechangelog --show-field Version)_source.changes
+dcut ftp-master cancel -f streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 ```
 
 ## For experimental
@@ -78,7 +85,7 @@ debian/create_rfs_mail.sh
 gbp dch -Ra --commit -Dexperimental
 
 # Do test build with sbuild (using experimental as an alias to unstable schroot)
-gbp buildpackage "--git-builder=sbuild -v -As -d experimental --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'" --extra-repository='deb http://deb.debian.org/debian experimental main' --build-dep-resolver=aspcud
+gbp buildpackage "--git-builder=sbuild -v -As -d experimental --no-clean-source --source-only-changes --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL'" --extra-repository='deb http://deb.debian.org/debian experimental main' --build-dep-resolver=aspcud
 ```
 
 The rest is identical to unstable.
@@ -109,7 +116,7 @@ git merge master
 gbp dch -Ra --bpo --commit
 
 # Do test build with sbuild
-gbp buildpackage "--git-builder=sbuild -v -As -d bookworm-backports --no-clean-source --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
+gbp buildpackage "--git-builder=sbuild -v -As -d bookworm-backports --no-clean-source --source-only-changes --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
 
 # Check for build warnings or errors
 grep -Pi 'error|warn' ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.build
@@ -125,11 +132,20 @@ gbp tag --sign-tags
 # Push to git repository
 git push origin experimental master upstream pristine-tar bookworm-backports --tags
 
-# Push to mentors FTP
-dput mentors ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
+# Check salsa-ci: https://salsa.debian.org/amurzeau/streamlink/-/pipelines
 
-# Generate RFS mail
+# If needed, generate RFS mail
 debian/create_rfs_mail.sh
+
+# If not uploading to NEW, upload source-only to ftp-master FTP
+dput ftp-master ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_source.changes
+
+# If uploading to NEW, upload binary packages instead
+dput ftp-master ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
+
+# If need to cancel upload (choose either one):
+dcut ftp-master cancel -f streamlink_$(dpkg-parsechangelog --show-field Version)_source.changes
+dcut ftp-master cancel -f streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.changes
 ```
 
 # Building package from streamlink unreleased version

@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Sep 06, 2024" "6.10.0" "Streamlink"
+.TH "STREAMLINK" "1" "Oct 01, 2024" "6.11.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -491,15 +491,22 @@ streamlink \-p mpv \-\-title \(dq{author} \- {category} \- {title}\(dq <URL> [ST
 .SS File output options
 .INDENT 0.0
 .TP
+.B \-O
+.TP
+.B \-\-stdout
+Write stream data to \fBstdout\fP instead of playing it in the \fI\%\-\-player\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B \-o FILENAME
 .TP
 .B \-\-output FILENAME
-Write stream data to \fBFILENAME\fP instead of playing it. If \fBFILENAME\fP is set to \fB\-\fP (dash), then the stream data will be
-written to stdout, similar to the \fI\%\-\-stdout\fP argument.
+Write stream data to \fBFILENAME\fP instead of playing it in the \fI\%\-\-player\fP\&.
+If \fBFILENAME\fP is set to \fB\-\fP (dash), then the stream data will be written to \fBstdout\fP, similar to the \fI\%\-\-stdout\fP argument.
 .sp
 Non\-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 .sp
-You will be prompted if the file already exists.
+Unless \fI\%\-\-force\fP is set, Streamlink will ask for confirmation before writing if \fBFILENAME\fP already exists.
 .sp
 Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
 as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
@@ -518,22 +525,16 @@ streamlink \-\-output \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-O
-.TP
-.B \-\-stdout
-Write stream data to stdout instead of playing it.
-.UNINDENT
-.INDENT 0.0
-.TP
 .B \-r FILENAME
 .TP
 .B \-\-record FILENAME
-Open the stream in the player, while at the same time writing it to \fBFILENAME\fP\&. If \fBFILENAME\fP is set to \fB\-\fP (dash),
-then the stream data will be written to stdout, similar to the \fI\%\-\-stdout\fP argument, while still opening the player.
+Write stream data to \fBFILENAME\fP while at the same time allowing playback in the \fI\%\-\-player\fP or writing it to \fI\%\-\-stdout\fP\&.
+If \fBFILENAME\fP is set to \fB\-\fP (dash), then the stream data will be written to \fBstdout\fP, similar to the \fI\%\-\-stdout\fP argument,
+while still opening the player.
 .sp
 Non\-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
 .sp
-You will be prompted if the file already exists.
+Unless \fI\%\-\-force\fP is set, Streamlink will ask for confirmation before writing if \fBFILENAME\fP already exists.
 .sp
 Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
 as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
@@ -555,26 +556,7 @@ streamlink \-\-record \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%
 .B \-R FILENAME
 .TP
 .B \-\-record\-and\-pipe FILENAME
-Write stream data to stdout, while at the same time writing it to \fBFILENAME\fP\&.
-.sp
-Non\-existent directories and subdirectories will be created if they do not exist, if filesystem permissions allow.
-.sp
-You will be prompted if the file already exists.
-.sp
-Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI documentation for all available metadata variables,
-as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
-.sp
-Unsupported characters in substituted variables will be replaced with an underscore.
-.sp
-Example:
-.INDENT 7.0
-.INDENT 3.5
-.sp
-.EX
-streamlink \-\-record\-and\-pipe \(dq~/recordings/{author}/{category}/{id}\-{time:%Y%m%d%H%M%S}.ts\(dq <URL> [STREAM]
-.EE
-.UNINDENT
-.UNINDENT
+Deprecated in favor of \fI\%\-\-stdout\fP \fI\%\-\-record=FILENAME\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1214,40 +1196,6 @@ The username used to register with Clubbing TV.
 .TP
 .B \-\-clubbingtv\-password
 A Clubbing TV account password to use with \fI\%\-\-clubbingtv\-username\fP\&.
-.UNINDENT
-.SS Crunchyroll
-.INDENT 0.0
-.TP
-.B \-\-crunchyroll\-username USERNAME
-A Crunchyroll username to allow access to restricted streams.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-crunchyroll\-password [PASSWORD]
-A Crunchyroll password for use with \fI\%\-\-crunchyroll\-username\fP\&.
-.sp
-If left blank you will be prompted.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-crunchyroll\-purge\-credentials
-Purge cached Crunchyroll credentials to initiate a new session and reauthenticate.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-crunchyroll\-session\-id SESSION_ID
-Set a specific session ID for crunchyroll, can be used to bypass
-region restrictions. If using an authenticated session ID, it is
-recommended that the authentication parameters be omitted as the
-session ID is account specific.
-.sp
-\fBNOTE:\fP
-.INDENT 7.0
-.INDENT 3.5
-The session ID will be overwritten if authentication is used
-and the session ID does not match the account.
-.UNINDENT
-.UNINDENT
 .UNINDENT
 .SS Nicolive
 .INDENT 0.0
