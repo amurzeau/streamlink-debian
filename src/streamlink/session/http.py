@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import re
 import ssl
 import time
 import warnings
-from typing import Any, Dict, Pattern, Tuple
+from typing import Any
 
 import requests.adapters
 import urllib3
@@ -62,13 +64,16 @@ requests.adapters.HTTPResponse = _HTTPResponse  # type: ignore[misc]
 # > encodings.
 class Urllib3UtilUrlPercentReOverride:
     # urllib3>=2.0.0: _PERCENT_RE, urllib3<2.0.0: PERCENT_RE
-    _re_percent_encoding: Pattern \
-        = getattr(urllib3.util.url, "_PERCENT_RE", getattr(urllib3.util.url, "PERCENT_RE", re.compile(r"%[a-fA-F0-9]{2}")))
+    _re_percent_encoding: re.Pattern = getattr(
+        urllib3.util.url,
+        "_PERCENT_RE",
+        getattr(urllib3.util.url, "PERCENT_RE", re.compile(r"%[a-fA-F0-9]{2}")),
+    )
 
     # urllib3>=1.25.8
     # https://github.com/urllib3/urllib3/blame/1.25.8/src/urllib3/util/url.py#L219-L227
     @classmethod
-    def subn(cls, repl: Any, string: str, count: Any = None) -> Tuple[str, int]:
+    def subn(cls, repl: Any, string: str, count: Any = None) -> tuple[str, int]:
         return string, len(cls._re_percent_encoding.findall(string))
 
 
@@ -81,7 +86,7 @@ _VALID_REQUEST_ARGS = "method", "url", "headers", "files", "data", "params", "au
 
 
 class HTTPSession(Session):
-    params: Dict
+    params: dict
 
     def __init__(self):
         super().__init__()
@@ -106,13 +111,13 @@ class HTTPSession(Session):
         warnings.warn("Deprecated HTTPSession.determine_json_encoding() call", StreamlinkDeprecationWarning, stacklevel=1)
         data = int.from_bytes(sample[:4], "big")
 
-        if data & 0xffffff00 == 0:
+        if data & 0xFFFFFF00 == 0:
             return "UTF-32BE"
-        elif data & 0xff00ff00 == 0:
+        elif data & 0xFF00FF00 == 0:
             return "UTF-16BE"
-        elif data & 0x00ffffff == 0:
+        elif data & 0x00FFFFFF == 0:
             return "UTF-32LE"
-        elif data & 0x00ff00ff == 0:
+        elif data & 0x00FF00FF == 0:
             return "UTF-16LE"
         else:
             return "UTF-8"
@@ -137,7 +142,7 @@ class HTTPSession(Session):
         return self.get(url, stream=True).url
 
     @staticmethod
-    def valid_request_args(**req_keywords) -> Dict:
+    def valid_request_args(**req_keywords) -> dict:
         return {k: v for k, v in req_keywords.items() if k in _VALID_REQUEST_ARGS}
 
     def prepare_new_request(self, **req_keywords) -> PreparedRequest:
@@ -191,8 +196,7 @@ class HTTPSession(Session):
                     raise err from None  # TODO: fix this
                 retries += 1
                 # back off retrying, but only to a maximum sleep time
-                delay = min(retry_max_backoff,
-                            retry_backoff * (2 ** (retries - 1)))
+                delay = min(retry_max_backoff, retry_backoff * (2 ** (retries - 1)))
                 time.sleep(delay)
 
         if schema:

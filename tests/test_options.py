@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 
 import pytest
@@ -188,6 +190,12 @@ class TestArgument:
             "const": 123,
         }
 
+        # doesn't include the const keyword if action is store_true or store_false
+        assert Argument("test", action="store_true").options == {"action": "store_true", "default": False}
+        assert Argument("test", action="store_true", default=123).options == {"action": "store_true", "default": 123}
+        assert Argument("test", action="store_false").options == {"action": "store_false", "default": True}
+        assert Argument("test", action="store_false", default=123).options == {"action": "store_false", "default": 123}
+
     def test_equality(self):
         a1 = Argument(
             "test",
@@ -226,6 +234,20 @@ class TestArgument:
         assert a1 == a2
         assert a1 != a3
         assert a2 != a3
+
+    @pytest.mark.parametrize(
+        ("action", "default", "expected_const", "expected_default"),
+        [
+            pytest.param("store_true", None, True, False, id="store_true-no-default"),
+            pytest.param("store_true", "default", True, "default", id="store_true-with-default"),
+            pytest.param("store_false", None, False, True, id="store_false-no-default"),
+            pytest.param("store_false", "default", False, "default", id="store_false-with-default"),
+        ],
+    )
+    def test_store_true_false(self, action: str, default: str | None, expected_const: bool, expected_default: str | None):
+        arg = Argument("foo", action=action, default=default)
+        assert arg.const is expected_const
+        assert arg.default is expected_default
 
 
 class TestArguments:
@@ -283,29 +305,32 @@ class TestArguments:
             list(args.requires("test1"))
         assert cm.value.args[0] == "test2 is not a valid argument for this plugin"
 
-    @pytest.mark.parametrize("args", [
-        pytest.param(
-            Arguments(
-                Argument("test1", requires="test2"),
-                Argument("test2", requires="test1"),
+    @pytest.mark.parametrize(
+        "args",
+        [
+            pytest.param(
+                Arguments(
+                    Argument("test1", requires="test2"),
+                    Argument("test2", requires="test1"),
+                ),
+                id="Cycle",
             ),
-            id="Cycle",
-        ),
-        pytest.param(
-            Arguments(
-                Argument("test1", requires="test2"),
-                Argument("test2", requires="test3"),
-                Argument("test3", requires="test1"),
+            pytest.param(
+                Arguments(
+                    Argument("test1", requires="test2"),
+                    Argument("test2", requires="test3"),
+                    Argument("test3", requires="test1"),
+                ),
+                id="Cycle deep",
             ),
-            id="Cycle deep",
-        ),
-        pytest.param(
-            Arguments(
-                Argument("test1", requires="test1"),
+            pytest.param(
+                Arguments(
+                    Argument("test1", requires="test1"),
+                ),
+                id="Cycle self",
             ),
-            id="Cycle self",
-        ),
-    ])
+        ],
+    )
     def test_requires_cycle(self, args: Arguments):
         with pytest.raises(RuntimeError) as cm:
             list(args.requires("test1"))
