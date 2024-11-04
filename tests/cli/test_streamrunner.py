@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import errno
 import sys
 from collections import deque
+from collections.abc import Callable
 from pathlib import Path
 from threading import Thread
-from typing import Callable, Deque, List, Union
 from unittest.mock import Mock, patch
 
 import pytest
@@ -43,7 +45,7 @@ class FakeStream(_TestableWithHandshake, StreamIO):
 
     def __init__(self) -> None:
         super().__init__()
-        self.data: Deque[Union[bytes, Callable]] = deque()
+        self.data: deque[bytes | Callable] = deque()
 
     # noinspection PyUnusedLocal
     def read(self, *args):
@@ -59,7 +61,7 @@ class FakeOutput(_TestableWithHandshake):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.data: List[bytes] = []
+        self.data: list[bytes] = []
 
     def write(self, data):
         with self.handshake():
@@ -154,8 +156,10 @@ class TestPlayerOutput:
 
     @pytest.fixture()
     def output(self, player_process: Mock):
-        with patch("subprocess.Popen") as mock_popen, \
-             patch("streamlink_cli.output.player.sleep"):
+        with (
+            patch("subprocess.Popen") as mock_popen,
+            patch("streamlink_cli.output.player.sleep"),
+        ):
             mock_popen.return_value = player_process
             output = FakePlayerOutput(Path("mocked"))
             output.open()
@@ -544,7 +548,7 @@ class TestHTTPServer:
         expectedlogs = (
             ([("streamrunner", "info", "HTTP connection closed")] if logs else [])
             + [("streamrunner", "info", "Stream ended")]
-        )
+        )  # fmt: skip
         assert [(record.module, record.levelname, record.message) for record in caplog.records] == expectedlogs
 
 
@@ -577,7 +581,7 @@ class TestHasProgress:
     def test_no_progress(
         self,
         monkeypatch: pytest.MonkeyPatch,
-        output: Union[FakePlayerOutput, FakeFileOutput, FakeHTTPOutput],
+        output: FakePlayerOutput | FakeFileOutput | FakeHTTPOutput,
         stderr: bool,
     ):
         if not stderr:
@@ -612,7 +616,7 @@ class TestHasProgress:
     )
     def test_has_progress(
         self,
-        output: Union[FakePlayerOutput, FakeFileOutput],
+        output: FakePlayerOutput | FakeFileOutput,
         expected: Path,
     ):
         stream_runner = FakeStreamRunner(StreamIO(), output, show_progress=True)

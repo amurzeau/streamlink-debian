@@ -1,5 +1,7 @@
+from __future__ import annotations
+
+from collections.abc import Sequence
 from textwrap import indent
-from typing import Optional, Sequence, Union
 
 
 class ValidationError(ValueError):
@@ -9,22 +11,22 @@ class ValidationError(ValueError):
 
     MAX_LENGTH = 60
 
-    errors: Union[str, Exception, Sequence[Union[str, Exception]]]
+    errors: str | Exception | Sequence[str | Exception]
 
     def __init__(
         self,
         *errors,
-        schema: Optional[Union[str, object]] = None,
+        schema: str | object | None = None,
         **errkeywords,
     ):
         self.schema = schema
         if len(errors) == 1 and isinstance(errors[0], str):
-            self.errors = (self._truncate(errors[0], **errkeywords), )
+            self.errors = (self._truncate(errors[0], **errkeywords),)
         else:
             self.errors = errors
 
     def _ellipsis(self, string: str):
-        return string if len(string) <= self.MAX_LENGTH else f"<{string[:self.MAX_LENGTH - 5]}...>"
+        return string if len(string) <= self.MAX_LENGTH else f"<{string[: self.MAX_LENGTH - 5]}...>"
 
     def _truncate(self, template: str, **kwargs):
         return template.format(**{k: self._ellipsis(str(v)) for k, v in kwargs.items()})
