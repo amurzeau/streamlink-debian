@@ -28,7 +28,6 @@ docs/conf.py
 docs/deprecations.rst
 docs/developing.rst
 docs/docutils.conf
-docs/donate.rst
 docs/ext_argparse.py
 docs/ext_github.py
 docs/ext_html_template_vars.py
@@ -39,6 +38,7 @@ docs/install.rst
 docs/migrations.rst
 docs/players.rst
 docs/plugins.rst
+docs/support.rst
 docs/thirdparty.rst
 docs/_build/man/streamlink.1
 docs/_static/apple-touch-icon.png
@@ -98,20 +98,14 @@ src/streamlink/packages/requests_file.py
 src/streamlink/plugin/__init__.py
 src/streamlink/plugin/plugin.py
 src/streamlink/plugin/api/__init__.py
-src/streamlink/plugin/api/http_session.py
 src/streamlink/plugin/api/useragents.py
+src/streamlink/plugin/api/validate.py
 src/streamlink/plugin/api/websocket.py
-src/streamlink/plugin/api/validate/__init__.py
-src/streamlink/plugin/api/validate/_exception.py
-src/streamlink/plugin/api/validate/_schemas.py
-src/streamlink/plugin/api/validate/_validate.py
-src/streamlink/plugin/api/validate/_validators.py
 src/streamlink/plugin/api/webbrowser/__init__.py
 src/streamlink/plugin/api/webbrowser/aws_waf.py
 src/streamlink/plugins/__init__.py
 src/streamlink/plugins/abematv.py
 src/streamlink/plugins/adultswim.py
-src/streamlink/plugins/afreeca.py
 src/streamlink/plugins/albavision.py
 src/streamlink/plugins/aloula.py
 src/streamlink/plugins/app17.py
@@ -205,6 +199,7 @@ src/streamlink/plugins/rtvs.py
 src/streamlink/plugins/ruv.py
 src/streamlink/plugins/sbscokr.py
 src/streamlink/plugins/showroom.py
+src/streamlink/plugins/soop.py
 src/streamlink/plugins/sportal.py
 src/streamlink/plugins/sportschau.py
 src/streamlink/plugins/ssh101.py
@@ -290,6 +285,11 @@ src/streamlink/utils/random.py
 src/streamlink/utils/socket.py
 src/streamlink/utils/times.py
 src/streamlink/utils/url.py
+src/streamlink/validate/__init__.py
+src/streamlink/validate/_exception.py
+src/streamlink/validate/_schemas.py
+src/streamlink/validate/_validate.py
+src/streamlink/validate/_validators.py
 src/streamlink/webbrowser/__init__.py
 src/streamlink/webbrowser/chromium.py
 src/streamlink/webbrowser/exceptions.py
@@ -337,7 +337,6 @@ src/streamlink_cli/utils/progress.py
 src/streamlink_cli/utils/versioncheck.py
 tests/__init__.py
 tests/conftest.py
-tests/test_api_validate.py
 tests/test_api_websocket.py
 tests/test_buffers.py
 tests/test_cache.py
@@ -348,11 +347,11 @@ tests/test_plugin.py
 tests/test_plugin_userinput.py
 tests/test_plugins.py
 tests/test_streamlink_api.py
+tests/test_validate.py
 tests/cli/__init__.py
 tests/cli/test_argparser.py
 tests/cli/test_compat.py
 tests/cli/test_console.py
-tests/cli/test_plugin_args_and_options.py
 tests/cli/test_streamrunner.py
 tests/cli/main/__init__.py
 tests/cli/main/conftest.py
@@ -388,7 +387,6 @@ tests/plugins/__init__.py
 tests/plugins/conftest.py
 tests/plugins/test_abematv.py
 tests/plugins/test_adultswim.py
-tests/plugins/test_afreeca.py
 tests/plugins/test_albavision.py
 tests/plugins/test_aloula.py
 tests/plugins/test_app17.py
@@ -482,6 +480,7 @@ tests/plugins/test_rtvs.py
 tests/plugins/test_ruv.py
 tests/plugins/test_sbscokr.py
 tests/plugins/test_showroom.py
+tests/plugins/test_soop.py
 tests/plugins/test_sportal.py
 tests/plugins/test_sportschau.py
 tests/plugins/test_ssh101.py

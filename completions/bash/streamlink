@@ -2,7 +2,7 @@
 
 
 
-_shtab_streamlink_cli_option_strings=('-h' '--help' '-V' '--version' '--plugins' '--plugin-dir' '--plugin-dirs' '--can-handle-url' '--can-handle-url-no-redirect' '--config' '--no-config' '-l' '--loglevel' '--logformat' '--logdateformat' '--logfile' '-Q' '--quiet' '-j' '--json' '--auto-version-check' '--version-check' '--locale' '--interface' '-4' '--ipv4' '-6' '--ipv6' '-p' '--player' '-a' '--player-args' '--player-env' '-v' '--verbose-player' '-n' '--player-fifo' '--fifo' '--player-http' '--player-continuous-http' '--player-external-http' '--player-external-http-continuous' '--player-external-http-interface' '--player-external-http-port' '--player-passthrough' '--player-no-close' '-t' '--title' '-O' '--stdout' '-o' '--output' '-r' '--record' '-R' '--record-and-pipe' '--fs-safe-rules' '-f' '--force' '--progress' '--force-progress' '--url' '--default-stream' '--stream-url' '--retry-streams' '--retry-max' '--retry-open' '--stream-types' '--stream-priority' '--stream-sorting-excludes' '--ringbuffer-size' '--stream-segment-attempts' '--stream-segment-threads' '--stream-segment-timeout' '--stream-timeout' '--mux-subtitles' '--hls-live-edge' '--hls-segment-stream-data' '--hls-playlist-reload-attempts' '--hls-playlist-reload-time' '--hls-segment-queue-threshold' '--hls-segment-ignore-names' '--hls-segment-key-uri' '--hls-audio-select' '--hls-start-offset' '--hls-duration' '--hls-live-restart' '--dash-manifest-reload-attempts' '--ffmpeg-ffmpeg' '--ffmpeg-no-validation' '--ffmpeg-verbose' '--ffmpeg-verbose-path' '--ffmpeg-loglevel' '--ffmpeg-fout' '--ffmpeg-video-transcode' '--ffmpeg-audio-transcode' '--ffmpeg-copyts' '--ffmpeg-start-at-zero' '--http-proxy' '--http-cookie' '--http-header' '--http-query-param' '--http-ignore-env' '--http-no-ssl-verify' '--http-disable-dh' '--http-ssl-cert' '--http-ssl-cert-crt-key' '--http-timeout' '--webbrowser' '--webbrowser-executable' '--webbrowser-timeout' '--webbrowser-cdp-host' '--webbrowser-cdp-port' '--webbrowser-cdp-timeout' '--webbrowser-headless' '--afreeca-username' '--afreeca-password' '--afreeca-purge-credentials' '--afreeca-stream-password' '--bbciplayer-username' '--bbciplayer-password' '--bbciplayer-hd' '--clubbingtv-username' '--clubbingtv-password' '--niconico-email' '--niconico-password' '--niconico-user-session' '--niconico-purge-credentials' '--niconico-timeshift-offset' '--openrectv-email' '--openrectv-password' '--pixiv-sessionid' '--pixiv-devicetoken' '--pixiv-purge-credentials' '--pixiv-performer' '--raiplay-email' '--raiplay-password' '--raiplay-purge-credentials' '--steam-email' '--steam-password' '--streann-url' '--tf1-email' '--tf1-password' '--tf1-purge-credentials' '--twitcasting-password' '--twitch-disable-ads' '--twitch-low-latency' '--twitch-api-header' '--twitch-access-token-param' '--twitch-force-client-integrity' '--twitch-purge-client-integrity' '--ustream-password' '--ustvnow-username' '--ustvnow-password' '--wwenetwork-email' '--wwenetwork-password' '--yupptv-boxid' '--yupptv-yuppflixtoken' '--yupptv-purge-credentials' '--zattoo-email' '--zattoo-password' '--zattoo-purge-credentials' '--zattoo-stream-types')
+_shtab_streamlink_cli_option_strings=('-h' '--help' '-V' '--version' '--version-check' '--auto-version-check' '--plugins' '--plugin-dir' '--plugin-dirs' '--can-handle-url' '--can-handle-url-no-redirect' '--config' '--no-config' '--locale' '-l' '--loglevel' '--logformat' '--logdateformat' '--logfile' '-Q' '--quiet' '-j' '--json' '--interface' '-4' '--ipv4' '-6' '--ipv6' '-p' '--player' '-a' '--player-args' '--player-env' '-v' '--player-verbose' '--verbose-player' '-n' '--player-fifo' '--fifo' '--player-http' '--player-continuous-http' '--player-external-http' '--player-external-http-continuous' '--player-external-http-interface' '--player-external-http-port' '--player-passthrough' '--player-no-close' '-t' '--title' '-O' '--stdout' '-o' '--output' '-r' '--record' '-R' '--record-and-pipe' '--fs-safe-rules' '-f' '--force' '--progress' '--url' '--default-stream' '--stream-url' '--retry-streams' '--retry-max' '--retry-open' '--stream-types' '--stream-priority' '--stream-sorting-excludes' '--ringbuffer-size' '--stream-segment-attempts' '--stream-segment-threads' '--stream-segment-timeout' '--stream-timeout' '--mux-subtitles' '--hls-live-edge' '--hls-segment-stream-data' '--hls-playlist-reload-attempts' '--hls-playlist-reload-time' '--hls-segment-queue-threshold' '--hls-segment-ignore-names' '--hls-segment-key-uri' '--hls-audio-select' '--hls-start-offset' '--hls-duration' '--hls-live-restart' '--dash-manifest-reload-attempts' '--ffmpeg-ffmpeg' '--ffmpeg-no-validation' '--ffmpeg-verbose' '--ffmpeg-verbose-path' '--ffmpeg-loglevel' '--ffmpeg-fout' '--ffmpeg-video-transcode' '--ffmpeg-audio-transcode' '--ffmpeg-copyts' '--ffmpeg-start-at-zero' '--http-proxy' '--http-cookie' '--http-header' '--http-query-param' '--http-ignore-env' '--http-no-ssl-verify' '--http-disable-dh' '--http-ssl-cert' '--http-ssl-cert-crt-key' '--http-timeout' '--webbrowser' '--webbrowser-executable' '--webbrowser-timeout' '--webbrowser-cdp-host' '--webbrowser-cdp-port' '--webbrowser-cdp-timeout' '--webbrowser-headless' '--bbciplayer-username' '--bbciplayer-password' '--bbciplayer-hd' '--clubbingtv-username' '--clubbingtv-password' '--niconico-email' '--niconico-password' '--niconico-user-session' '--niconico-purge-credentials' '--niconico-timeshift-offset' '--openrectv-email' '--openrectv-password' '--pixiv-sessionid' '--pixiv-devicetoken' '--pixiv-purge-credentials' '--pixiv-performer' '--raiplay-email' '--raiplay-password' '--raiplay-purge-credentials' '--soop-username' '--soop-password' '--soop-purge-credentials' '--soop-stream-password' '--steam-email' '--steam-password' '--streann-url' '--tf1-email' '--tf1-password' '--tf1-purge-credentials' '--twitcasting-password' '--twitch-disable-ads' '--twitch-low-latency' '--twitch-api-header' '--twitch-access-token-param' '--twitch-force-client-integrity' '--twitch-purge-client-integrity' '--ustream-password' '--ustvnow-username' '--ustvnow-password' '--wwenetwork-email' '--wwenetwork-password' '--yupptv-boxid' '--yupptv-yuppflixtoken' '--yupptv-purge-credentials' '--zattoo-email' '--zattoo-password' '--zattoo-purge-credentials' '--zattoo-stream-types')
 
 
 
@@ -15,18 +15,19 @@ _shtab_streamlink_cli__h_nargs=0
 _shtab_streamlink_cli___help_nargs=0
 _shtab_streamlink_cli__V_nargs=0
 _shtab_streamlink_cli___version_nargs=0
+_shtab_streamlink_cli___version_check_nargs=0
 _shtab_streamlink_cli___plugins_nargs=0
 _shtab_streamlink_cli___no_config_nargs=0
 _shtab_streamlink_cli__Q_nargs=0
 _shtab_streamlink_cli___quiet_nargs=0
 _shtab_streamlink_cli__j_nargs=0
 _shtab_streamlink_cli___json_nargs=0
-_shtab_streamlink_cli___version_check_nargs=0
 _shtab_streamlink_cli__4_nargs=0
 _shtab_streamlink_cli___ipv4_nargs=0
 _shtab_streamlink_cli__6_nargs=0
 _shtab_streamlink_cli___ipv6_nargs=0
 _shtab_streamlink_cli__v_nargs=0
+_shtab_streamlink_cli___player_verbose_nargs=0
 _shtab_streamlink_cli___verbose_player_nargs=0
 _shtab_streamlink_cli__n_nargs=0
 _shtab_streamlink_cli___player_fifo_nargs=0
@@ -39,7 +40,6 @@ _shtab_streamlink_cli__O_nargs=0
 _shtab_streamlink_cli___stdout_nargs=0
 _shtab_streamlink_cli__f_nargs=0
 _shtab_streamlink_cli___force_nargs=0
-_shtab_streamlink_cli___force_progress_nargs=0
 _shtab_streamlink_cli___stream_url_nargs=0
 _shtab_streamlink_cli___mux_subtitles_nargs=0
 _shtab_streamlink_cli___hls_segment_stream_data_nargs=0
@@ -52,11 +52,12 @@ _shtab_streamlink_cli___http_ignore_env_nargs=0
 _shtab_streamlink_cli___http_no_ssl_verify_nargs=0
 _shtab_streamlink_cli___http_disable_dh_nargs=0
 _shtab_streamlink_cli___http_ssl_cert_crt_key_nargs=2
-_shtab_streamlink_cli___afreeca_purge_credentials_nargs=0
 _shtab_streamlink_cli___bbciplayer_hd_nargs=0
 _shtab_streamlink_cli___niconico_purge_credentials_nargs=0
 _shtab_streamlink_cli___pixiv_purge_credentials_nargs=0
 _shtab_streamlink_cli___raiplay_purge_credentials_nargs=0
+_shtab_streamlink_cli___soop_purge_credentials_nargs=0
+_shtab_streamlink_cli___afreeca_purge_credentials_nargs=0
 _shtab_streamlink_cli___tf1_purge_credentials_nargs=0
 _shtab_streamlink_cli___twitch_disable_ads_nargs=0
 _shtab_streamlink_cli___twitch_disable_hosting_nargs=0

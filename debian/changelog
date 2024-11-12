@@ -1,3 +1,13 @@
+streamlink (7.0.0-1) unstable; urgency=medium
+
+  * d/README.source: fix commands to upload source-only packages
+  * d/tests/control: remove unused dependency python3-pytest-asyncio
+  * d/create_rfs_mail.sh: remove doc package difference for backports
+  * New upstream version 7.0.0
+  * d/patches: update patches
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 04 Nov 2024 19:35:26 +0100
+
 streamlink (6.11.0-2~bpo12+1) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.

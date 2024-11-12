@@ -12,23 +12,23 @@ Bug-Debian: https://bugs.debian.org/750502
  3 files changed, 2 insertions(+), 16 deletions(-)
 
 diff --git a/src/streamlink_cli/argparser.py b/src/streamlink_cli/argparser.py
-index 0431964..1bfae26 100644
+index 35ec436..392e07a 100644
 --- a/src/streamlink_cli/argparser.py
 +++ b/src/streamlink_cli/argparser.py
-@@ -366,7 +366,7 @@ def build_parser():
+@@ -237,7 +237,7 @@ def build_parser():
          metavar="{yes,true,1,on,no,false,0,off}",
          default=False,
          help="""
--        Enable or disable the automatic check for a new version of Streamlink.
-+        Unused, kept for compatibility reasons.
+-            Enable or disable the automatic check for a new version of Streamlink.
++            Unused, kept for compatibility reasons.
  
-         Default is "no".
+             Default is "no".
          """,
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index d3dfeab..e0cf0fc 100644
+index 3105c5a..c8908d0 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
-@@ -1002,7 +1002,7 @@ def setup(parser: ArgumentParser) -> None:
+@@ -940,7 +940,7 @@ def setup(parser: ArgumentParser) -> None:
  def run(parser: ArgumentParser) -> int:
      exit_code = 0
  
