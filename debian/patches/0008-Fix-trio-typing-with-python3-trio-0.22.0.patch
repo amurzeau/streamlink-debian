@@ -25,25 +25,25 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  6 files changed, 15 insertions(+), 15 deletions(-)
 
 diff --git a/src/streamlink/plugin/api/webbrowser/aws_waf.py b/src/streamlink/plugin/api/webbrowser/aws_waf.py
-index fd7e84f..61f9977 100644
+index 8856723..d69dcf5 100644
 --- a/src/streamlink/plugin/api/webbrowser/aws_waf.py
 +++ b/src/streamlink/plugin/api/webbrowser/aws_waf.py
-@@ -28,8 +28,8 @@ class AWSWAF:
+@@ -29,8 +29,8 @@ class AWSWAF:
          self.session = session
  
      def acquire(self, url: str) -> bool:
--        send: trio.MemorySendChannel[Optional[str]]
--        receive: trio.MemoryReceiveChannel[Optional[str]]
+-        send: trio.MemorySendChannel[str | None]
+-        receive: trio.MemoryReceiveChannel[str | None]
 +        send: trio.MemorySendChannel
 +        receive: trio.MemoryReceiveChannel
  
          data = None
          send, receive = trio.open_memory_channel(1)
 diff --git a/src/streamlink/utils/processoutput.py b/src/streamlink/utils/processoutput.py
-index c82ff25..edb3c8f 100644
+index 4b18ae2..1b05f9c 100644
 --- a/src/streamlink/utils/processoutput.py
 +++ b/src/streamlink/utils/processoutput.py
-@@ -8,8 +8,8 @@ import trio
+@@ -11,8 +11,8 @@ import trio
  
  
  class ProcessOutput:
@@ -55,15 +55,15 @@ index c82ff25..edb3c8f 100644
      def __init__(
          self,
 diff --git a/src/streamlink/webbrowser/cdp/connection.py b/src/streamlink/webbrowser/cdp/connection.py
-index 6483c03..b724434 100644
+index d1867fd..27aee4c 100644
 --- a/src/streamlink/webbrowser/cdp/connection.py
 +++ b/src/streamlink/webbrowser/cdp/connection.py
 @@ -32,7 +32,7 @@ CMD_TIMEOUT = 2
  
  TCmdResponse = TypeVar("TCmdResponse")
  TEvent = TypeVar("TEvent")
--TEventChannels: TypeAlias = "Dict[Type[TEvent], Set[trio.MemorySendChannel[TEvent]]]"
-+TEventChannels: TypeAlias = "Dict[Type[TEvent], Set[trio.MemorySendChannel]]"
+-TEventChannels: TypeAlias = "dict[type[TEvent], set[trio.MemorySendChannel[TEvent]]]"
++TEventChannels: TypeAlias = "dict[type[TEvent], set[trio.MemorySendChannel]]"
  
  
  class CDPEventListener(Generic[TEvent]):
@@ -76,24 +76,24 @@ index 6483c03..b724434 100644
 +    _sender: trio.MemorySendChannel
 +    _receiver: trio.MemoryReceiveChannel
  
-     def __init__(self, event_channels: TEventChannels, event: Type[TEvent], max_buffer_size: Optional[int] = None):
+     def __init__(self, event_channels: TEventChannels, event: type[TEvent], max_buffer_size: int | None = None):
          max_buffer_size = MAX_BUFFER_SIZE if max_buffer_size is None else max_buffer_size
 diff --git a/tests/utils/test_processoutput.py b/tests/utils/test_processoutput.py
-index 5a1016c..bcaaf57 100644
+index 5aacb66..4e1c2a8 100644
 --- a/tests/utils/test_processoutput.py
 +++ b/tests/utils/test_processoutput.py
-@@ -34,8 +34,8 @@ class FakeProcessOutput(ProcessOutput):
+@@ -36,8 +36,8 @@ class FakeProcessOutput(ProcessOutput):
      onstdout: Mock
      onstderr: Mock
  
--    onoutput_sender: trio.MemorySendChannel[Tuple[str, str]]
--    onoutput_receiver: trio.MemoryReceiveChannel[Tuple[str, str]]
+-    onoutput_sender: trio.MemorySendChannel[tuple[str, str]]
+-    onoutput_receiver: trio.MemoryReceiveChannel[tuple[str, str]]
 +    onoutput_sender: trio.MemorySendChannel
 +    onoutput_receiver: trio.MemoryReceiveChannel
  
      def __init__(self, *args, ignoresigterm: bool = False, **kwargs):
          command = [sys.executable, "-c", CODE]
-@@ -76,8 +76,8 @@ def get_process(monkeypatch: pytest.MonkeyPatch, _max_test_time) -> Callable[[],
+@@ -78,8 +78,8 @@ def get_process(monkeypatch: pytest.MonkeyPatch, _max_test_time) -> Callable[[],
      trio_run_process = trio.run_process
  
      # use a memory channel, so we can wait until the process has launched
@@ -105,10 +105,10 @@ index 5a1016c..bcaaf57 100644
  
      async def get_process() -> trio.Process:
 diff --git a/tests/webbrowser/cdp/__init__.py b/tests/webbrowser/cdp/__init__.py
-index 094745b..cce5ab9 100644
+index 86615ea..e1497f7 100644
 --- a/tests/webbrowser/cdp/__init__.py
 +++ b/tests/webbrowser/cdp/__init__.py
-@@ -8,8 +8,8 @@ from trio_websocket import CloseReason, ConnectionClosed  # type: ignore[import]
+@@ -5,8 +5,8 @@ from trio_websocket import CloseReason, ConnectionClosed  # type: ignore[import]
  
  
  class FakeWebsocketConnection:
@@ -120,10 +120,10 @@ index 094745b..cce5ab9 100644
      def __init__(self) -> None:
          self.sender, self.receiver = trio.open_memory_channel(10)
 diff --git a/tests/webbrowser/conftest.py b/tests/webbrowser/conftest.py
-index dab5a42..27dfe17 100644
+index e194e95..eba34ca 100644
 --- a/tests/webbrowser/conftest.py
 +++ b/tests/webbrowser/conftest.py
-@@ -28,8 +28,8 @@ def webbrowser_launch(monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCapture
+@@ -29,8 +29,8 @@ def webbrowser_launch(monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCapture
      trio_run_process = trio.run_process
  
      # use a memory channel, so we can wait until the process has launched

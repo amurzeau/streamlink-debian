@@ -116,10 +116,10 @@ index 0000000..78d643b
 +    return self._group_contains(self.value, expected_exception, match, depth)
 +
 diff --git a/tests/webbrowser/cdp/test_client.py b/tests/webbrowser/cdp/test_client.py
-index 18cfb6f..e060da0 100644
+index c0c2629..81e2dd5 100644
 --- a/tests/webbrowser/cdp/test_client.py
 +++ b/tests/webbrowser/cdp/test_client.py
-@@ -4,8 +4,13 @@ from unittest.mock import ANY, AsyncMock, Mock, call
+@@ -7,8 +7,13 @@ from unittest.mock import ANY, AsyncMock, Mock, call
  
  import pytest
  import trio
@@ -134,10 +134,10 @@ index 18cfb6f..e060da0 100644
  from streamlink.session import Streamlink
  from streamlink.webbrowser.cdp.client import CDPClient, CDPClientSession, RequestPausedHandler
 diff --git a/tests/webbrowser/cdp/test_connection.py b/tests/webbrowser/cdp/test_connection.py
-index 1af39d3..b0902c8 100644
+index b822ca2..172b636 100644
 --- a/tests/webbrowser/cdp/test_connection.py
 +++ b/tests/webbrowser/cdp/test_connection.py
-@@ -7,9 +7,14 @@ from unittest.mock import AsyncMock
+@@ -9,9 +9,14 @@ from unittest.mock import AsyncMock
  
  import pytest
  import trio
