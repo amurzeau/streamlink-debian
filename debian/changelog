@@ -1,3 +1,9 @@
+streamlink (7.0.0-1~bpo12+1) bookworm-backports; urgency=medium
+
+  * Rebuild for bookworm-backports.
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Tue, 12 Nov 2024 19:17:13 +0100
+
 streamlink (7.0.0-1) unstable; urgency=medium
 
   * d/README.source: fix commands to upload source-only packages
