@@ -36,6 +36,11 @@ _shtab_streamlink_cli_options=(
   "*--plugin-dirs[
             Load plugins from a list of comma-separated directories. (deprecated)
         ]:plugin_dirs:"
+  "--show-matchers[
+            Show the list of matchers of a specific plugin (URL regex pattern with opt. priority and opt. name).
+
+            The output is a human-readable pseudo YAML format. Please use --json when reading matcher data programmatically.
+        ]:show_matchers:"
   "--can-handle-url[
             Check if Streamlink has a plugin that can handle the specified URL.
 

@@ -11,7 +11,7 @@ from collections.abc import Iterator, Mapping
 from contextlib import suppress
 from pathlib import Path
 from types import ModuleType
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 import streamlink.plugins
 from streamlink.options import Argument, Arguments
@@ -21,13 +21,12 @@ from streamlink.plugin.plugin import _PLUGINARGUMENT_TYPE_REGISTRY, NO_PRIORITY,
 from streamlink.utils.module import exec_module, get_finder
 
 
-try:
-    from typing import TypeAlias, TypedDict  # type: ignore[attr-defined]
-except ImportError:  # pragma: no cover
-    from typing_extensions import TypeAlias, TypedDict
+if TYPE_CHECKING:
+    try:
+        from typing import TypeAlias  # type: ignore[attr-defined]
+    except ImportError:
+        from typing_extensions import TypeAlias
 
-
-if TYPE_CHECKING:  # pragma: no cover
     from _typeshed.importlib import PathEntryFinderProtocol
 
 
@@ -307,7 +306,7 @@ class StreamlinkPluginsData:
             matchers = Matchers()
             for m in plugindata.get("matchers") or []:
                 matcher = cls._build_matcher(m)
-                matchers.register(matcher)
+                matchers.add(matcher)
 
             res[pluginname] = matchers
 
@@ -339,14 +338,14 @@ class StreamlinkPluginsData:
     @staticmethod
     def _build_argument(data: _TPluginArgumentData) -> Argument | None:
         name: str = data.get("name")  # type: ignore[assignment]
-        _typedata = data.get("type")
-        if not _typedata:
-            _type = None
-        elif _type := _PLUGINARGUMENT_TYPE_REGISTRY.get(_typedata):
-            _type_args = data.get("type_args") or ()
-            _type_kwargs = data.get("type_kwargs") or {}
-            if _type_args or _type_kwargs:
-                _type = _type(*_type_args, **_type_kwargs)
+        type_data = data.get("type")
+        if not type_data:
+            argument_type = None
+        elif argument_type := _PLUGINARGUMENT_TYPE_REGISTRY.get(type_data):
+            type_args = data.get("type_args") or ()
+            type_kwargs = data.get("type_kwargs") or {}
+            if type_args or type_kwargs:
+                argument_type = argument_type(*type_args, **type_kwargs)
         else:
             return None
 
@@ -356,7 +355,7 @@ class StreamlinkPluginsData:
             nargs=data.get("nargs"),
             const=data.get("const"),
             default=data.get("default"),
-            type=_type,
+            type=argument_type,
             choices=data.get("choices"),
             required=data.get("required") or False,
             help=data.get("help"),

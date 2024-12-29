@@ -52,7 +52,7 @@ def caplog(caplog: pytest.LogCaptureFixture) -> pytest.LogCaptureFixture:
 
 @pytest.fixture(scope="module")
 def fake_plugin():
-    @pluginmatcher(re.compile("fake"))
+    @pluginmatcher(re.compile(r"fake"))
     @pluginargument("foo")
     @pluginargument("bar")
     class FakePlugin(_Plugin):
@@ -360,10 +360,10 @@ class TestLoadPluginsData:
         assert [(record.name, record.levelname, record.message) for record in caplog.get_records(when="setup")] == []
 
         matchers_a = Matchers()
-        matchers_a.register(Matcher(pattern=re.compile(r"foo"), priority=NORMAL_PRIORITY, name=None))
-        matchers_a.register(Matcher(pattern=re.compile(r"bar", re.VERBOSE), priority=10, name="bar"))
+        matchers_a.add(Matcher(pattern=re.compile(r"foo"), priority=NORMAL_PRIORITY, name=None))
+        matchers_a.add(Matcher(pattern=re.compile(r"bar", re.VERBOSE), priority=10, name="bar"))
         matchers_b = Matchers()
-        matchers_b.register(Matcher(pattern=re.compile(r"baz"), priority=NORMAL_PRIORITY, name=None))
+        matchers_b.add(Matcher(pattern=re.compile(r"baz"), priority=NORMAL_PRIORITY, name=None))
         assert list(session.plugins.iter_matchers()) == [("testpluginA", matchers_a), ("testpluginB", matchers_b)]
 
     @pytest.mark.parametrize(
@@ -535,19 +535,19 @@ class TestLoadPluginsData:
 
 class TestMatchURL:
     def test_priority(self, session: Streamlink):
-        @pluginmatcher(priority=HIGH_PRIORITY, pattern=re.compile("^(high|normal|low|no)$"))
+        @pluginmatcher(priority=HIGH_PRIORITY, pattern=re.compile(r"^(high|normal|low|no)$"))
         class HighPriority(_Plugin):
             pass
 
-        @pluginmatcher(priority=NORMAL_PRIORITY, pattern=re.compile("^(normal|low|no)$"))
+        @pluginmatcher(priority=NORMAL_PRIORITY, pattern=re.compile(r"^(normal|low|no)$"))
         class NormalPriority(_Plugin):
             pass
 
-        @pluginmatcher(priority=LOW_PRIORITY, pattern=re.compile("^(low|no)$"))
+        @pluginmatcher(priority=LOW_PRIORITY, pattern=re.compile(r"^(low|no)$"))
         class LowPriority(_Plugin):
             pass
 
-        @pluginmatcher(priority=NO_PRIORITY, pattern=re.compile("^no$"))
+        @pluginmatcher(priority=NO_PRIORITY, pattern=re.compile(r"^no$"))
         class NoPriority(_Plugin):
             pass
 
@@ -571,7 +571,7 @@ class TestMatchURL:
         assert session.plugins.match_url("high") is None
 
     def test_no_priority(self, session: Streamlink):
-        @pluginmatcher(priority=NO_PRIORITY, pattern=re.compile("^no$"))
+        @pluginmatcher(priority=NO_PRIORITY, pattern=re.compile(r"^no$"))
         class NoPriority(_Plugin):
             pass
 

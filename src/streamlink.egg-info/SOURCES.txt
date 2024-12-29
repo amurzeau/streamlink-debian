@@ -234,7 +234,7 @@ src/streamlink/plugins/vidio.py
 src/streamlink/plugins/vimeo.py
 src/streamlink/plugins/vinhlongtv.py
 src/streamlink/plugins/vk.py
-src/streamlink/plugins/vkplay.py
+src/streamlink/plugins/vkvideo.py
 src/streamlink/plugins/vtvgo.py
 src/streamlink/plugins/welt.py
 src/streamlink/plugins/wwenetwork.py
@@ -266,7 +266,6 @@ src/streamlink/stream/hls/hls.py
 src/streamlink/stream/hls/m3u8.py
 src/streamlink/stream/hls/segment.py
 src/streamlink/stream/segmented/__init__.py
-src/streamlink/stream/segmented/concurrent.py
 src/streamlink/stream/segmented/segment.py
 src/streamlink/stream/segmented/segmented.py
 src/streamlink/utils/__init__.py
@@ -323,6 +322,7 @@ src/streamlink_cli/constants.py
 src/streamlink_cli/exceptions.py
 src/streamlink_cli/main.py
 src/streamlink_cli/py.typed
+src/streamlink_cli/show_matchers.py
 src/streamlink_cli/streamrunner.py
 src/streamlink_cli/output/__init__.py
 src/streamlink_cli/output/abc.py
@@ -366,6 +366,7 @@ tests/cli/main/test_output_stream_passthrough.py
 tests/cli/main/test_player_argv.py
 tests/cli/main/test_resolve_stream_name.py
 tests/cli/main/test_setup_config_args.py
+tests/cli/main/test_show_matchers.py
 tests/cli/main/test_version_check.py
 tests/cli/output/__init__.py
 tests/cli/output/test_file.py
@@ -515,7 +516,7 @@ tests/plugins/test_vidio.py
 tests/plugins/test_vimeo.py
 tests/plugins/test_vinhlongtv.py
 tests/plugins/test_vk.py
-tests/plugins/test_vkplay.py
+tests/plugins/test_vkvideo.py
 tests/plugins/test_vtvgo.py
 tests/plugins/test_welt.py
 tests/plugins/test_wwenetwork.py
@@ -537,6 +538,10 @@ tests/resources/dash/test_2.mpd
 tests/resources/dash/test_3.mpd
 tests/resources/dash/test_8.mpd
 tests/resources/dash/test_9.mpd
+tests/resources/dash/test_baseurl_nested.mpd
+tests/resources/dash/test_baseurl_urljoin.mpd
+tests/resources/dash/test_dynamic_no_publish_time_timeline_with_start.mpd
+tests/resources/dash/test_dynamic_no_publish_time_timeline_without_start.mpd
 tests/resources/dash/test_dynamic_segment_list_no_duration.mpd
 tests/resources/dash/test_dynamic_segment_list_p1.mpd
 tests/resources/dash/test_dynamic_segment_list_p2.mpd
@@ -545,7 +550,6 @@ tests/resources/dash/test_dynamic_segment_list_p4.mpd
 tests/resources/dash/test_dynamic_segment_list_p5.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p1.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p2.mpd
-tests/resources/dash/test_nested_baseurls.mpd
 tests/resources/dash/test_no_segment_list_or_template.mpd
 tests/resources/dash/test_segment_list.mpd
 tests/resources/dash/test_segments_byterange.mpd

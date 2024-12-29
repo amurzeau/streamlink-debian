@@ -1,6 +1,8 @@
 """
-$description Russian live-streaming platform for gaming and esports, owned by VKontakte.
+$description Russian live-streaming platform for gaming and esports, owned by VKontakte. Formerly called vkplay.
+$url live.vkvideo.ru
 $url live.vkplay.ru
+$url vkplay.live
 $type live
 $metadata id
 $metadata author
@@ -20,10 +22,10 @@ log = logging.getLogger(__name__)
 
 
 @pluginmatcher(
-    re.compile(r"https?://(?:live\.vkplay\.ru|vkplay\.live)/(?P<channel_name>\w+)/?$"),
+    re.compile(r"https?://(?:live\.vkvideo\.ru|live\.vkplay\.ru|vkplay\.live)/(?P<channel_name>\w+)/?$"),
 )
-class VKplay(Plugin):
-    API_URL = "https://api.live.vkplay.ru/v1"
+class VKvideo(Plugin):
+    API_URL = "https://api.live.vkvideo.ru/v1"
 
     def _get_streams(self):
         self.author = self.match["channel_name"]
@@ -94,4 +96,4 @@ class VKplay(Plugin):
                 return HLSStream.parse_variant_playlist(self.session, streamurl)
 
 
-__plugin__ = VKplay
+__plugin__ = VKvideo
