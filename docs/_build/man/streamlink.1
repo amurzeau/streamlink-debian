@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Nov 04, 2024" "7.0.0" "Streamlink"
+.TH "STREAMLINK" "1" "Dec 28, 2024" "7.1.1" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -129,6 +129,13 @@ Can be set multiple times to load plugins from multiple directories.
 .TP
 .B \-\-plugin\-dirs DIRECTORY
 Load plugins from a list of comma\-separated directories. (deprecated)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-show\-matchers PLUGIN
+Show the list of matchers of a specific plugin (URL regex pattern with opt. priority and opt. name).
+.sp
+The output is a human\-readable pseudo YAML format. Please use \fI\%\-\-json\fP when reading matcher data programmatically.
 .UNINDENT
 .INDENT 0.0
 .TP

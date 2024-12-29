@@ -107,7 +107,7 @@ class TestPluginMatcher:
 
         with pytest.raises(TypeError) as cm:
             # noinspection PyTypeChecker
-            pluginmatcher(re.compile(""))(MyPlugin)
+            pluginmatcher(re.compile(r""))(MyPlugin)
 
         assert str(cm.value) == "MyPlugin is not a Plugin"
 
@@ -115,7 +115,7 @@ class TestPluginMatcher:
         class MyPlugin(FakePlugin):
             pass
 
-        matcher = pluginmatcher(re.compile("http://foo"), name="foo")
+        matcher = pluginmatcher(re.compile(r"http://foo"), name="foo")
 
         with pytest.raises(ValueError, match=r"^A matcher named 'foo' has already been registered$"):
             matcher(matcher(MyPlugin))
@@ -126,28 +126,63 @@ class TestPluginMatcher:
 
         plugin = MyPlugin(Mock(), "http://foo")
         assert plugin.url == "http://foo"
-        assert plugin.matchers is None
+        assert plugin.matchers == []
         assert plugin.matches == []
         assert plugin.matcher is None
         assert plugin.match is None
 
     def test_matchers(self):
-        @pluginmatcher(re.compile("foo", re.VERBOSE))
-        @pluginmatcher(re.compile("bar"), priority=HIGH_PRIORITY)
-        @pluginmatcher(re.compile("baz"), priority=HIGH_PRIORITY, name="baz")
+        @pluginmatcher(re.compile(r"foo", re.VERBOSE))
+        @pluginmatcher(re.compile(r"bar"), priority=HIGH_PRIORITY)
+        @pluginmatcher(re.compile(r"baz"), priority=HIGH_PRIORITY, name="baz")
         class MyPlugin(FakePlugin):
             pass
 
         assert MyPlugin.matchers == [
-            Matcher(re.compile("foo", re.VERBOSE), NORMAL_PRIORITY),
-            Matcher(re.compile("bar"), HIGH_PRIORITY),
-            Matcher(re.compile("baz"), HIGH_PRIORITY, "baz"),
+            Matcher(re.compile(r"foo", re.VERBOSE), NORMAL_PRIORITY),
+            Matcher(re.compile(r"bar"), HIGH_PRIORITY),
+            Matcher(re.compile(r"baz"), HIGH_PRIORITY, "baz"),
         ]
 
+    def test_matchers_inheritance(self):
+        @pluginmatcher(re.compile(r"foo"))
+        @pluginmatcher(re.compile(r"bar"))
+        class PluginOne(FakePlugin):
+            pass
+
+        @pluginmatcher(re.compile(r"baz"))
+        @pluginmatcher(re.compile(r"qux"))
+        class PluginTwo(PluginOne):
+            pass
+
+        assert PluginOne.matchers is not PluginTwo.matchers
+        assert PluginOne.matchers == [
+            Matcher(re.compile(r"foo"), NORMAL_PRIORITY),
+            Matcher(re.compile(r"bar"), NORMAL_PRIORITY),
+        ]
+        assert PluginTwo.matchers == [
+            Matcher(re.compile(r"baz"), NORMAL_PRIORITY),
+            Matcher(re.compile(r"qux"), NORMAL_PRIORITY),
+            Matcher(re.compile(r"foo"), NORMAL_PRIORITY),
+            Matcher(re.compile(r"bar"), NORMAL_PRIORITY),
+        ]
+
+    # noinspection PyUnusedLocal
+    def test_matchers_inheritance_named_duplicate(self):
+        @pluginmatcher(name="foo", pattern=re.compile(r"foo"))
+        class PluginOne(FakePlugin):
+            pass
+
+        with pytest.raises(ValueError, match=r"^A matcher named 'foo' has already been registered$"):
+
+            @pluginmatcher(name="foo", pattern=re.compile(r"foo"))
+            class PluginTwo(PluginOne):
+                pass
+
     def test_url_setter(self):
-        @pluginmatcher(re.compile("http://(foo)"))
-        @pluginmatcher(re.compile("http://(bar)"))
-        @pluginmatcher(re.compile("http://(baz)"))
+        @pluginmatcher(re.compile(r"http://(foo)"))
+        @pluginmatcher(re.compile(r"http://(bar)"))
+        @pluginmatcher(re.compile(r"http://(baz)"))
         class MyPlugin(FakePlugin):
             pass
 
@@ -176,8 +211,8 @@ class TestPluginMatcher:
         assert plugin.match is None
 
     def test_named_matchers_and_matches(self):
-        @pluginmatcher(re.compile("http://foo"), name="foo")
-        @pluginmatcher(re.compile("http://bar"), name="bar")
+        @pluginmatcher(re.compile(r"http://foo"), name="foo")
+        @pluginmatcher(re.compile(r"http://bar"), name="bar")
         class MyPlugin(FakePlugin):
             pass
 
@@ -233,12 +268,28 @@ class TestPluginArguments:
         assert tuple(arg.dest for arg in pluginclass.arguments) == ("_foo", "_bar", "_baz"), "Argument keyword"
         assert tuple(arg.options.get("help") for arg in pluginclass.arguments) == ("FOO", "BAR", "BAZ"), "argparse keyword"
 
-    def test_mixed(self):
+    @pytest.mark.parametrize("pluginclass", [DecoratedPlugin, ClassAttrPlugin])
+    def test_arguments_mixed(self, pluginclass):
         @pluginargument("qux")
-        class MixedPlugin(self.ClassAttrPlugin):
+        class MixedPlugin(pluginclass):
             pass
 
         assert tuple(arg.name for arg in MixedPlugin.arguments) == ("qux", "foo", "bar", "baz")
+
+    def test_arguments_inheritance(self):
+        @pluginargument("foo", help="FOO")
+        @pluginargument("bar", help="BAR")
+        class PluginOne(FakePlugin):
+            pass
+
+        @pluginargument("baz", help="BAZ")
+        @pluginargument("qux", help="QUX")
+        class PluginTwo(PluginOne):
+            pass
+
+        assert PluginOne.arguments is not PluginTwo.arguments
+        assert tuple(arg.name for arg in PluginOne.arguments) == ("foo", "bar")
+        assert tuple(arg.name for arg in PluginTwo.arguments) == ("baz", "qux", "foo", "bar")
 
     @pytest.mark.parametrize(
         ("options", "args", "expected", "raises"),
@@ -327,7 +378,8 @@ class TestPluginArguments:
         assert str(cm.value) == "Foo is not a Plugin"
 
     def test_empty(self):
-        assert Plugin.arguments is None
+        assert FakePlugin.arguments is not None
+        assert tuple(iter(FakePlugin.arguments)) == ()
 
 
 @pytest.mark.parametrize("attr", ["id", "author", "category", "title"])

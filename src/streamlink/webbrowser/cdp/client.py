@@ -5,7 +5,7 @@ import re
 from collections.abc import AsyncGenerator, Awaitable, Callable, Coroutine, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import trio
 
@@ -16,10 +16,11 @@ from streamlink.webbrowser.cdp.exceptions import CDPError
 from streamlink.webbrowser.chromium import ChromiumWebbrowser
 
 
-try:
-    from typing import Self, TypeAlias  # type: ignore[attr-defined]
-except ImportError:  # pragma: no cover
-    from typing_extensions import Self, TypeAlias
+if TYPE_CHECKING:
+    try:
+        from typing import Self, TypeAlias  # type: ignore[attr-defined]
+    except ImportError:
+        from typing_extensions import Self, TypeAlias
 
 
 TRequestHandlerCallable: TypeAlias = "Callable[[CDPClientSession, fetch.RequestPaused], Awaitable]"
@@ -446,5 +447,5 @@ class CDPClientSession:
         user_agent: str = await self.evaluate("navigator.userAgent", await_promise=False)
         if not user_agent:  # pragma: no cover
             raise CDPError("Could not read navigator.userAgent value")
-        user_agent = re.sub("Headless", "", user_agent, flags=re.IGNORECASE)
+        user_agent = re.sub(r"Headless", "", user_agent, flags=re.IGNORECASE)
         await self.cdp_session.send(network.set_user_agent_override(user_agent=user_agent))

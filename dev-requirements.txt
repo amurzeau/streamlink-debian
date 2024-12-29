@@ -13,11 +13,12 @@ freezegun >=1.0.0
 pytest-cov
 coverage[toml]
 
-# code-linting
-ruff ==0.7.0
+# code-linting / code-formatting
+ruff ==0.8.4
 
 # typing
-mypy ==1.12.1
+mypy[faster-cache] ==1.14.0
+typing-extensions >=4.0.0
 lxml-stubs
 trio-typing
 types-freezegun
