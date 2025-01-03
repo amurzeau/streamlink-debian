@@ -22,7 +22,6 @@ Build-Depends: debhelper-compat (= 13),
  python3-requests,
  python3-trio,
  python3-trio-websocket,
- python3-typing-extensions,
  python3-urllib3,
  python3-websocket,
 # Documentation dependencies

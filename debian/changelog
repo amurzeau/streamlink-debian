@@ -1,3 +1,11 @@
+streamlink (7.1.1-1) unstable; urgency=medium
+
+  * New upstream version 7.1.1
+  * d/patches: update patches
+  * d/control: remove build dependency on python3-typing-extensions
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 29 Dec 2024 14:27:44 +0100
+
 streamlink (7.0.0-1~bpo12+1) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.
