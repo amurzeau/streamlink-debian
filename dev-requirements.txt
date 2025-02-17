@@ -7,17 +7,17 @@ versioningit >=2.0.0,<4  # required for being able to run editable installs
 pytest >=8.0.0
 pytest-trio
 requests-mock
-freezegun >=1.0.0
+freezegun >=1.5.0
 
 # code-coverage
 pytest-cov
 coverage[toml]
 
 # code-linting / code-formatting
-ruff ==0.8.6
+ruff ==0.9.5
 
 # typing
-mypy[faster-cache] ==1.14.1
+mypy[faster-cache] ==1.15.0
 typing-extensions >=4.0.0
 lxml-stubs
 trio-typing

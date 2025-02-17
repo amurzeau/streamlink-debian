@@ -205,7 +205,6 @@ src/streamlink/plugins/sportschau.py
 src/streamlink/plugins/ssh101.py
 src/streamlink/plugins/stadium.py
 src/streamlink/plugins/steam.py
-src/streamlink/plugins/streamable.py
 src/streamlink/plugins/streann.py
 src/streamlink/plugins/stv.py
 src/streamlink/plugins/svtplay.py
@@ -218,7 +217,6 @@ src/streamlink/plugins/trovo.py
 src/streamlink/plugins/turkuvaz.py
 src/streamlink/plugins/tv360.py
 src/streamlink/plugins/tv3cat.py
-src/streamlink/plugins/tv4play.py
 src/streamlink/plugins/tv5monde.py
 src/streamlink/plugins/tv8.py
 src/streamlink/plugins/tv999.py
@@ -487,7 +485,6 @@ tests/plugins/test_sportschau.py
 tests/plugins/test_ssh101.py
 tests/plugins/test_stadium.py
 tests/plugins/test_steam.py
-tests/plugins/test_streamable.py
 tests/plugins/test_streann.py
 tests/plugins/test_stv.py
 tests/plugins/test_svtplay.py
@@ -500,7 +497,6 @@ tests/plugins/test_trovo.py
 tests/plugins/test_turkuvaz.py
 tests/plugins/test_tv360.py
 tests/plugins/test_tv3cat.py
-tests/plugins/test_tv4play.py
 tests/plugins/test_tv5monde.py
 tests/plugins/test_tv8.py
 tests/plugins/test_tv999.py
