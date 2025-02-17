@@ -310,15 +310,20 @@ class TwitchAPI:
         self.access_token_params = dict(access_token_param or [])
         self.access_token_params.setdefault("playerType", "embed")
 
-    def call(self, data, schema=None, **kwargs):
-        res = self.session.http.post(
+    def call(self, data, /, *, headers=None, schema, **kwargs):
+        return self.session.http.post(
             "https://gql.twitch.tv/gql",
             json=data,
-            headers={**self.headers, **kwargs.pop("headers", {})},
+            headers={
+                **self.headers,
+                **(headers or {}),
+            },
+            schema=validate.Schema(
+                validate.parse_json(),
+                schema,
+            ),
             **kwargs,
         )
-
-        return self.session.http.json(res, schema=schema)
 
     @staticmethod
     def _gql_persisted_query(operationname, sha256hash, **variables):
@@ -362,7 +367,7 @@ class TwitchAPI:
 
         return self.call(
             query,
-            schema=validate.Schema(
+            schema=validate.all(
                 {
                     "data": {
                         "video": {
@@ -404,8 +409,8 @@ class TwitchAPI:
 
         return self.call(
             queries,
-            schema=validate.Schema(
-                [
+            schema=validate.all(
+                validate.list(
                     validate.all(
                         {
                             "data": {
@@ -432,7 +437,7 @@ class TwitchAPI:
                             },
                         },
                     ),
-                ],
+                ),
                 validate.union_get(
                     (1, "data", "user", "stream", "id"),
                     (0, "data", "userOrError", "displayName"),
@@ -458,8 +463,8 @@ class TwitchAPI:
 
         return self.call(
             queries,
-            schema=validate.Schema(
-                [
+            schema=validate.all(
+                validate.list(
                     validate.all(
                         {
                             "data": {
@@ -476,7 +481,7 @@ class TwitchAPI:
                         {"data": {"clip": {"title": str}}},
                         validate.get(("data", "clip")),
                     ),
-                ],
+                ),
                 validate.union_get(
                     (0, "id"),
                     (0, "broadcaster", "displayName"),
@@ -512,34 +517,32 @@ class TwitchAPI:
             query,
             acceptable_status=(200, 400, 401, 403),
             headers=headers,
-            schema=validate.Schema(
-                validate.any(
-                    validate.all(
-                        {"errors": [{"message": str}]},
-                        validate.get(("errors", 0, "message")),
-                        validate.transform(lambda data: ("error", None, data)),
-                    ),
-                    validate.all(
-                        {"error": str, "message": str},
-                        validate.union_get("error", "message"),
-                        validate.transform(lambda data: ("error", *data)),
-                    ),
-                    validate.all(
-                        {
-                            "data": validate.any(
-                                validate.all(
-                                    {"streamPlaybackAccessToken": subschema},
-                                    validate.get("streamPlaybackAccessToken"),
-                                ),
-                                validate.all(
-                                    {"videoPlaybackAccessToken": subschema},
-                                    validate.get("videoPlaybackAccessToken"),
-                                ),
+            schema=validate.any(
+                validate.all(
+                    {"errors": [{"message": str}]},
+                    validate.get(("errors", 0, "message")),
+                    validate.transform(lambda data: ("error", None, data)),
+                ),
+                validate.all(
+                    {"error": str, "message": str},
+                    validate.union_get("error", "message"),
+                    validate.transform(lambda data: ("error", *data)),
+                ),
+                validate.all(
+                    {
+                        "data": validate.any(
+                            validate.all(
+                                {"streamPlaybackAccessToken": subschema},
+                                validate.get("streamPlaybackAccessToken"),
                             ),
-                        },
-                        validate.get("data"),
-                        validate.transform(lambda data: ("token", *data) if data is not None else ("token", None, None)),
-                    ),
+                            validate.all(
+                                {"videoPlaybackAccessToken": subschema},
+                                validate.get("videoPlaybackAccessToken"),
+                            ),
+                        ),
+                    },
+                    validate.get("data"),
+                    validate.transform(lambda data: ("token", *data) if data is not None else ("token", None, None)),
                 ),
             ),
         )
@@ -553,7 +556,7 @@ class TwitchAPI:
 
         return self.call(
             query,
-            schema=validate.Schema(
+            schema=validate.all(
                 {
                     "data": {
                         "clip": {
@@ -875,22 +878,23 @@ class Twitch(Plugin):
         response = ""
         data = (None, None)
 
-        # try without a client-integrity token first (the web player did the same on 2023-05-31)
-        if not self.options.get("force-client-integrity"):
+        # if live, try without a client-integrity token first (the web player did the same on 2023-05-31)
+        # if not live, we don't need a client-integrity token
+        if not is_live or not self.options.get("force-client-integrity"):
             response, *data = self.api.access_token(is_live, channel_or_vod)
 
-        # try again with a client-integrity token if the API response was erroneous
-        if response != "token":
-            client_integrity = self._client_integrity_token(channel_or_vod) if is_live else None
+        # if live and the previous API response was erroneous, try again with a client-integrity token
+        if is_live and response != "token":
+            client_integrity = self._client_integrity_token(channel_or_vod)
             response, *data = self.api.access_token(is_live, channel_or_vod, client_integrity)
 
-            # unknown API response error: abort
-            if response != "token":
-                error, message = data
-                raise PluginError(f"{error or 'Error'}: {message or 'Unknown error'}")
+        # unknown API response error: abort
+        if response != "token":
+            error, message = data
+            raise PluginError(f"{error or 'Error'}: {message or 'Unknown error'}")
 
         # access token response was empty: stream is offline or channel doesn't exist
-        if response == "token" and data[0] is None:
+        elif data[0] is None:
             raise NoStreamsError
 
         sig, token = data

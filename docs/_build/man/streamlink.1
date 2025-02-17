@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Jan 08, 2025" "7.1.2" "Streamlink"
+.TH "STREAMLINK" "1" "Feb 14, 2025" "7.1.3" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -195,7 +195,13 @@ Set a custom logging format.
 See the Python standard library\(aqs \fBlogging.Formatter\fP docs for more information about the logging format
 and the available \fBLogRecord\fP attributes. Streamlink\(aqs formatter uses the curly brace style.
 .sp
-The default format depends on the chosen log level (may include the \fBasctime\fP attribute).
+The default format depends on the chosen log level.
+.sp
+For verbose levels (\fBtrace\fP and \fBall\fP):
+.sp
+Default is: \fB\(dq[{asctime}][{name}][{levelname}] {message}\(dq\fP\&.
+.sp
+Otherwise:
 .sp
 Default is: \fB\(dq[{name}][{levelname}] {message}\(dq\fP\&.
 .UNINDENT
@@ -206,7 +212,13 @@ Set a custom logging date format.
 .sp
 This formats the \fBLogRecord\fP\(aqs \fBasctime\fP attribute via \fBstrftime()\fP\&.
 .sp
-The default date format depends on the chosen log level (may include fractions).
+The default date format depends on the chosen log level.
+.sp
+For verbose levels (\fBtrace\fP and \fBall\fP):
+.sp
+Default is: \fB\(dq%H:%M:%S.%f\(dq\fP\&.
+.sp
+Otherwise:
 .sp
 Default is: \fB\(dq%H:%M:%S\(dq\fP\&.
 .UNINDENT
@@ -1281,7 +1293,7 @@ The email address used to register with tf1.fr.
 .INDENT 0.0
 .TP
 .B \-\-tf1\-password PASSWORD
-A tf1.fr account password to use with \-\-tf1\-username.
+A tf1.fr account password to use with \fI\%\-\-tf1\-email\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP

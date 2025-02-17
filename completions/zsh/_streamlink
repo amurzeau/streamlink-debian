@@ -82,7 +82,13 @@ _shtab_streamlink_cli_options=(
             See the Python standard library\'s \`logging.Formatter\` docs for more information about the logging format
             and the available \`LogRecord\` attributes. Streamlink\'s formatter uses the curly brace style.
 
-            The default format depends on the chosen log level (may include the \`asctime\` attribute).
+            The default format depends on the chosen log level.
+
+            For verbose levels (\`trace\` and \`all\`)\:
+
+            Default is \"\[\{asctime\}\]\[\{name\}\]\[\{levelname\}\] \{message\}\".
+
+            Otherwise\:
 
             Default is \"\[\{name\}\]\[\{levelname\}\] \{message\}\".
         ]:logformat:"
@@ -91,7 +97,13 @@ _shtab_streamlink_cli_options=(
 
             This formats the \`LogRecord\`\'s \`asctime\` attribute via \`strftime()\`.
 
-            The default date format depends on the chosen log level (may include fractions).
+            The default date format depends on the chosen log level.
+
+            For verbose levels (\`trace\` and \`all\`)\:
+
+            Default is \"\%H\:\%M\:\%S.\%f\".
+
+            Otherwise\:
 
             Default is \"\%H\:\%M\:\%S\".
         ]:logdateformat:"
@@ -737,7 +749,7 @@ _shtab_streamlink_cli_options=(
   "--steam-password[A Steam account password to use with --steam-email.]:steam_password:"
   "--streann-url[Source URL where the iframe is located, only required for direct URLs of ott.streann.com]:streann_url:"
   "--tf1-email[The email address used to register with tf1.fr.]:tf1_email:"
-  "--tf1-password[A tf1.fr account password to use with --tf1-username.]:tf1_password:"
+  "--tf1-password[A tf1.fr account password to use with --tf1-email.]:tf1_password:"
   "--tf1-purge-credentials[Purge cached tf1.fr credentials to initiate a new session and reauthenticate.]"
   "--twitcasting-password[Password for private Twitcasting streams.]:twitcasting_password:"
   "--twitch-disable-ads[
