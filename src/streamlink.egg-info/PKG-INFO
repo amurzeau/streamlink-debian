@@ -1,6 +1,6 @@
 Metadata-Version: 2.2
 Name: streamlink
-Version: 7.1.2
+Version: 7.1.3
 Summary: Streamlink is a command-line utility that extracts streams from various services and pipes them into a video player of choice.
 Author: Streamlink
 Author-email: streamlink@protonmail.com
