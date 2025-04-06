@@ -3,6 +3,7 @@ streamlink (7.2.0-1) unstable; urgency=medium
   * New upstream version 7.2.0
   * d/control: add suggests on python3-brotli and python3-zstandard to
     support websites requiring these decompression standards like euronews
+  * d/control: bump standard version to 4.7.2, no change required
 
  -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 06 Apr 2025 18:51:30 +0200
 
