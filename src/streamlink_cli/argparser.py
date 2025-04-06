@@ -412,9 +412,7 @@ def build_parser():
         "--quiet",
         action="store_true",
         help="""
-            Hide all log output.
-
-            Alias for --loglevel=none.
+            Suppress all console and log output, and also disable user prompts.
         """,
     )
     logging.add_argument(
@@ -816,13 +814,16 @@ def build_parser():
     stream.add_argument(
         "--retry-streams",
         metavar="DELAY",
-        type=num(float, gt=0),
+        type=num(float, ge=0),
         help="""
             Retry fetching the list of available streams until streams are found
-            while waiting `DELAY` second(s) between each attempt. If unset, only one
-            attempt will be made to fetch the list of streams available.
+            while waiting `DELAY` second(s) between each attempt.
 
-            The number of fetch retry attempts can be capped with --retry-max.
+            The number of retry attempts can be capped with --retry-max.
+            A default value of ``1`` is implied for non-zero values of --retry-max.
+
+            If both --retry-streams and --retry-max are set to `0`, then only one attempt will be made
+            to fetch the list of available streams. This is the default behavior.
         """,
     )
     stream.add_argument(
@@ -830,10 +831,10 @@ def build_parser():
         metavar="COUNT",
         type=num(int, ge=0),
         help="""
-            When using --retry-streams, stop retrying the fetch after `COUNT` retry
-            attempt(s). Fetch will retry infinitely if `COUNT` is zero or unset.
+            Stop fetching the list of available streams after `COUNT` retry attempt(s).
 
-            If --retry-max is set without setting --retry-streams, the delay between retries will default to 1 second.
+            A value of `0` makes Streamlink fetch streams indefinitely if --retry-streams is set to a non-zero value.
+            If --retry-streams is unset, then the default delay between fetching available streams is 1 second.
         """,
     )
     stream.add_argument(
