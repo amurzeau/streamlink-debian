@@ -175,7 +175,6 @@ src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nicolive.py
 src/streamlink/plugins/nimotv.py
 src/streamlink/plugins/nos.py
-src/streamlink/plugins/nowtvtr.py
 src/streamlink/plugins/nrk.py
 src/streamlink/plugins/okru.py
 src/streamlink/plugins/olympicchannel.py
@@ -455,7 +454,6 @@ tests/plugins/test_nhkworld.py
 tests/plugins/test_nicolive.py
 tests/plugins/test_nimotv.py
 tests/plugins/test_nos.py
-tests/plugins/test_nowtvtr.py
 tests/plugins/test_nrk.py
 tests/plugins/test_okru.py
 tests/plugins/test_olympicchannel.py
@@ -554,10 +552,11 @@ tests/resources/dash/test_static_no_publish_time.mpd
 tests/resources/dash/test_suggested_presentation_delay.mpd
 tests/resources/dash/test_timeline_ids.mpd
 tests/resources/hls/test_1.m3u8
-tests/resources/hls/test_2.m3u8
 tests/resources/hls/test_date.m3u8
 tests/resources/hls/test_master.m3u8
 tests/resources/hls/test_master_twitch_vod.m3u8
+tests/resources/hls/test_media_language.m3u8
+tests/resources/hls/test_media_language_special.m3u8
 tests/resources/hls/test_multivariant_bandwidth.m3u8
 tests/session/__init__.py
 tests/session/test_http.py
