@@ -46,7 +46,12 @@ Architecture: all
 Depends: ${misc:Depends},
  ${python3:Depends}
 Recommends: ffmpeg
-Suggests: streamlink, python3-streamlink-doc
+Suggests: streamlink,
+ python3-streamlink-doc,
+# Used for decompressing HTTP responses. Needed for euronews for example.
+# See also: https://github.com/streamlink/streamlink/pull/6452
+ python3-brotli,
+ python3-zstandard
 Description: Python module for extracting video streams from various websites
  Streamlink is a CLI utility which pipes video streams from various services
  into a video player, such as VLC.
