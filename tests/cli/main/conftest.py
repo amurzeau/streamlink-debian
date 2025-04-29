@@ -15,6 +15,22 @@ def argv(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch):
     return argv
 
 
+@pytest.fixture(autouse=True)
+def _console_output_stream(monkeypatch: pytest.MonkeyPatch):
+    # don't wrap stdout/stderr in CLI integration tests, as we're capturing the output
+    monkeypatch.setattr("streamlink_cli.console.stream_wrapper.StreamWrapper._wrap", Mock())
+    # don't do any feature checks
+    monkeypatch.setattr("streamlink_cli.console.stream.ConsoleOutputStream.__new__", lambda cls, *_, **__: object.__new__(cls))
+
+
+@pytest.fixture(autouse=True)
+def mock_console_output_close(monkeypatch: pytest.MonkeyPatch):
+    mock_close = Mock()
+    monkeypatch.setattr("streamlink_cli.console.console.ConsoleOutput.close", mock_close)
+
+    return mock_close
+
+
 @pytest.fixture()
 def user_input_requester():
     return Mock(
