@@ -15,7 +15,7 @@ from contextlib import closing, suppress
 from gettext import gettext
 from pathlib import Path
 from time import sleep
-from typing import Any, TextIO
+from typing import Any
 
 import streamlink.logger as logger
 from streamlink import NoPluginError, PluginError, StreamError, Streamlink, __version__ as streamlink_version
@@ -32,8 +32,16 @@ from streamlink_cli.argparser import (
     setup_session_options,
 )
 from streamlink_cli.compat import stdout
-from streamlink_cli.console import ConsoleOutput, ConsoleUserInputRequester
-from streamlink_cli.constants import CONFIG_FILES, DEFAULT_STREAM_METADATA, LOG_DIR, PLUGIN_DIRS, STREAM_SYNONYMS
+from streamlink_cli.console import ConsoleOutput, ConsoleOutputStream, ConsoleUserInputRequester
+from streamlink_cli.console.progress import Progress
+from streamlink_cli.constants import (
+    CONFIG_FILES,
+    DEFAULT_STREAM_METADATA,
+    LOG_DIR,
+    PLUGIN_DIRS,
+    PROGRESS_INTERVAL_NO_STATUS,
+    STREAM_SYNONYMS,
+)
 from streamlink_cli.exceptions import StreamlinkCLIError
 from streamlink_cli.output import FileOutput, HTTPOutput, PlayerOutput
 from streamlink_cli.show_matchers import show_matchers
@@ -357,6 +365,29 @@ def open_stream(stream):
     return stream_fd, prebuffer
 
 
+# noinspection PyShadowingNames
+def get_output_progress(output: FileOutput | PlayerOutput) -> Progress | None:
+    if (force := args.progress == "force") or args.progress == "yes" and console.supports_status_messages():
+        options: dict[str, Any] = {}
+        # on non-interactive stdio, write progress status messages as regular messages in a slower interval
+        if force and not console.supports_status_messages():
+            options |= {
+                "interval": PROGRESS_INTERVAL_NO_STATUS,
+                "status": False,
+            }
+
+        if isinstance(output, PlayerOutput):
+            if output.record and output.record.filename:
+                return Progress(console, path=output.record.filename, **options)
+        elif isinstance(output, FileOutput):  # pragma: no branch
+            if output.filename:
+                return Progress(console, path=output.filename, **options)
+            elif output.record and output.record.filename:  # pragma: no branch
+                return Progress(console, path=output.record.filename, **options)
+
+    return None
+
+
 def output_stream(stream, formatter: Formatter):
     """Open stream, create output and finally write the stream to output."""
     global output
@@ -387,15 +418,12 @@ def output_stream(stream, formatter: Formatter):
             raise StreamlinkCLIError(f"Failed to open output ({err})") from err
 
     try:
+        progress = get_output_progress(output)
         with closing(output):
             log.debug("Writing stream to output")
-            show_progress = (
-                args.progress == "force"
-                or args.progress == "yes" and (sys.stderr.isatty() if sys.stderr else False)
-            )  # fmt: skip
             # TODO: finally clean up the global variable mess and refactor the streamlink_cli package
             # noinspection PyUnboundLocalVariable
-            stream_runner = StreamRunner(stream_fd, output, show_progress=show_progress)
+            stream_runner = StreamRunner(stream_fd, output, progress=progress)
             # noinspection PyUnboundLocalVariable
             stream_runner.run(prebuffer)
     except OSError as err:
@@ -852,14 +880,22 @@ def log_current_arguments(session: Streamlink, parser: argparse.ArgumentParser):
 def setup_console() -> None:
     global console
 
-    console_output: TextIO | None
-    if args.quiet:
+    console_output: ConsoleOutputStream | None
+    no_stdout = sys.stdout is None
+    no_stderr = sys.stderr is None
+    if no_stdout and no_stderr or args.quiet:
+        # Console output should be empty if
+        # - neither stdout nor stderr exist
+        # - `--quiet` is set
         console_output = None
-    elif args.stdout or args.output == "-" or args.record == "-" or args.record_and_pipe:
-        # Console output should be on stderr if we are outputting a stream to stdout
-        console_output = sys.stderr
+    elif no_stdout or args.stdout or args.output == "-" or args.record == "-" or args.record_and_pipe:
+        # Console output should be on stderr if
+        # - no stdout exists, but stderr does
+        # - we are outputting a stream to stdout
+        console_output = ConsoleOutputStream.wrap(sys, "stderr")
     else:
-        console_output = sys.stdout or sys.stderr
+        # Default console output is stdout (if it exists)
+        console_output = ConsoleOutputStream.wrap(sys, "stdout")
 
     console = ConsoleOutput(console_output=console_output, json=args.json)
 
@@ -981,10 +1017,11 @@ def main():
             else:
                 console.msg(f"error: {msg}")
 
+    # flush+close console and file streams, and remove stream wrapper
+    console.close()
+
     # https://docs.python.org/3/library/signal.html#note-on-sigpipe
-    try:
-        sys.stdout.flush()
-    except (AttributeError, OSError):
-        del sys.stdout
+    # Prevent BrokenPipeError: unset sys.stdout, so Python doesn't attempt a flush() on exit
+    del sys.stdout
 
     sys.exit(exit_code)

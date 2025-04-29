@@ -1,17 +1,16 @@
 Metadata-Version: 2.4
 Name: streamlink
-Version: 7.2.0
+Version: 7.3.0
 Summary: Streamlink is a command-line utility that extracts streams from various services and pipes them into a video player of choice.
 Author: Streamlink
 Author-email: streamlink@protonmail.com
-License: Simplified BSD
+License-Expression: BSD-2-Clause
 Project-URL: Homepage, https://github.com/streamlink/streamlink
 Project-URL: Documentation, https://streamlink.github.io/
 Project-URL: Tracker, https://github.com/streamlink/streamlink/issues
 Project-URL: Source, https://github.com/streamlink/streamlink
 Project-URL: Funding, https://streamlink.github.io/latest/support.html
 Classifier: Development Status :: 5 - Production/Stable
-Classifier: License :: OSI Approved :: BSD License
 Classifier: Environment :: Console
 Classifier: Intended Audience :: End Users/Desktop
 Classifier: Operating System :: POSIX
