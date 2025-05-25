@@ -1,3 +1,10 @@
+streamlink (7.3.0-2) unstable; urgency=medium
+
+  * d/control: remove unneeded build-dependency python3-exceptiongroup
+    (Closes: #1106515)
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sun, 25 May 2025 14:35:32 +0200
+
 streamlink (7.3.0-1) unstable; urgency=medium
 
   * New upstream version 7.3.0
