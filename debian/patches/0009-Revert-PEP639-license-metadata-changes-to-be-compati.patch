@@ -1,0 +1,50 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Sat, 21 Jun 2025 13:14:38 +0200
+Subject: Revert PEP639 license metadata changes to be compatible with
+ bookworm's setuptools
+
+Forwarded: not-needed
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ pyproject.toml | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 8303a6e..99e8e15 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [build-system]
+ requires = [
+-  "setuptools >=77",
++  "setuptools >=65.6",
+   "wheel",
+   # The versioningit build-requirement gets removed from the source distribution,
+   # as the version string is already built into it (see the onbuild versioningit hook):
+@@ -20,14 +20,14 @@ description = """\
+ Streamlink is a command-line utility that extracts streams from various services and pipes them into a video player of choice.\
+ """
+ readme = "README.md"
+-license = "BSD-2-Clause"
+-license-files = ["LICENSE"]
++license = { text = "Simplified BSD" }
+ authors = [
+   { name = "Streamlink" },
+   { email = "streamlink@protonmail.com" }
+ ]
+ classifiers = [
+   "Development Status :: 5 - Production/Stable",
++  "License :: OSI Approved :: BSD License",
+   "Environment :: Console",
+   "Intended Audience :: End Users/Desktop",
+   "Operating System :: POSIX",
+@@ -88,6 +88,9 @@ Funding = "https://streamlink.github.io/latest/support.html"
+ # https://setuptools.pypa.io/en/stable/userguide/pyproject_config.html
+ # https://setuptools.pypa.io/en/stable/userguide/package_discovery.html
+ # https://setuptools.pypa.io/en/stable/userguide/datafiles.html
++[tool.setuptools]
++license-files = ["LICENSE"]
++
+ [tool.setuptools.packages.find]
+ where = ["src"]
+ namespaces = false

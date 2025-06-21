@@ -6,3 +6,4 @@
 0008-Remove-intersphinx.patch
 0009-Fix-tests-with-pytest-v7.patch
 0008-Fix-trio-typing-with-python3-trio-0.22.0.patch
+0009-Revert-PEP639-license-metadata-changes-to-be-compati.patch
