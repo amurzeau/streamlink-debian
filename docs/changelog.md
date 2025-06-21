@@ -1,5 +1,37 @@
 # Changelog
 
+## streamlink 7.3.0 (2025-04-26)
+
+- Changed: download progress to use the console output stream rather than always `stderr`, which previously caused log and progress messages to be interweaved ([#6497](https://github.com/streamlink/streamlink/pull/6497), [#6496](https://github.com/streamlink/streamlink/pull/6496))
+- Changed: download progress output to be a status message line at the bottom of the console output, unless `--progress=force` is set in non-interactive or unsupported environments, in which case less frequent regular progress messages are written ([#6497](https://github.com/streamlink/streamlink/pull/6497), [#6496](https://github.com/streamlink/streamlink/pull/6496))
+- Fixed: potential division by zero error when formatting progress output ([#6498](https://github.com/streamlink/streamlink/pull/6498))
+- Build: bumped `setuptools` requirement from `>=65.6` to `>=77` and switched to PEP 639 project license metadata format ([#6502](https://github.com/streamlink/streamlink/pull/6502))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/7.2.0...7.3.0)
+
+
+## streamlink 7.2.0 (2025-04-04)
+
+- Added: `decompress` extras marker to Streamlink's optional dependencies for installing `brotli` and `zstandard`, which were previously implied optional dependencies via the transitive dependency `urllib3` ([#6451](https://github.com/streamlink/streamlink/pull/6451))
+- Changed: `--retry-streams` to allow a value of `0`, so it can be unset again if set previously ([#6455](https://github.com/streamlink/streamlink/pull/6455))
+- Changed: `--quiet` to suppress all text output including errors, not just log output ([#6461](https://github.com/streamlink/streamlink/pull/6461))
+- Fixed: `--logfile` affecting the console output stream ([#6461](https://github.com/streamlink/streamlink/pull/6461))
+- Fixed: broken user input prompt behavior on missing or non-interactive I/O streams ([#6461](https://github.com/streamlink/streamlink/pull/6461))
+- Fixed: `Plugin` classes not requiring a matching matcher ([#6466](https://github.com/streamlink/streamlink/pull/6466))
+- Fixed: `--hls-audio-select` not being case-insensitive and only comparing input values rather than resolved language codes ([#6469](https://github.com/streamlink/streamlink/pull/6469), [#6479](https://github.com/streamlink/streamlink/pull/6479))
+- Updated: Chrome Devtool Protocol interfaces, to match recent Chromium versions ([#6481](https://github.com/streamlink/streamlink/pull/6481))
+- Updated plugins:
+  - euronews: rewritten and fixed plugin ([#6452](https://github.com/streamlink/streamlink/pull/6452))
+  - kick: refactored plugin, fixed clip matcher and 403 API responses ([#6491](https://github.com/streamlink/streamlink/pull/6491))
+  - nicolive: fixed plugin not loading cookies from WebSocket messages ([#6441](https://github.com/streamlink/streamlink/pull/6441))
+  - nicolive: made the plugin always filter out blank HLS segments ([#6476](https://github.com/streamlink/streamlink/pull/6476))
+  - nowtvtr: removed plugin ([#6488](https://github.com/streamlink/streamlink/pull/6488))
+  - okru: canonicalize mobile URLs ([#6444](https://github.com/streamlink/streamlink/pull/6444))
+  - tf1: fixed stream matcher ([#6439](https://github.com/streamlink/streamlink/pull/6439))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/7.1.3...7.2.0)
+
+
 ## streamlink 7.1.3 (2025-02-14)
 
 - Fixed: `validate.contains()` to allow all kinds of `Container` object inputs ([#6421](https://github.com/streamlink/streamlink/pull/6421))

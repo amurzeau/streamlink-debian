@@ -17,3 +17,6 @@ trio<1,>=0.22.0
 
 [:python_version >= "3.13"]
 trio<1,>=0.25.0
+
+[decompress]
+urllib3[brotli,zstd]<3,>=1.26.0

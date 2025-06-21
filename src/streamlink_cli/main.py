@@ -32,8 +32,16 @@ from streamlink_cli.argparser import (
     setup_session_options,
 )
 from streamlink_cli.compat import stdout
-from streamlink_cli.console import ConsoleOutput, ConsoleUserInputRequester
-from streamlink_cli.constants import CONFIG_FILES, DEFAULT_STREAM_METADATA, LOG_DIR, PLUGIN_DIRS, STREAM_SYNONYMS
+from streamlink_cli.console import ConsoleOutput, ConsoleOutputStream, ConsoleUserInputRequester
+from streamlink_cli.console.progress import Progress
+from streamlink_cli.constants import (
+    CONFIG_FILES,
+    DEFAULT_STREAM_METADATA,
+    LOG_DIR,
+    PLUGIN_DIRS,
+    PROGRESS_INTERVAL_NO_STATUS,
+    STREAM_SYNONYMS,
+)
 from streamlink_cli.exceptions import StreamlinkCLIError
 from streamlink_cli.output import FileOutput, HTTPOutput, PlayerOutput
 from streamlink_cli.show_matchers import show_matchers
@@ -86,12 +94,12 @@ def check_file_output(path: Path, force: bool) -> Path:
     log.debug("Checking file output")
 
     if realpath.is_file() and not force:
-        if sys.stdin and sys.stdin.isatty():
+        try:
             answer = console.ask(f"File {path} already exists! Overwrite it? [y/N] ")
-            if not answer or answer.lower() != "y":
-                raise StreamlinkCLIError()
-        else:
+        except OSError:
             log.error(f"File {path} already exists, use --force to overwrite it.")
+            raise StreamlinkCLIError() from None
+        if not answer or answer.lower() != "y":
             raise StreamlinkCLIError()
 
     return realpath
@@ -357,6 +365,29 @@ def open_stream(stream):
     return stream_fd, prebuffer
 
 
+# noinspection PyShadowingNames
+def get_output_progress(output: FileOutput | PlayerOutput) -> Progress | None:
+    if (force := args.progress == "force") or args.progress == "yes" and console.supports_status_messages():
+        options: dict[str, Any] = {}
+        # on non-interactive stdio, write progress status messages as regular messages in a slower interval
+        if force and not console.supports_status_messages():
+            options |= {
+                "interval": PROGRESS_INTERVAL_NO_STATUS,
+                "status": False,
+            }
+
+        if isinstance(output, PlayerOutput):
+            if output.record and output.record.filename:
+                return Progress(console, path=output.record.filename, **options)
+        elif isinstance(output, FileOutput):  # pragma: no branch
+            if output.filename:
+                return Progress(console, path=output.filename, **options)
+            elif output.record and output.record.filename:  # pragma: no branch
+                return Progress(console, path=output.record.filename, **options)
+
+    return None
+
+
 def output_stream(stream, formatter: Formatter):
     """Open stream, create output and finally write the stream to output."""
     global output
@@ -387,15 +418,12 @@ def output_stream(stream, formatter: Formatter):
             raise StreamlinkCLIError(f"Failed to open output ({err})") from err
 
     try:
+        progress = get_output_progress(output)
         with closing(output):
             log.debug("Writing stream to output")
-            show_progress = (
-                args.progress == "force"
-                or args.progress == "yes" and (sys.stderr.isatty() if sys.stderr else False)
-            )  # fmt: skip
             # TODO: finally clean up the global variable mess and refactor the streamlink_cli package
             # noinspection PyUnboundLocalVariable
-            stream_runner = StreamRunner(stream_fd, output, show_progress=show_progress)
+            stream_runner = StreamRunner(stream_fd, output, progress=progress)
             # noinspection PyUnboundLocalVariable
             stream_runner.run(prebuffer)
     except OSError as err:
@@ -480,6 +508,8 @@ def fetch_streams_with_retry(plugin: Plugin, interval: float, count: int) -> Map
 
     try:
         streams = fetch_streams(plugin)
+    except FatalPluginError:
+        raise
     except PluginError as err:
         log.error(err)
         streams = None
@@ -583,9 +613,10 @@ def handle_url():
 
     try:
         pluginname, pluginclass, resolved_url = streamlink.resolve_url(args.url)
+        log.info(f"Found matching plugin {pluginname} for URL {args.url}")
+
         options = setup_plugin_options(streamlink, args, pluginname, pluginclass)
         plugin = pluginclass(streamlink, resolved_url, options)
-        log.info(f"Found matching plugin {pluginname} for URL {args.url}")
 
         if args.retry_max or args.retry_streams:
             retry_streams = 1
@@ -713,6 +744,8 @@ def setup_args(
 
     if not args.url and args.url_param:
         args.url = args.url_param
+
+    args.silent_log = any(getattr(args, attr) for attr in QUIET_OPTIONS)
 
 
 def setup_config_args(parser, ignore_unknown=False):
@@ -844,17 +877,36 @@ def log_current_arguments(session: Streamlink, parser: argparse.ArgumentParser):
             log.debug(f" {name}={value if name not in sensitive else '*' * 8}")
 
 
-def setup_logger_and_console(
-    stream=sys.stdout,
-    level: str = "info",
-    fmt: str | None = None,
-    datefmt: str | None = None,
-    file: str | None = None,
-    json=False,
-):
+def setup_console() -> None:
     global console
 
-    verbose = level in ("trace", "all")
+    console_output: ConsoleOutputStream | None
+    no_stdout = sys.stdout is None
+    no_stderr = sys.stderr is None
+    if no_stdout and no_stderr or args.quiet:
+        # Console output should be empty if
+        # - neither stdout nor stderr exist
+        # - `--quiet` is set
+        console_output = None
+    elif no_stdout or args.stdout or args.output == "-" or args.record == "-" or args.record_and_pipe:
+        # Console output should be on stderr if
+        # - no stdout exists, but stderr does
+        # - we are outputting a stream to stdout
+        console_output = ConsoleOutputStream.wrap(sys, "stderr")
+    else:
+        # Default console output is stdout (if it exists)
+        console_output = ConsoleOutputStream.wrap(sys, "stdout")
+
+    console = ConsoleOutput(console_output=console_output, json=args.json)
+
+
+def setup_logger() -> None:
+    level: str = args.loglevel if not args.silent_log else logging.getLevelName(logger.NONE)
+    file: str | None = args.logfile if level != logging.getLevelName(logger.NONE) else None
+    fmt: str | None = args.logformat
+    datefmt: str | None = args.logdateformat
+
+    verbose = level in (logging.getLevelName(logger.TRACE), logging.getLevelName(logger.ALL))
     if not fmt:
         if verbose:
             fmt = "[{asctime}][{name}][{levelname}] {message}"
@@ -883,13 +935,14 @@ def setup_logger_and_console(
             datefmt=datefmt,
             style="{",
             level=level,
-            stream=stream,
+            stream=console.console_output,
             capture_warnings=True,
         )
     except Exception as err:
         raise StreamlinkCLIError(f"Logging setup error: {err}") from err
 
-    console = ConsoleOutput(streamhandler.stream, json)
+    if isinstance(streamhandler, logging.FileHandler):
+        console.file_output = streamhandler.stream
 
 
 def setup(parser: ArgumentParser) -> None:
@@ -897,25 +950,8 @@ def setup(parser: ArgumentParser) -> None:
     # call argument set up as early as possible to load args from config files
     setup_config_args(parser, ignore_unknown=True)
 
-    # Console output should be on stderr if we are outputting
-    # a stream to stdout.
-    if args.stdout or args.output == "-" or args.record == "-" or args.record_and_pipe:
-        console_out = sys.stderr
-    else:
-        console_out = sys.stdout
-
-    # We don't want log output when we are printing JSON or a command-line.
-    silent_log = any(getattr(args, attr) for attr in QUIET_OPTIONS)
-    log_level = args.loglevel if not silent_log else "none"
-    log_file = args.logfile if log_level != "none" else None
-    setup_logger_and_console(
-        stream=console_out,
-        level=log_level,
-        fmt=args.logformat,
-        datefmt=args.logdateformat,
-        file=log_file,
-        json=args.json,
-    )
+    setup_console()
+    setup_logger()
 
     setup_streamlink()
     # load additional plugins
@@ -926,8 +962,7 @@ def setup(parser: ArgumentParser) -> None:
     setup_config_args(parser)
 
     # update the logging level if changed by a plugin specific config
-    log_level = args.loglevel if not silent_log else "none"
-    logger.root.setLevel(log_level)
+    logger.root.setLevel(args.loglevel if not args.silent_log else logger.NONE)
 
     log_root_warning()
     log_current_versions()
@@ -982,10 +1017,11 @@ def main():
             else:
                 console.msg(f"error: {msg}")
 
+    # flush+close console and file streams, and remove stream wrapper
+    console.close()
+
     # https://docs.python.org/3/library/signal.html#note-on-sigpipe
-    try:
-        sys.stdout.flush()
-    except (AttributeError, OSError):
-        del sys.stdout
+    # Prevent BrokenPipeError: unset sys.stdout, so Python doesn't attempt a flush() on exit
+    del sys.stdout
 
     sys.exit(exit_code)
