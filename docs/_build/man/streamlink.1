@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Apr 26, 2025" "7.3.0" "Streamlink"
+.TH "STREAMLINK" "1" "Jul 08, 2025" "7.5.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -115,44 +115,6 @@ Default is: \fB\(dqno\(dq\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-plugins
-Print a list of all currently installed plugins.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-plugin\-dir DIRECTORY
-Load plugins from this directory.
-.sp
-Can be set multiple times to load plugins from multiple directories.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-plugin\-dirs DIRECTORY
-Load plugins from a list of comma\-separated directories. (deprecated)
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-show\-matchers PLUGIN
-Show the list of matchers of a specific plugin (URL regex pattern with opt. priority and opt. name).
-.sp
-The output is a human\-readable pseudo YAML format. Please use \fI\%\-\-json\fP when reading matcher data programmatically.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-can\-handle\-url URL
-Check if Streamlink has a plugin that can handle the specified URL.
-.sp
-Status code is \fB0\fP on success, \fB1\fP on failure.
-.sp
-Useful for external scripting.
-.UNINDENT
-.INDENT 0.0
-.TP
-.B \-\-can\-handle\-url\-no\-redirect URL
-Same as \fI\%\-\-can\-handle\-url\fP, but without following redirects when looking up the URL.
-.UNINDENT
-.INDENT 0.0
-.TP
 .B \-\-config FILENAME
 Load options from this config file.
 .sp
@@ -199,7 +161,7 @@ The default format depends on the chosen log level.
 .sp
 For verbose levels (\fBtrace\fP and \fBall\fP):
 .sp
-Default is: \fB\(dq[{asctime}][{name}][{levelname}] {message}\(dq\fP\&.
+Default is: \fB\(dq[{asctime}][{threadName}][{name}][{levelname}] {message}\(dq\fP\&.
 .sp
 Otherwise:
 .sp
@@ -277,6 +239,60 @@ Suppress all console and log output, and also disable user prompts.
 Output JSON representations instead of the normal text output.
 .sp
 Useful for external scripting.
+.UNINDENT
+.SS Plugin options
+.INDENT 0.0
+.TP
+.B \-\-plugins
+Print a list of all currently installed plugins.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-show\-matchers PLUGIN
+Show the list of matchers of a specific plugin (URL regex pattern with opt. priority and opt. name).
+.sp
+The output is a human\-readable pseudo YAML format. Please use \fI\%\-\-json\fP when reading matcher data programmatically.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-can\-handle\-url URL
+Check if Streamlink has a plugin that can handle the specified URL.
+.sp
+Status code is \fB0\fP on success, \fB1\fP on failure.
+.sp
+Useful for external scripting.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-can\-handle\-url\-no\-redirect URL
+Same as \fI\%\-\-can\-handle\-url\fP, but without following redirects when looking up the URL.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-no\-plugin\-cache
+Disable I/O of the plugin key\-value store.
+.sp
+If disabled, plugins won\(aqt be able to load or store data like cookies, authentication data, etc.
+The data which is loaded or stored depends on each plugin implementation.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-no\-plugin\-sideloading
+Disable automatic sideloading of third\-party plugins from the default location.
+.sp
+See the plugin\-sideloading documentation for where third\-party plugins are loaded from.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-plugin\-dir DIRECTORY
+Load additional plugins from this directory.
+.sp
+Can be set multiple times to load plugins from multiple directories.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-plugin\-dirs DIRECTORY
+Load additional plugins from a list of comma\-separated directories. (deprecated)
 .UNINDENT
 .SS Network arguments
 .INDENT 0.0
@@ -567,7 +583,7 @@ Deprecated in favor of \fI\%\-\-stdout\fP \fI\%\-\-record=FILENAME\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \-\-fs\-safe\-rules
+.B \-\-fs\-safe\-rules {POSIX,Windows}
 The rules used to make formatting variables filesystem\-safe are chosen
 automatically according to the type of system in use. This overrides
 the automatic detection.
@@ -1141,7 +1157,7 @@ Please be aware that headless mode might be blocked by websites which implement 
 .sp
 Default is: \fBfalse\fP\&.
 .UNINDENT
-.SS Plugin options
+.SS Plugin\-specific options
 .SS Bbciplayer
 .INDENT 0.0
 .TP
@@ -1308,12 +1324,6 @@ Purge cached tf1.fr credentials to initiate a new session and reauthenticate.
 Password for private Twitcasting streams.
 .UNINDENT
 .SS Twitch
-.INDENT 0.0
-.TP
-.B \-\-twitch\-disable\-ads
-Skip embedded advertisement segments at the beginning or during a stream.
-Will cause these segments to be missing from the output.
-.UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-twitch\-low\-latency

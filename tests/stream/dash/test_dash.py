@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
 from datetime import datetime, timezone
 from unittest.mock import ANY, Mock, call
 
@@ -14,6 +15,9 @@ from streamlink.stream.dash import MPD, DASHStream, DASHStreamWorker, MPDParsing
 from streamlink.stream.dash.dash import log
 from streamlink.utils.parse import parse_xml as original_parse_xml
 from tests.resources import text, xml
+
+
+does_not_raise = nullcontext()
 
 
 @pytest.fixture()
@@ -325,6 +329,38 @@ class TestDASHStreamParseManifest:
         assert mpd.call_args_list == [call(ANY, url="http://test/manifest.mpd", base_url="http://test/manifest.mpd")]
         assert list(streams.keys()) == ["480p"]
 
+    @pytest.mark.parametrize(
+        ("period", "raises"),
+        [
+            pytest.param(0, does_not_raise, id="index-0"),
+            pytest.param(1, does_not_raise, id="index-1"),
+            pytest.param(2, does_not_raise, id="index-2"),
+            pytest.param("p1", does_not_raise, id="id-p1"),
+            pytest.param("p2", does_not_raise, id="id-p2"),
+            pytest.param(3, pytest.raises(PluginError, match=r"^DASH period 3 not found\."), id="error-index"),
+            pytest.param("p3", pytest.raises(PluginError, match=r"^DASH period 'p3' not found\."), id="error-id"),
+        ],
+    )
+    def test_period_selection(
+        self,
+        caplog: pytest.LogCaptureFixture,
+        session: Streamlink,
+        mpd: Mock,
+        period: int | str,
+        raises: nullcontext,
+    ):
+        caplog.set_level(1, "streamlink")
+
+        with xml("dash/test_period_selection.mpd") as mpd_xml:
+            mpd.return_value = MPD(mpd_xml, base_url="http://test/manifest.mpd", url="http://test/manifest.mpd")
+
+        with raises:
+            streams = DASHStream.parse_manifest(session, "http://test/manifest.mpd", period=period)
+            assert streams
+
+        records = [(record.name, record.levelname, record.message) for record in caplog.records]
+        assert ("streamlink.stream.dash", "debug", "Available DASH periods: 0, 1 (id='p1'), 2 (id='p2')") in records
+
 
 class TestDASHStreamOpen:
     @pytest.fixture()
@@ -345,7 +381,7 @@ class TestDASHStreamOpen:
         stream = DASHStream(session, Mock(), rep_video)
         stream.open()
 
-        assert reader.call_args_list == [call(stream, rep_video, timestamp)]
+        assert reader.call_args_list == [call(stream, rep_video, timestamp, name="video")]
         assert reader().open.call_count == 1
         assert muxer.call_args_list == []
 
@@ -356,12 +392,15 @@ class TestDASHStreamOpen:
         mock_reader_video = Mock()
         mock_reader_audio = Mock()
         readers = {rep_video: mock_reader_video, rep_audio: mock_reader_audio}
-        reader.side_effect = lambda _stream, _representation, _timestamp: readers[_representation]
+        reader.side_effect = lambda _stream, _representation, _timestamp, *_, **__: readers[_representation]
 
         stream = DASHStream(session, Mock(), rep_video, rep_audio)
         stream.open()
 
-        assert reader.call_args_list == [call(stream, rep_video, timestamp), call(stream, rep_audio, timestamp)]
+        assert reader.call_args_list == [
+            call(stream, rep_video, timestamp, name="video"),
+            call(stream, rep_audio, timestamp, name="audio"),
+        ]
         assert mock_reader_video.open.call_count == 1
         assert mock_reader_audio.open.call_count == 1
         assert muxer.call_args_list == [call(session, mock_reader_video, mock_reader_audio, copyts=True)]

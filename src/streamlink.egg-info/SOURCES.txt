@@ -3,8 +3,6 @@ CHANGELOG.md
 LICENSE
 MANIFEST.in
 README.md
-dev-requirements.txt
-docs-requirements.txt
 icon.svg
 pyproject.toml
 setup.py
@@ -118,6 +116,7 @@ src/streamlink/plugins/bbciplayer.py
 src/streamlink/plugins/bfmtv.py
 src/streamlink/plugins/bigo.py
 src/streamlink/plugins/bilibili.py
+src/streamlink/plugins/blasttv.py
 src/streamlink/plugins/blazetv.py
 src/streamlink/plugins/bloomberg.py
 src/streamlink/plugins/brightcove.py
@@ -165,7 +164,6 @@ src/streamlink/plugins/mangomolo.py
 src/streamlink/plugins/mdstrm.py
 src/streamlink/plugins/mediaklikk.py
 src/streamlink/plugins/mediavitrina.py
-src/streamlink/plugins/mitele.py
 src/streamlink/plugins/mixcloud.py
 src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mrtmk.py
@@ -175,6 +173,7 @@ src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nicolive.py
 src/streamlink/plugins/nimotv.py
 src/streamlink/plugins/nos.py
+src/streamlink/plugins/nowtvtr.py
 src/streamlink/plugins/nrk.py
 src/streamlink/plugins/okru.py
 src/streamlink/plugins/olympicchannel.py
@@ -232,7 +231,6 @@ src/streamlink/plugins/vimeo.py
 src/streamlink/plugins/vinhlongtv.py
 src/streamlink/plugins/vk.py
 src/streamlink/plugins/vkvideo.py
-src/streamlink/plugins/vtvgo.py
 src/streamlink/plugins/welt.py
 src/streamlink/plugins/wwenetwork.py
 src/streamlink/plugins/youtube.py
@@ -279,6 +277,7 @@ src/streamlink/utils/path.py
 src/streamlink/utils/processoutput.py
 src/streamlink/utils/random.py
 src/streamlink/utils/socket.py
+src/streamlink/utils/thread.py
 src/streamlink/utils/times.py
 src/streamlink/utils/url.py
 src/streamlink/validate/__init__.py
@@ -376,6 +375,7 @@ tests/cli/main/test_output_stream_passthrough.py
 tests/cli/main/test_player_argv.py
 tests/cli/main/test_resolve_stream_name.py
 tests/cli/main/test_setup_config_args.py
+tests/cli/main/test_setup_plugins.py
 tests/cli/main/test_show_matchers.py
 tests/cli/main/test_version_check.py
 tests/cli/output/__init__.py
@@ -409,6 +409,7 @@ tests/plugins/test_bbciplayer.py
 tests/plugins/test_bfmtv.py
 tests/plugins/test_bigo.py
 tests/plugins/test_bilibili.py
+tests/plugins/test_blasttv.py
 tests/plugins/test_blazetv.py
 tests/plugins/test_bloomberg.py
 tests/plugins/test_brightcove.py
@@ -456,7 +457,6 @@ tests/plugins/test_mangomolo.py
 tests/plugins/test_mdstrm.py
 tests/plugins/test_mediaklikk.py
 tests/plugins/test_mediavitrina.py
-tests/plugins/test_mitele.py
 tests/plugins/test_mixcloud.py
 tests/plugins/test_mjunoon.py
 tests/plugins/test_mrtmk.py
@@ -466,6 +466,7 @@ tests/plugins/test_nhkworld.py
 tests/plugins/test_nicolive.py
 tests/plugins/test_nimotv.py
 tests/plugins/test_nos.py
+tests/plugins/test_nowtvtr.py
 tests/plugins/test_nrk.py
 tests/plugins/test_okru.py
 tests/plugins/test_olympicchannel.py
@@ -523,7 +524,6 @@ tests/plugins/test_vimeo.py
 tests/plugins/test_vinhlongtv.py
 tests/plugins/test_vk.py
 tests/plugins/test_vkvideo.py
-tests/plugins/test_vtvgo.py
 tests/plugins/test_welt.py
 tests/plugins/test_wwenetwork.py
 tests/plugins/test_youtube.py
@@ -557,6 +557,7 @@ tests/resources/dash/test_dynamic_segment_list_p5.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p1.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p2.mpd
 tests/resources/dash/test_no_segment_list_or_template.mpd
+tests/resources/dash/test_period_selection.mpd
 tests/resources/dash/test_segment_list.mpd
 tests/resources/dash/test_segments_byterange.mpd
 tests/resources/dash/test_segments_dynamic_number.mpd
@@ -605,6 +606,7 @@ tests/utils/test_parse.py
 tests/utils/test_path.py
 tests/utils/test_processoutput.py
 tests/utils/test_random.py
+tests/utils/test_thread.py
 tests/utils/test_times.py
 tests/utils/test_url.py
 tests/webbrowser/__init__.py

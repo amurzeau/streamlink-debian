@@ -1,5 +1,50 @@
 # Changelog
 
+## streamlink 7.5.0 (2025-07-08)
+
+- Added: `--no-plugin-sideloading` for disabling plugin sideloading from the default location ([#6602](https://github.com/streamlink/streamlink/pull/6602))
+- Added: `--no-plugin-cache` for disabling cache file I/O of the plugin key-value store ([#6602](https://github.com/streamlink/streamlink/pull/6602))
+- Improved: cache file I/O of the plugin key-value store ([#6568](https://github.com/streamlink/streamlink/pull/6568))
+- Changed: default log format on the `trace`/`all` log level, with included thread name ([#6557](https://github.com/streamlink/streamlink/pull/6557))
+- Fixed: missing thread names for various segmented and muxed streams ([#6556](https://github.com/streamlink/streamlink/pull/6556))
+- Fixed: pipe write error log messages when muxing streams ([#6558](https://github.com/streamlink/streamlink/pull/6558))
+- Updated plugins:
+  - aloula: updated plugin matchers to support new URLs ([#6572](https://github.com/streamlink/streamlink/pull/6572))
+  - goodgame: fixed HLS stream URLs ([#6585](https://github.com/streamlink/streamlink/pull/6585))
+  - mitele: removed plugin ([#6586](https://github.com/streamlink/streamlink/pull/6586))
+  - nowtvtr: restored plugin ([#6560](https://github.com/streamlink/streamlink/pull/6560))
+  - twitcasting: updated plugin to filter out preroll ads ([#6601](https://github.com/streamlink/streamlink/pull/6601))
+  - twitch: changed plugin to always filter out ads, deprecated `--twitch-disable-ads` ([#6579](https://github.com/streamlink/streamlink/pull/6579))
+  - twitch: forced default User-Agent on access token API request ([#6578](https://github.com/streamlink/streamlink/pull/6578))
+  - twitch: fixed clips validation schema ([#6570](https://github.com/streamlink/streamlink/pull/6570))
+- Docs: rearranged CLI arguments that are related to the plugin system ([#6602](https://github.com/streamlink/streamlink/pull/6602))
+- Build: removed `{dev,docs}-requirements.txt` in favor of PEP 735 ([#6596](https://github.com/streamlink/streamlink/pull/6596))
+- Build: bumped `lxml` requirement to `>=4.6.4,<7` (`lxml>=6` now supports free-threaded mode) ([#6587](https://github.com/streamlink/streamlink/pull/6587))
+- Tests: fixed test failures on Python 3.14.0b3 ([#6589](https://github.com/streamlink/streamlink/pull/6589))
+- Tests: fixed test failures in free-threaded mode ([#6591](https://github.com/streamlink/streamlink/pull/6591), [#6595](https://github.com/streamlink/streamlink/pull/6595))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/7.4.0...7.5.0)
+
+
+## streamlink 7.4.0 (2025-06-08)
+
+- Added: `encoding` keyword to all HTTP request methods to override the response content encoding ([#6544](https://github.com/streamlink/streamlink/pull/6544))
+- Added: debug log message for the available DASH periods (id or index) ([#6521](https://github.com/streamlink/streamlink/pull/6521))
+- Fixed: `LookupError` when selecting an invalid DASH period ([#6518](https://github.com/streamlink/streamlink/pull/6518))
+- Updated plugins:
+  - blasttv: new plugin ([#6547](https://github.com/streamlink/streamlink/pull/6547))
+  - kick: fixed 403 API responses by solving the JS challenge using the webbrowser API ([#6500](https://github.com/streamlink/streamlink/pull/6500))
+  - nicolive: fixed plugin metadata by forcing UTF-8 encoding ([#6544](https://github.com/streamlink/streamlink/pull/6544))
+  - picarto: fixed validation schema and fixed multi-stream selection ([#6512](https://github.com/streamlink/streamlink/pull/6512))
+  - tvp: rewritten and fixed plugin ([#6535](https://github.com/streamlink/streamlink/pull/6535))
+  - twitcasting: fixed plugin by switching to new websocket+HLS streams ([#6540](https://github.com/streamlink/streamlink/pull/6540))
+  - vtvgo: removed plugin ([#6516](https://github.com/streamlink/streamlink/pull/6516))
+- Tests: fixed py314 test failures ([#6527](https://github.com/streamlink/streamlink/pull/6527))
+- Tests: fixed some HLS tests failing in rare cases ([#6536](https://github.com/streamlink/streamlink/pull/6536))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/7.3.0...7.4.0)
+
+
 ## streamlink 7.3.0 (2025-04-26)
 
 - Changed: download progress to use the console output stream rather than always `stderr`, which previously caused log and progress messages to be interweaved ([#6497](https://github.com/streamlink/streamlink/pull/6497), [#6496](https://github.com/streamlink/streamlink/pull/6496))

@@ -159,6 +159,13 @@ class TestHLSStream(TestMixinStreamHLS, unittest.TestCase):
 
         return session
 
+    def test_thread_names(self):
+        self.subject(playlists=[Playlist(0, [Segment(0)], end=True)])
+        assert self.thread.reader.worker.name == "HLSStreamWorker-0"
+        assert self.thread.reader.writer.name == "HLSStreamWriter-0"
+        assert self.thread.reader.writer.executor._thread_name_prefix == "HLSStreamWriter-0-executor"
+        self.await_read(read_all=True)
+
     def test_playlist_end(self):
         segments = self.subject([
             Playlist(0, [Segment(0)], end=True),
@@ -433,6 +440,14 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
             frozen_time.tick(targetduration)
             self.await_playlist_wait(1)
             self.await_playlist_reload(1)
+
+            # FIXME: NO-GIL
+            #   Closing only the worker thread when no new segments were queued keeps the writer thread and buffer still open,
+            #   which is why the test's reader thread keeps running until the test teardown,
+            #   but this somehow breaks the assertion down below, so close everything manually...
+            #   These tests will have to be rewritten eventually in pytest-style, without having to mock log calls.
+            self.thread.close()
+            self.thread.join(1)
 
             assert mock_log.warning.call_args_list == [call("No new segments in playlist for more than 5.00s. Stopping...")]
 
@@ -1232,6 +1247,22 @@ class TestHlsExtAudio:
             if record.name == "streamlink.stream.hls" and record.levelno == logging.WARNING
         ] == [
             "Unrecognized language for media playlist: language='invalid' name='Does not exist'",
+        ]
+
+    @pytest.mark.parametrize(
+        "session",
+        [
+            pytest.param({"hls-audio-select": ["*"]}, id="names"),
+        ],
+        indirect=["session"],
+    )
+    def test_substream_names(self, session: Streamlink, stream: MuxedHLSStream):
+        assert isinstance(stream, MuxedHLSStream)
+        assert [substream.name for substream in stream.substreams] == [
+            None,
+            "audio",
+            "audio",
+            "audio",
         ]
 
 
