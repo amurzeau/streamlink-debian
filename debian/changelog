@@ -1,8 +1,10 @@
-streamlink (7.5.0-1) UNRELEASED; urgency=medium
+streamlink (7.5.0-1) unstable; urgency=medium
 
   * New upstream version 7.5.0
+  * d/README.source: update with dev-requirements.txt removal
+  * d/patches: update patches
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 09 Jul 2025 21:12:37 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 09 Jul 2025 21:19:06 +0200
 
 streamlink (7.3.0-2) unstable; urgency=medium
 
