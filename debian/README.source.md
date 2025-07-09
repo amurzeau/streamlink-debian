@@ -34,7 +34,7 @@ git diff --name-only $(git describe --tags --abbrev=0) HEAD | grep -v '^debian' 
 lrc
 
 # Check for new dependencies
-git diff upstream^..upstream docs-requirements.txt dev-requirements.txt pyproject.toml docs/install.rst
+git diff upstream^..upstream pyproject.toml docs/install.rst
 
 # Check for new supported players
 git diff upstream^..upstream docs/players.rst
