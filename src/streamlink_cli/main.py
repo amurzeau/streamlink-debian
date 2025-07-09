@@ -10,6 +10,7 @@ import signal
 import ssl
 import sys
 import warnings
+from atexit import register as _atexit_register
 from collections.abc import Mapping
 from contextlib import closing, suppress
 from gettext import gettext
@@ -711,11 +712,11 @@ def can_handle_url() -> int:
         return 128 + signal.SIGINT
 
 
-def load_plugins(dirs: list[Path], showwarning: bool = True):
+def load_plugins(session: Streamlink, dirs: list[Path], showwarning: bool = True):
     """Attempts to load plugins from a list of directories."""
     for directory in dirs:
         if directory.is_dir():
-            streamlink.plugins.load_path(directory)
+            session.plugins.load_path(directory)
         elif showwarning:
             log.warning(f"Plugin path {directory} does not exist or is not a directory!")
 
@@ -790,12 +791,13 @@ def setup_signals():
     signal.signal(signal.SIGTERM, signal.default_int_handler)
 
 
-def setup_plugins(extra_plugin_dir=None):
+def setup_plugins(session: Streamlink, sideloading: bool = True, extra_plugin_dir: list[str] | None = None):
     """Loads any additional plugins."""
-    load_plugins(PLUGIN_DIRS, showwarning=False)
+    if sideloading:
+        load_plugins(session, PLUGIN_DIRS, showwarning=False)
 
     if extra_plugin_dir:
-        load_plugins([Path(path).expanduser() for path in extra_plugin_dir])
+        load_plugins(session, [Path(path).expanduser() for path in extra_plugin_dir])
 
 
 def setup_streamlink():
@@ -899,6 +901,9 @@ def setup_console() -> None:
 
     console = ConsoleOutput(console_output=console_output, json=args.json)
 
+    # flush+close console and file streams on exit, and remove stream wrapper
+    _atexit_register(console.close)
+
 
 def setup_logger() -> None:
     level: str = args.loglevel if not args.silent_log else logging.getLevelName(logger.NONE)
@@ -909,7 +914,7 @@ def setup_logger() -> None:
     verbose = level in (logging.getLevelName(logger.TRACE), logging.getLevelName(logger.ALL))
     if not fmt:
         if verbose:
-            fmt = "[{asctime}][{name}][{levelname}] {message}"
+            fmt = "[{asctime}][{threadName}][{name}][{levelname}] {message}"
         else:
             fmt = "[{name}][{levelname}] {message}"
     if not datefmt:
@@ -955,7 +960,7 @@ def setup(parser: ArgumentParser) -> None:
 
     setup_streamlink()
     # load additional plugins
-    setup_plugins(args.plugin_dirs)
+    setup_plugins(streamlink, not args.no_plugin_sideloading, args.plugin_dirs)
     setup_plugin_args(streamlink, parser)
     # call setup args again once the plugin specific args have been added
     setup_args(parser)
@@ -1016,9 +1021,6 @@ def main():
                 console.msg_json({"error": msg})
             else:
                 console.msg(f"error: {msg}")
-
-    # flush+close console and file streams, and remove stream wrapper
-    console.close()
 
     # https://docs.python.org/3/library/signal.html#note-on-sigpipe
     # Prevent BrokenPipeError: unset sys.stdout, so Python doesn't attempt a flush() on exit

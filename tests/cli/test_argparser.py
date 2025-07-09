@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import gettext
-from argparse import SUPPRESS, ArgumentError, Namespace
+
+# noinspection PyProtectedMember
+from argparse import SUPPRESS, Action, ArgumentError, Namespace, _StoreConstAction, _VersionAction  # noqa: PLC2701
 from pathlib import Path
 from typing import Any
 from unittest.mock import Mock, call
@@ -23,9 +25,32 @@ from streamlink_cli.exceptions import StreamlinkCLIError
 from streamlink_cli.main import main as streamlink_cli_main
 
 
+def pytest_generate_tests(metafunc: pytest.Metafunc):
+    if "action" in metafunc.fixturenames:
+        # noinspection PyProtectedMember
+        metafunc.parametrize(
+            "action",
+            [
+                pytest.param(
+                    action,
+                    id=next((opt for opt in action.option_strings if opt.startswith("--")), action.dest),
+                )
+                for action in build_parser()._actions
+                if action.help != SUPPRESS
+            ],
+        )
+
+
 @pytest.fixture(scope="module")
 def parser():
     return build_parser()
+
+
+def test_metavar_or_noargumentvalue(action: Action):
+    assert (
+        action.metavar  # has an explicit metavar description
+        or isinstance(action, (_StoreConstAction, _VersionAction))  # doesn't expect a value
+    )
 
 
 class TestConfigFileArguments:
@@ -224,7 +249,7 @@ def test_setup_session_options_default_values(monkeypatch: pytest.MonkeyPatch, p
     args = parser.parse_args([])
     setup_session_options(session, args)
     assert session.options == session.options.defaults
-    assert not mock_set_option.called, "Value of unset session-option arg must be None and must not call set_option()"
+    assert mock_set_option.call_args_list == [], "Value of unset session-option arg must be None and must not call set_option()"
 
 
 @pytest.mark.parametrize(
@@ -337,7 +362,10 @@ class TestSetupPluginArgsAndOptions:
         return session
 
     def test_setup_arguments(self, session: Streamlink, parser: ArgumentParser, plugin: type[Plugin]):
-        group_plugins = next((grp for grp in parser._action_groups if grp.title == "Plugin options"), None)  # pragma: no branch
+        group_plugins = next(
+            (grp for grp in parser._action_groups if grp.title == "Plugin-specific options"),
+            None,
+        )  # pragma: no branch
         assert group_plugins is not None, "Adds the 'Plugin options' arguments group"
         assert group_plugins in parser.NESTED_ARGUMENT_GROUPS[None], "Adds the 'Plugin options' arguments group"
 

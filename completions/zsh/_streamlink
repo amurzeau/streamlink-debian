@@ -25,32 +25,6 @@ _shtab_streamlink_cli_options=(
 
             Default is \"no\".
         ]:auto_version_check:"
-  "--plugins[
-            Print a list of all currently installed plugins.
-        ]"
-  "*--plugin-dir[
-            Load plugins from this directory.
-
-            Can be set multiple times to load plugins from multiple directories.
-        ]:plugin_dirs:"
-  "*--plugin-dirs[
-            Load plugins from a list of comma-separated directories. (deprecated)
-        ]:plugin_dirs:"
-  "--show-matchers[
-            Show the list of matchers of a specific plugin (URL regex pattern with opt. priority and opt. name).
-
-            The output is a human-readable pseudo YAML format. Please use --json when reading matcher data programmatically.
-        ]:show_matchers:"
-  "--can-handle-url[
-            Check if Streamlink has a plugin that can handle the specified URL.
-
-            Status code is \`0\` on success, \`1\` on failure.
-
-            Useful for external scripting.
-        ]:can_handle_url:"
-  "--can-handle-url-no-redirect[
-            Same as --can-handle-url, but without following redirects when looking up the URL.
-        ]:can_handle_url_no_redirect:"
   "*--config[
             Load options from this config file.
 
@@ -86,7 +60,7 @@ _shtab_streamlink_cli_options=(
 
             For verbose levels (\`trace\` and \`all\`)\:
 
-            Default is \"\[\{asctime\}\]\[\{name\}\]\[\{levelname\}\] \{message\}\".
+            Default is \"\[\{asctime\}\]\[\{threadName\}\]\[\{name\}\]\[\{levelname\}\] \{message\}\".
 
             Otherwise\:
 
@@ -135,6 +109,43 @@ _shtab_streamlink_cli_options=(
 
             Useful for external scripting.
         ]"
+  "--plugins[
+            Print a list of all currently installed plugins.
+        ]"
+  "--show-matchers[
+            Show the list of matchers of a specific plugin (URL regex pattern with opt. priority and opt. name).
+
+            The output is a human-readable pseudo YAML format. Please use --json when reading matcher data programmatically.
+        ]:show_matchers:"
+  "--can-handle-url[
+            Check if Streamlink has a plugin that can handle the specified URL.
+
+            Status code is \`0\` on success, \`1\` on failure.
+
+            Useful for external scripting.
+        ]:can_handle_url:"
+  "--can-handle-url-no-redirect[
+            Same as --can-handle-url, but without following redirects when looking up the URL.
+        ]:can_handle_url_no_redirect:"
+  "--no-plugin-cache[
+            Disable I\/O of the plugin key-value store.
+
+            If disabled, plugins won\'t be able to load or store data like cookies, authentication data, etc.
+            The data which is loaded or stored depends on each plugin implementation.
+        ]"
+  "--no-plugin-sideloading[
+            Disable automatic sideloading of third-party plugins from the default location.
+
+            See the plugin-sideloading documentation for where third-party plugins are loaded from.
+        ]"
+  "*--plugin-dir[
+            Load additional plugins from this directory.
+
+            Can be set multiple times to load plugins from multiple directories.
+        ]:plugin_dirs:"
+  "*--plugin-dirs[
+            Load additional plugins from a list of comma-separated directories. (deprecated)
+        ]:plugin_dirs:"
   "--interface[
             Set the network interface.
         ]:interface:"
@@ -753,10 +764,6 @@ _shtab_streamlink_cli_options=(
   "--tf1-password[A tf1.fr account password to use with --tf1-email.]:tf1_password:"
   "--tf1-purge-credentials[Purge cached tf1.fr credentials to initiate a new session and reauthenticate.]"
   "--twitcasting-password[Password for private Twitcasting streams.]:twitcasting_password:"
-  "--twitch-disable-ads[
-        Skip embedded advertisement segments at the beginning or during a stream.
-        Will cause these segments to be missing from the output.
-    ]"
   "--twitch-low-latency[
         Enables low latency streaming by prefetching HLS segments.
         Sets --hls-segment-stream-data to true and --hls-live-edge to 2, if it is higher.
