@@ -1,3 +1,9 @@
+streamlink (7.5.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 7.5.0
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 09 Jul 2025 21:12:37 +0200
+
 streamlink (7.3.0-2) unstable; urgency=medium
 
   * d/control: remove unneeded build-dependency python3-exceptiongroup
