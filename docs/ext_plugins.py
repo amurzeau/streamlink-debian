@@ -11,7 +11,7 @@ from typing import Any
 
 from docutils import nodes
 from docutils.parsers.rst import Directive
-from docutils.statemachine import ViewList
+from docutils.statemachine import StringList
 from sphinx.errors import ExtensionError
 from sphinx.util.nodes import nested_parse_with_titles
 
@@ -146,21 +146,27 @@ class PluginArguments(ast.NodeVisitor, IDatalistItem):
                 continue
 
             custom_name = next(
-                (kw.value.value for kw in decorator.keywords if kw.arg == "argument_name" and type(kw.value) is ast.Constant),
+                (
+                    str(kw.value.value)
+                    for kw in decorator.keywords
+                    if kw.arg == "argument_name" and type(kw.value) is ast.Constant
+                ),
                 None,
-            )
+            )  # fmt: skip
             if custom_name:
                 self.arguments.append(custom_name)
                 continue
 
             name = next(
-                (kw.value.value for kw in decorator.keywords if kw.arg == "name" and type(kw.value) is ast.Constant),
+                (
+                    str(kw.value.value)
+                    for kw in decorator.keywords
+                    if kw.arg == "name" and type(kw.value) is ast.Constant
+                ),
                 None,
-            ) or (
-                decorator.args
-                and type(decorator.args[0]) is ast.Constant
-                and decorator.args[0].value
             )  # fmt: skip
+            if not name and decorator.args and type(decorator.args[0]) is ast.Constant:
+                name = str(decorator.args[0].value)
             if name:
                 self.arguments.append(f"{self.pluginname}-{name}")
 
@@ -224,7 +230,7 @@ class PluginFinder:
                 yield pluginmetadata
 
     def _parse_plugin(self, pluginname: str, pluginfile: Path) -> PluginMetadata | None:
-        with pluginfile.open() as handle:
+        with pluginfile.open("r", encoding="utf-8") as handle:
             # read until the first token has been parsed
             for tokeninfo in tokenize.generate_tokens(handle.readline):
                 # the very first token needs to be a string / block comment with the metadata
@@ -251,17 +257,18 @@ class PluginFinder:
 
 
 class PluginsDirective(Directive):
-    def run(self):
+    # noinspection PyMethodMayBeStatic
+    def generate(self):
         pluginfinder = PluginFinder()
 
-        node = nodes.section()
-        node.document = self.state.document
-        result = ViewList()
         for pluginmetadata in pluginfinder.get_plugins():
-            for line in pluginmetadata.generate():
-                result.append(line, "plugins")
+            yield from pluginmetadata.generate()
 
+    def run(self):
+        node = nodes.Element(document=self.state.document)
+        result = StringList(list(self.generate()), "plugins")
         nested_parse_with_titles(self.state, result, node)
+
         return node.children
 
 
