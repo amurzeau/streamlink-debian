@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Jul 08, 2025" "7.5.0" "Streamlink"
+.TH "STREAMLINK" "1" "Sep 08, 2025" "7.6.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -609,6 +609,13 @@ When using \fI\%\-\-output\fP or \fI\%\-\-record\fP, always write to file even i
 .UNINDENT
 .INDENT 0.0
 .TP
+.B \-\-skip
+When using \fI\%\-\-output\fP or \fI\%\-\-record\fP, never write to file if it already exists (don\(aqt prompt).
+.sp
+Takes precedence over \fI\%\-\-force\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B \-\-progress {yes,force,no}
 When using \fI\%\-\-output\fP or \fI\%\-\-record\fP, show or hide the download progress bar, or force it if there\(aqs no terminal.
 .sp
@@ -1184,6 +1191,27 @@ The username used to register with Clubbing TV.
 .TP
 .B \-\-clubbingtv\-password
 A Clubbing TV account password to use with \fI\%\-\-clubbingtv\-username\fP\&.
+.UNINDENT
+.SS Kick
+.INDENT 0.0
+.TP
+.B \-\-kick\-low\-latency
+Enables low latency streaming by prefetching HLS segments.
+Sets \fI\%\-\-hls\-segment\-stream\-data\fP to true and \fI\%\-\-hls\-live\-edge\fP to 2, if it is higher.
+Reducing \fI\%\-\-hls\-live\-edge\fP to \fB1\fP will result in the lowest latency possible, but will most likely cause buffering.
+.sp
+In order to achieve true low latency streaming during playback, the player\(aqs caching/buffering settings will
+need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
+This depends on the stream\(aqs bitrate and the quality of the connection to Kick\(aqs servers. Please refer to the
+player\(aqs own documentation for the required configuration. Player parameters can be set via \fI\%\-\-player\-args\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+Low latency streams have to be enabled by the broadcasters on Kick themselves.
+Regular streams can cause buffering issues with this option enabled due to the reduced \fI\%\-\-hls\-live\-edge\fP value.
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .SS Nicolive
 .INDENT 0.0

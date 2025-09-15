@@ -348,6 +348,11 @@ _shtab_streamlink_cli_options=(
   {-f,--force}"[
             When using --output or --record, always write to file even if it already exists (overwrite).
         ]"
+  "--skip[
+            When using --output or --record, never write to file if it already exists (don\'t prompt).
+
+            Takes precedence over --force.
+        ]"
   "--progress[
             When using --output or --record, show or hide the download progress bar, or force it if there\'s no terminal.
 
@@ -731,6 +736,19 @@ _shtab_streamlink_cli_options=(
   "--bbciplayer-hd[Prefer HD streams over local SD streams, some live programmes may not be broadcast in HD.]"
   "--clubbingtv-username[The username used to register with Clubbing TV.]:clubbingtv_username:"
   "--clubbingtv-password[A Clubbing TV account password to use with --clubbingtv-username.]:clubbingtv_password:"
+  "--kick-low-latency[
+        Enables low latency streaming by prefetching HLS segments.
+        Sets --hls-segment-stream-data to true and --hls-live-edge to 2, if it is higher.
+        Reducing --hls-live-edge to \`1\` will result in the lowest latency possible, but will most likely cause buffering.
+
+        In order to achieve true low latency streaming during playback, the player\'s caching\/buffering settings will
+        need to be adjusted and reduced to a value as low as possible, but still high enough to not cause any buffering.
+        This depends on the stream\'s bitrate and the quality of the connection to Kick\'s servers. Please refer to the
+        player\'s own documentation for the required configuration. Player parameters can be set via --player-args.
+
+        Note\: Low latency streams have to be enabled by the broadcasters on Kick themselves.
+        Regular streams can cause buffering issues with this option enabled due to the reduced --hls-live-edge value.
+    ]"
   "--niconico-email[The email or phone number associated with your Niconico account]:niconico_email:"
   "--niconico-password[The password of your Niconico account]:niconico_password:"
   "--niconico-user-session[

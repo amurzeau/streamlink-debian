@@ -152,7 +152,6 @@ src/streamlink/plugins/http.py
 src/streamlink/plugins/htv.py
 src/streamlink/plugins/huajiao.py
 src/streamlink/plugins/huya.py
-src/streamlink/plugins/indihometv.py
 src/streamlink/plugins/invintus.py
 src/streamlink/plugins/kick.py
 src/streamlink/plugins/kugou.py
@@ -230,7 +229,7 @@ src/streamlink/plugins/vidio.py
 src/streamlink/plugins/vimeo.py
 src/streamlink/plugins/vinhlongtv.py
 src/streamlink/plugins/vk.py
-src/streamlink/plugins/vkvideo.py
+src/streamlink/plugins/vkvideolive.py
 src/streamlink/plugins/welt.py
 src/streamlink/plugins/wwenetwork.py
 src/streamlink/plugins/youtube.py
@@ -445,7 +444,6 @@ tests/plugins/test_http.py
 tests/plugins/test_htv.py
 tests/plugins/test_huajiao.py
 tests/plugins/test_huya.py
-tests/plugins/test_indihometv.py
 tests/plugins/test_invintus.py
 tests/plugins/test_kick.py
 tests/plugins/test_kugou.py
@@ -523,7 +521,7 @@ tests/plugins/test_vidio.py
 tests/plugins/test_vimeo.py
 tests/plugins/test_vinhlongtv.py
 tests/plugins/test_vk.py
-tests/plugins/test_vkvideo.py
+tests/plugins/test_vkvideolive.py
 tests/plugins/test_welt.py
 tests/plugins/test_wwenetwork.py
 tests/plugins/test_youtube.py

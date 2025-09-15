@@ -40,6 +40,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Internet :: WWW/HTTP",
   "Topic :: Multimedia :: Sound/Audio",
   "Topic :: Multimedia :: Video",
@@ -103,12 +104,12 @@ test = [
   "pytest-cov",
 ]
 lint = [
-  "ruff ==0.12.1",
+  "ruff ==0.12.11",
 ]
 typing = [
   { include-group = "test" },
   { include-group = "docs" },
-  "mypy ==1.16.1",
+  "mypy[faster-cache] ==1.17.1",
   "typing-extensions >=4.0.0",
   "lxml-stubs",
   "trio-typing",
@@ -121,7 +122,7 @@ typing = [
 docs = [
   { include-group = "dev" },
   "sphinx >=6.0.0,<9",
-  "furo ==2024.08.06",
+  "furo ==2025.07.19",
   "myst-parser >=1.0.0,<5",
   "sphinx-design >=0.5.0,<=0.6.1",
 ]
@@ -288,6 +289,8 @@ select = [
   "T20",
   # flake8-pytest-style
   "PT",
+  # flake8-use-pathlib
+  "PTH",
   # flake8-quotes
   "Q",
   # flake8-tidy-imports
