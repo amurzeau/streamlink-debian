@@ -60,7 +60,7 @@ diffoscope ../build-area/python3-streamlink-doc_$(dpkg-parsechangelog --show-fie
 gbp tag --sign-tags
 
 # Push to git repository
-git push origin experimental master upstream pristine-tar bookworm-backports --tags
+git push origin experimental master upstream pristine-tar trixie-backports --tags
 
 # Check salsa-ci: https://salsa.debian.org/amurzeau/streamlink/-/pipelines
 
@@ -116,7 +116,7 @@ git merge master
 gbp dch -Ra --bpo --commit
 
 # Do test build with sbuild
-gbp buildpackage "--git-builder=sbuild -v -As -d bookworm-backports --no-clean-source --source-only-changes --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
+gbp buildpackage "--git-builder=sbuild -v -As -d trixie-backports --no-clean-source --source-only-changes --run-lintian --lintian-opts=\"-EviIL +pedantic\" --run-autopkgtest --autopkgtest-root-args= --autopkgtest-opts=\"-- schroot %r-%a-sbuild\" --build-failed-commands '%SBUILD_SHELL' --build-dep-resolver=aptitude"
 
 # Check for build warnings or errors
 grep -Pi 'error|warn' ../build-area/streamlink_$(dpkg-parsechangelog --show-field Version)_amd64.build
@@ -130,7 +130,7 @@ diffoscope ../build-area/python3-streamlink-doc_$(dpkg-parsechangelog --show-fie
 gbp tag --sign-tags
 
 # Push to git repository
-git push origin experimental master upstream pristine-tar bookworm-backports --tags
+git push origin experimental master upstream pristine-tar trixie-backports --tags
 
 # Check salsa-ci: https://salsa.debian.org/amurzeau/streamlink/-/pipelines
 
