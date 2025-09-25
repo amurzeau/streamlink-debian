@@ -11,3 +11,5 @@ variables:
   # python3.10 hangs when faketime changes monotonic clock
   # (see https://github.com/wolfcw/libfaketime/issues/390)
   FAKETIME_DONT_FAKE_MONOTONIC: 1
+  # If there is a reproducibility test failure, shows the differences
+  SALSA_CI_REPROTEST_ENABLE_DIFFOSCOPE: 1
