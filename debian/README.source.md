@@ -178,3 +178,22 @@ This package contains the public Python module `streamlink`.
 ## python3-streamlink-doc
 
 This package contains streamlink documentation in html format.
+
+# sbuild setup
+
+## Creating a schroot
+
+To create a stable schroot in `/srv/chroot/stable-amd64`, use this command:
+```
+sbuild-createchroot --extra-repository="deb http://deb.debian.org/debian stable-backports main" --include=eatmydata --alias=trixie-backports --command-prefix=eatmydata --chroot-prefix=trixie-backports stable /srv/chroot/stable-amd64 http://deb.debian.org/debian
+```
+
+For unstable:
+```
+sbuild-createchroot unstable /srv/chroot/unstable-amd64 http://deb.debian.org/debian
+```
+
+For testing:
+```
+sbuild-createchroot testing /srv/chroot/testing-amd64 http://deb.debian.org/debian
+```
