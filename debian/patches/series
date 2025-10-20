@@ -4,3 +4,5 @@
 0004-Remove-GitHub-Buttons-without-replacement.patch
 0005-Use-fork-awesome-a-Debian-doesn-t-have-font-awesome-.patch
 0008-Remove-intersphinx.patch
+0007-Fix-sphinx-error-Duplicate-target-name-cannot-be-use.patch
+0008-Fix-sphinx-warning-Transition-must-be-child-of-docum.patch

@@ -1,0 +1,24 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Mon, 20 Oct 2025 19:48:26 +0200
+Subject: Fix sphinx error: Duplicate target name,
+ cannot be used as a unique reference: "linux appimages"
+
+Forwarded: https://github.com/streamlink/streamlink/pull/6699
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ docs/install.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/docs/install.rst b/docs/install.rst
+index 68af04c..d95ba54 100644
+--- a/docs/install.rst
++++ b/docs/install.rst
+@@ -253,7 +253,7 @@ Package availability
+ Packaging is not done by the Streamlink maintainers themselves except for
+ the `PyPI package <pypi-package-and-source-code_>`_,
+ the `Windows installers + portable builds <Windows binaries_>`_,
+-and the `Linux AppImages <Linux AppImages_>`_.
++and the `Linux AppImages`_.
+ 
+ If a packaged release of Streamlink is not available for your operating system / distro or your system's architecture,
+ or if it's out of date or broken, then please contact the respective package maintainers or package-repository maintainers

@@ -1,0 +1,24 @@
+From: Alexis Murzeau <amubtdx@gmail.com>
+Date: Mon, 20 Oct 2025 19:48:48 +0200
+Subject: Fix sphinx warning: Transition must be child of <document> or
+ <section>
+
+Forwarded: https://github.com/streamlink/streamlink/pull/6699
+Author: Alexis Murzeau <amubtdx@gmail.com>
+---
+ docs/api/validate.rst | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/docs/api/validate.rst b/docs/api/validate.rst
+index 35e9807..8be28ef 100644
+--- a/docs/api/validate.rst
++++ b/docs/api/validate.rst
+@@ -69,8 +69,6 @@ for an introduction to this API and a list of examples.
+     :func:`validate()` is implemented using the stdlib's :func:`functools.singledispatch` decorator, where more specific
+     schemas overload the default implementation with more validation logic.
+ 
+-    ----
+-
+     By default, :func:`validate()` compares ``value`` and ``schema`` for equality. This means that simple schema objects
+     like booleans, strings, numbers, None, etc. are validated here, as well as anything unknown.
+ 
