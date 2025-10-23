@@ -1,3 +1,9 @@
+streamlink (7.6.0-2) unstable; urgency=medium
+
+  * d/patches: fix docutils errors and warning (Closes: #1118304)
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 23 Oct 2025 22:25:54 +0200
+
 streamlink (7.6.0-1) unstable; urgency=medium
 
   * New upstream version 7.6.0
