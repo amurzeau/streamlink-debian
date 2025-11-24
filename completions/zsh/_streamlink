@@ -282,8 +282,10 @@ _shtab_streamlink_cli_options=(
             as well as the \"Plugins\" section for the list of metadata variables defined in each plugin.
 
             Only the following players are supported\:
-
-            mpv, potplayer, vlc
+            
+            - mpv
+            - PotPlayer
+            - VLC
 
             Example\:
 
@@ -474,6 +476,14 @@ _shtab_streamlink_cli_options=(
 
             Default is 10.0.
         ]:stream_segment_timeout:"
+  "--stream-segmented-duration[
+            Limit the output duration of segmented streams, like HLS and DASH.
+            The actual duration may be slightly longer, as it is rounded to the nearest segment.
+
+            Set to 0 to disable.
+
+            Default is 0.
+        ]:stream_segmented_duration:"
   "--stream-timeout[
             The maximum time to wait for an unfiltered stream to continue outputting data.
 
@@ -576,10 +586,7 @@ _shtab_streamlink_cli_options=(
             Default is 0.
         ]:hls_start_offset:"
   "--hls-duration[
-            Limit the playback duration, useful for watching segments of a stream.
-            The actual duration may be slightly longer, as it is rounded to the nearest HLS segment.
-
-            Default is unlimited.
+            Deprecated in favor of --stream-segmented-duration.
         ]:hls_duration:"
   "--hls-live-restart[
             Skip to the beginning of a live stream, or as far back as possible.
@@ -642,6 +649,13 @@ _shtab_streamlink_cli_options=(
   "--ffmpeg-start-at-zero[
             Enable the \`-start_at_zero\` FFmpeg option when using --ffmpeg-copyts.
         ]"
+  "--ffmpeg-validation-timeout[
+            Timeout in seconds for FFmpeg version validation.
+
+            Default is 4.0.
+
+            Increase this on low-power systems if FFmpeg startup is slow.
+        ]:ffmpeg_validation_timeout:"
   "--http-proxy[
             An HTTP proxy to use for all HTTP and HTTPS requests, including WebSocket connections.
 
@@ -795,6 +809,17 @@ _shtab_streamlink_cli_options=(
         Note\: Low latency streams have to be enabled by the broadcasters on Twitch themselves.
         Regular streams can cause buffering issues with this option enabled due to the reduced --hls-live-edge value.
     ]"
+  "--twitch-supported-codecs[
+        A comma-separated list of codec names which signals Twitch the client\'s stream codec preference.
+        Which streams and which codecs are available depends on the specific channel and broadcast.
+
+        Default is \"h264\".
+
+        Supported codecs are h264, h265 and av1. Set to \"h264,h265,av1\" to enable all codecs.
+
+        Higher quality streams may only be available by enabling h265 or av1.
+        Lower quality streams which are re-encoded on Twitch\'s end may still be h264, even if not requested.
+    ]:twitch_supported_codecs:"
   "*--twitch-api-header[
         A header to add to each Twitch API HTTP request.
 

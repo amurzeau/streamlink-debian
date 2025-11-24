@@ -2,23 +2,22 @@ from __future__ import annotations
 
 import logging
 import queue
-from collections.abc import Generator
 from concurrent import futures
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from threading import Event, current_thread
-from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeAlias, TypeVar
 
 from streamlink.buffers import RingBuffer
 from streamlink.stream.segmented.segment import Segment
-from streamlink.stream.stream import Stream, StreamIO
+from streamlink.stream.stream import StreamIO
 from streamlink.utils.thread import NamedThread
 
 
 if TYPE_CHECKING:
-    try:
-        from typing import TypeAlias  # type: ignore[attr-defined]
-    except ImportError:
-        from typing_extensions import TypeAlias
+    from collections.abc import Generator
+    from concurrent.futures import Future
+
+    from streamlink.stream.stream import Stream
 
 
 log = logging.getLogger(".".join(__name__.split(".")[:-1]))
@@ -39,8 +38,10 @@ class AwaitableMixin:
 
 TSegment = TypeVar("TSegment", bound=Segment)
 TResult = TypeVar("TResult")
-TResultFuture: TypeAlias = "Future[TResult | None]"
-TQueueItem: TypeAlias = "tuple[TSegment, TResultFuture, tuple]"
+
+if TYPE_CHECKING:
+    TResultFuture: TypeAlias = Future[TResult | None]
+    TQueueItem: TypeAlias = tuple[TSegment, TResultFuture, tuple]
 
 
 class SegmentedStreamWriter(AwaitableMixin, NamedThread, Generic[TSegment, TResult]):
@@ -74,7 +75,7 @@ class SegmentedStreamWriter(AwaitableMixin, NamedThread, Generic[TSegment, TResu
         self.timeout = timeout or self.session.options.get("stream-segment-timeout")
 
         self.executor = ThreadPoolExecutor(max_workers=self.threads, thread_name_prefix=f"{self.name}-executor")
-        self._queue: queue.Queue[TQueueItem] = queue.Queue(size)
+        self._queue: queue.Queue[TQueueItem | None] = queue.Queue(size)
 
     def close(self) -> None:
         """
@@ -121,10 +122,10 @@ class SegmentedStreamWriter(AwaitableMixin, NamedThread, Generic[TSegment, TResu
             except queue.Full:  # pragma: no cover
                 continue
 
-    def _queue_put(self, item: TQueueItem) -> None:
+    def _queue_put(self, item: TQueueItem | None) -> None:
         self._queue.put(item, block=True, timeout=1)
 
-    def _queue_get(self) -> TQueueItem:
+    def _queue_get(self) -> TQueueItem | None:
         return self._queue.get(block=True, timeout=0.5)
 
     @staticmethod
@@ -191,6 +192,10 @@ class SegmentedStreamWorker(AwaitableMixin, NamedThread, Generic[TSegment, TResu
         self.stream = reader.stream
         self.session = reader.session
 
+        self.sequence: int = -1
+        self.duration: float = 0.0
+        self.duration_limit: float = self.session.options.get("stream-segmented-duration")
+
     def close(self) -> None:
         """
         Shuts down the thread.
@@ -203,6 +208,16 @@ class SegmentedStreamWorker(AwaitableMixin, NamedThread, Generic[TSegment, TResu
 
         self.closed = True
         self._wait.set()
+
+    def check_sequence_gap(self, segment: TSegment) -> None:
+        size = segment.num - self.sequence
+        if size > 0:
+            if size > 1:
+                msg = f"Sequence gap of {size} segments at position {self.sequence}. "
+            else:
+                msg = f"Sequence gap of 1 segment at position {self.sequence}. "
+            warning = "This is unsupported and will result in incoherent output data."
+            log.warning(f"{msg}{warning}")
 
     def iter_segments(self) -> Generator[TSegment, None, None]:
         """
@@ -218,7 +233,17 @@ class SegmentedStreamWorker(AwaitableMixin, NamedThread, Generic[TSegment, TResu
         for segment in self.iter_segments():
             if self.closed:  # pragma: no cover
                 break
+
+            self.check_sequence_gap(segment)
+
+            self.sequence = segment.num + 1
+            self.duration += segment.duration
+
             self.writer.put(segment)
+
+            if self.duration >= self.duration_limit > 0.0:
+                log.info(f"Stopping stream early after {self.duration_limit:.2f}s")
+                break
 
         # End of stream, tells the writer to exit
         self.writer.put(None)

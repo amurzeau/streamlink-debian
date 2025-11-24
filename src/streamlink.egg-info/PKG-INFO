@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: streamlink
-Version: 7.6.0
+Version: 8.0.0
 Summary: Streamlink is a command-line utility that extracts streams from various services and pipes them into a video player of choice.
 Author: Streamlink
 Author-email: streamlink@protonmail.com
@@ -18,7 +18,6 @@ Classifier: Operating System :: MacOS
 Classifier: Operating System :: Microsoft :: Windows
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3 :: Only
-Classifier: Programming Language :: Python :: 3.9
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
@@ -28,7 +27,7 @@ Classifier: Topic :: Internet :: WWW/HTTP
 Classifier: Topic :: Multimedia :: Sound/Audio
 Classifier: Topic :: Multimedia :: Video
 Classifier: Topic :: Utilities
-Requires-Python: >=3.9
+Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: certifi
@@ -38,14 +37,15 @@ Requires-Dist: lxml<7,>=4.6.4
 Requires-Dist: pycountry
 Requires-Dist: pycryptodome<4,>=3.4.3
 Requires-Dist: PySocks!=1.5.7,>=1.5.6
-Requires-Dist: requests<3,>=2.26.0
+Requires-Dist: requests<3,>=2.30.0
 Requires-Dist: trio<1,>=0.25.0; python_version >= "3.13"
 Requires-Dist: trio<1,>=0.22.0; python_version < "3.13"
 Requires-Dist: trio-websocket<1,>=0.9.0
-Requires-Dist: urllib3<3,>=1.26.0
+Requires-Dist: urllib3<3,>=2.0.0
 Requires-Dist: websocket-client<2,>=1.2.1
 Provides-Extra: decompress
-Requires-Dist: urllib3[brotli,zstd]<3,>=1.26.0; extra == "decompress"
+Requires-Dist: urllib3[brotli]<3,>=2.0.0; python_version >= "3.14" and extra == "decompress"
+Requires-Dist: urllib3[brotli,zstd]<3,>=2.0.0; python_version < "3.14" and extra == "decompress"
 Dynamic: license-file
 
 <h1 align="center"><a href="https://streamlink.github.io/">Streamlink<br><img height="150" alt="Streamlink" src="https://raw.githubusercontent.com/streamlink/streamlink/master/icon.svg"></a></h1>

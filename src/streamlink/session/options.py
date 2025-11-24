@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import warnings
-from collections.abc import Callable, Iterator, Mapping
 from pathlib import Path
 from socket import AF_INET, AF_INET6
 from typing import TYPE_CHECKING, Any, ClassVar
@@ -16,6 +15,8 @@ from streamlink.utils.url import update_scheme
 
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator, Mapping
+
     from streamlink.session import Streamlink
 
 
@@ -144,6 +145,10 @@ class StreamlinkOptions(Options):
           - ``float``
           - ``10.0``
           - Segment connect and read timeout
+        * - stream-segmented-duration
+          - ``float``
+          - ``0.0``
+          - Limit the playback duration of segmented streams, rounded to the nearest segment
         * - stream-timeout
           - ``float``
           - ``60.0``
@@ -161,10 +166,10 @@ class StreamlinkOptions(Options):
           - ``0.0``
           - Number of seconds to skip from the beginning of the HLS stream,
             interpreted as a negative offset for livestreams
-        * - hls-duration
-          - ``float | None``
-          - ``None``
-          - Limit the HLS stream playback duration, rounded to the nearest HLS segment
+        * - hls-duration *(deprecated)*
+          - ``float``
+          - ``0.0``
+          - See ``stream-segmented-duration``
         * - hls-playlist-reload-attempts
           - ``int``
           - ``3``
@@ -213,6 +218,10 @@ class StreamlinkOptions(Options):
           - ``bool``
           - ``False``
           - Disable FFmpeg validation and version logging
+        * - ffmpeg-validation-timeout
+          - ``float``
+          - ``4.0``
+          - Timeout in seconds for FFmpeg version validation
         * - ffmpeg-verbose
           - ``bool``
           - ``False``
@@ -288,11 +297,11 @@ class StreamlinkOptions(Options):
             "stream-segment-attempts": 3,
             "stream-segment-threads": 1,
             "stream-segment-timeout": 10.0,
+            "stream-segmented-duration": 0.0,
             "stream-timeout": 60.0,
             "hls-live-edge": 3,
             "hls-live-restart": False,
             "hls-start-offset": 0.0,
-            "hls-duration": None,
             "hls-playlist-reload-attempts": 3,
             "hls-playlist-reload-time": "default",
             "hls-segment-queue-threshold": 3,
@@ -303,6 +312,7 @@ class StreamlinkOptions(Options):
             "dash-manifest-reload-attempts": 3,
             "ffmpeg-ffmpeg": None,
             "ffmpeg-no-validation": False,
+            "ffmpeg-validation-timeout": 4.0,
             "ffmpeg-verbose": False,
             "ffmpeg-verbose-path": None,
             "ffmpeg-loglevel": None,
@@ -413,10 +423,6 @@ class StreamlinkOptions(Options):
 
         return inner
 
-    # TODO: py39 support end: remove explicit dummy context binding of static method
-    _factory_set_http_attr_key_equals_value = _factory_set_http_attr_key_equals_value.__get__(object)
-    _factory_set_deprecated = _factory_set_deprecated.__get__(object)
-
     # ----
 
     _OPTIONS_HTTP_ATTRS: ClassVar[Mapping[str, str]] = {
@@ -455,4 +461,5 @@ class StreamlinkOptions(Options):
         "http-ssl-verify": _set_http_attr,
         "http-trust-env": _set_http_attr,
         "http-timeout": _set_http_attr,
+        "hls-duration": _factory_set_deprecated("stream-segmented-duration", float),
     }
