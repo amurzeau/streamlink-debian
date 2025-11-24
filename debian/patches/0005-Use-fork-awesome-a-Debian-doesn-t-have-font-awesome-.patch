@@ -10,7 +10,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  2 files changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/docs/_static/styles/custom.css b/docs/_static/styles/custom.css
-index 9cf682c..a928f69 100644
+index 6c3fa52..bac0698 100644
 --- a/docs/_static/styles/custom.css
 +++ b/docs/_static/styles/custom.css
 @@ -97,10 +97,10 @@ a[href^="https://"]:not(.muted-link):not(.sd-badge):not([href^="https://streamli
@@ -27,10 +27,10 @@ index 9cf682c..a928f69 100644
    text-decoration: none;
  }
 diff --git a/docs/conf.py b/docs/conf.py
-index a00a3fd..9a8011c 100644
+index 72327b1..b2c7580 100644
 --- a/docs/conf.py
 +++ b/docs/conf.py
-@@ -163,9 +163,8 @@ html_static_path = ['_static']
+@@ -112,9 +112,8 @@ html_logo = "../icon.svg"
  
  html_css_files = [
      "styles/custom.css",
@@ -41,4 +41,4 @@ index a00a3fd..9a8011c 100644
 +    "styles/v5-compat.css",
  ]
  
- # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
+ html_static_path = ["_static"]
