@@ -1,6 +1,6 @@
 import ssl
 from collections.abc import Callable, Iterable, Mapping, MutableMapping, Sequence
-from typing import Any
+from typing import Any, TypeAlias
 
 # noinspection PyUnresolvedReferences
 from _typeshed import SupportsItems, SupportsRead  # noqa: PLC2701
@@ -8,7 +8,6 @@ from requests import PreparedRequest, Response, Session
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests.cookies import RequestsCookieJar
-from typing_extensions import TypeAlias
 
 from streamlink.plugin.api.validate import Schema
 from streamlink.session import Streamlink
@@ -60,7 +59,7 @@ _Params: TypeAlias = (
 )
 _TextMapping: TypeAlias = MutableMapping[str, str]
 _HeadersUpdateMapping: TypeAlias = Mapping[str, str | bytes | None]
-_Timeout: TypeAlias = float | tuple[float, float] | tuple[float, None]
+_Timeout: TypeAlias = float | tuple[float | None, float | None]
 _Verify: TypeAlias = bool | str
 
 # END: borrowed from typeshed / types-requests

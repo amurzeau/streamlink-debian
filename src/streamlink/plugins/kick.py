@@ -39,7 +39,7 @@ log = logging.getLogger(__name__)
 LOW_LATENCY_MAX_LIVE_EDGE = 2
 
 
-@dataclass
+@dataclass(kw_only=True)
 class KickHLSSegment(HLSSegment):
     prefetch: bool = False
 
@@ -79,11 +79,10 @@ class KickHLSStreamWorker(HLSStreamWorker):
     writer: KickHLSStreamWriter
     stream: KickHLSStream
 
-    def _playlist_reload_time(self, playlist: KickM3U8):  # type: ignore[override]
-        if self.stream.low_latency and playlist.segments:
-            return playlist.segments[-1].duration
-
-        return super()._playlist_reload_time(playlist)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.stream.low_latency:
+            self.reload_time = "segment"
 
     def process_segments(self, playlist: KickM3U8):  # type: ignore[override]
         # ignore prefetch segments if not LL streaming
@@ -180,8 +179,8 @@ class Kick(Plugin):
 
     def _get_cookies_from_webbrowser(self) -> bool:
         from streamlink.compat import BaseExceptionGroup  # noqa: PLC0415
-        from streamlink.webbrowser.cdp import CDPClient, CDPClientSession  # noqa: PLC0415
-        from streamlink.webbrowser.cdp.devtools import fetch  # noqa: PLC0415
+        from streamlink.webbrowser.cdp import CDPClient, CDPClientSession  # noqa: PLC0415, TC001
+        from streamlink.webbrowser.cdp.devtools import fetch  # noqa: PLC0415, TC001
 
         async def on_main(client_session: CDPClientSession, request: fetch.RequestPaused):
             # get Chromium's request headers, update HTTP session headers and also cache them

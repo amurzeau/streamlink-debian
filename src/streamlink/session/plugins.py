@@ -7,11 +7,9 @@ import json
 import logging
 import pkgutil
 import re
-from collections.abc import Iterator, Mapping
 from contextlib import suppress
 from pathlib import Path
-from types import ModuleType
-from typing import TYPE_CHECKING, Literal, TypedDict
+from typing import TYPE_CHECKING, Literal, TypeAlias, TypedDict
 
 import streamlink.plugins
 from streamlink.options import Argument, Arguments
@@ -22,10 +20,8 @@ from streamlink.utils.module import exec_module, get_finder
 
 
 if TYPE_CHECKING:
-    try:
-        from typing import TypeAlias  # type: ignore[attr-defined]
-    except ImportError:
-        from typing_extensions import TypeAlias
+    from collections.abc import Iterator, Mapping
+    from types import ModuleType
 
     from _typeshed.importlib import PathEntryFinderProtocol
 
@@ -209,9 +205,10 @@ class StreamlinkPlugins:
 
 _RE_STRIP_JSON_COMMENTS = re.compile(rb"^(?:\s*//[^\n]*\n+)+")
 
-_TListOfConstants: TypeAlias = "list[bool | int | float | str | None]"
-_TConstantOrListOfConstants: TypeAlias = "bool | int | float | str | _TListOfConstants | None"
-_TMappingOfConstantOrListOfConstants: TypeAlias = "dict[str, _TConstantOrListOfConstants]"
+if TYPE_CHECKING:
+    _TListOfConstants: TypeAlias = list[bool | int | float | str | None]
+    _TConstantOrListOfConstants: TypeAlias = bool | int | float | str | _TListOfConstants | None
+    _TMappingOfConstantOrListOfConstants: TypeAlias = dict[str, _TConstantOrListOfConstants]
 
 
 class _TPluginMatcherData(TypedDict):

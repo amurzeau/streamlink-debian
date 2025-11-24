@@ -17,6 +17,7 @@ completions/bash/streamlink
 completions/zsh/_streamlink
 docs/Makefile
 docs/_man.rst
+docs/acknowledgements.rst
 docs/api.rst
 docs/api_guide.rst
 docs/applications.rst
@@ -26,11 +27,6 @@ docs/conf.py
 docs/deprecations.rst
 docs/developing.rst
 docs/docutils.conf
-docs/ext_argparse.py
-docs/ext_github.py
-docs/ext_html_template_vars.py
-docs/ext_plugins.py
-docs/ext_releaseref.py
 docs/index.rst
 docs/install.rst
 docs/migrations.rst
@@ -43,9 +39,13 @@ docs/_static/apple-touch-icon.png
 docs/_static/favicon-16x16.png
 docs/_static/favicon-32x32.png
 docs/_static/favicon.ico
+docs/_static/github-lockup-dark.svg
+docs/_static/github-lockup-light.svg
 docs/_static/icon-ffmpeg.svg
 docs/_static/icon-python.svg
 docs/_static/icon.svg
+docs/_static/jetbrains-mono-black.svg
+docs/_static/jetbrains-mono-white.svg
 docs/_static/opengraph-image.png
 docs/_static/site.webmanifest
 docs/_static/styles/custom.css
@@ -72,6 +72,11 @@ docs/cli/protocols.rst
 docs/cli/proxy.rst
 docs/cli/tutorial.rst
 docs/cli/plugins/twitch.rst
+docs/sphinxext/ext_argparse.py
+docs/sphinxext/ext_github.py
+docs/sphinxext/ext_html_template_vars.py
+docs/sphinxext/ext_plugins.py
+docs/sphinxext/ext_releaseref.py
 script/build-shell-completions.sh
 src/streamlink/__init__.py
 src/streamlink/__main__.py
@@ -168,7 +173,6 @@ src/streamlink/plugins/mjunoon.py
 src/streamlink/plugins/mrtmk.py
 src/streamlink/plugins/n13tv.py
 src/streamlink/plugins/nasaplus.py
-src/streamlink/plugins/nhkworld.py
 src/streamlink/plugins/nicolive.py
 src/streamlink/plugins/nimotv.py
 src/streamlink/plugins/nos.py
@@ -460,7 +464,6 @@ tests/plugins/test_mjunoon.py
 tests/plugins/test_mrtmk.py
 tests/plugins/test_n13tv.py
 tests/plugins/test_nasaplus.py
-tests/plugins/test_nhkworld.py
 tests/plugins/test_nicolive.py
 tests/plugins/test_nimotv.py
 tests/plugins/test_nos.py

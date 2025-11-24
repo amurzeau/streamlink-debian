@@ -5,24 +5,28 @@ import logging as _logging
 import numbers
 import re
 import warnings
-from collections.abc import Callable
 from pathlib import Path
 from string import printable
 from textwrap import dedent
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from streamlink import __version__ as streamlink_version, logger
 from streamlink.exceptions import StreamlinkDeprecationWarning
 from streamlink.options import Options
-from streamlink.plugin import Plugin
-from streamlink.session import Streamlink
-from streamlink.user_input import UserInputRequester
 from streamlink.utils.args import boolean, comma_list, comma_list_filter, filesize, keyvalue, num
 from streamlink.utils.times import hours_minutes_seconds_float
 from streamlink_cli.constants import STREAM_PASSTHROUGH
 from streamlink_cli.exceptions import StreamlinkCLIError
-from streamlink_cli.output.player import PlayerOutput
+from streamlink_cli.output.player import PlayerArgs, PlayerOutput
 from streamlink_cli.utils import find_default_player
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from streamlink.plugin import Plugin
+    from streamlink.session import Streamlink
+    from streamlink.user_input import UserInputRequester
 
 
 log = _logging.getLogger(__name__)
@@ -37,6 +41,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
     def __init__(self, *args, **kwargs):
         self.NESTED_ARGUMENT_GROUPS = {}
+        self.color = True  # pre 3.14 compat
         super().__init__(*args, **kwargs)
 
     # noinspection PyUnresolvedReferences,PyProtectedMember
@@ -104,6 +109,15 @@ class ArgumentParser(argparse.ArgumentParser):
 
         # return the number of arguments matched
         return len(match.group(1))
+
+    # disable color output for the "usage" text
+    def format_usage(self):
+        color = self.color
+        self.color = False
+        try:
+            return super().format_usage()
+        finally:
+            self.color = color
 
     # fix `--help` not including nested argument groups
     def format_help(self):
@@ -674,6 +688,7 @@ def build_parser():
             This option will instead let the player decide when to exit.
         """,
     )
+    # noinspection PyTypeChecker
     player.add_argument(
         "-t",
         "--title",
@@ -685,8 +700,7 @@ def build_parser():
             as well as the "Plugins" section for the list of metadata variables defined in each plugin.
 
             Only the following players are supported:
-
-            {", ".join(sorted(PlayerOutput.PLAYERS.keys()))}
+            {"".join(f"{chr(0x0A)}            - {pn}" for pn in sorted([p.NAME for p in PlayerArgs.PLAYERS], key=str.lower))}
 
             Example:
 
@@ -991,6 +1005,19 @@ def build_parser():
         """,
     )
     transport.add_argument(
+        "--stream-segmented-duration",
+        type=hours_minutes_seconds_float,
+        metavar="[[XX:]XX:]XX[.XX] | [XXh][XXm][XX[.XX]s]",
+        help="""
+            Limit the output duration of segmented streams, like HLS and DASH.
+            The actual duration may be slightly longer, as it is rounded to the nearest segment.
+
+            Set to 0 to disable.
+
+            Default is 0.
+        """,
+    )
+    transport.add_argument(
         "--stream-timeout",
         type=num(float, gt=0),
         metavar="TIMEOUT",
@@ -1151,10 +1178,7 @@ def build_parser():
         type=hours_minutes_seconds_float,
         metavar="[[XX:]XX:]XX[.XX] | [XXh][XXm][XX[.XX]s]",
         help="""
-            Limit the playback duration, useful for watching segments of a stream.
-            The actual duration may be slightly longer, as it is rounded to the nearest HLS segment.
-
-            Default is unlimited.
+            Deprecated in favor of --stream-segmented-duration.
         """,
     )
     transport_hls.add_argument(
@@ -1275,6 +1299,18 @@ def build_parser():
         default=None,
         help="""
             Enable the `-start_at_zero` FFmpeg option when using --ffmpeg-copyts.
+        """,
+    )
+    transport_ffmpeg.add_argument(
+        "--ffmpeg-validation-timeout",
+        type=float,
+        metavar="SECONDS",
+        help="""
+            Timeout in seconds for FFmpeg version validation.
+
+            Default is 4.0.
+
+            Increase this on low-power systems if FFmpeg startup is slow.
         """,
     )
 
@@ -1484,16 +1520,17 @@ _ARGUMENT_TO_SESSIONOPTION: list[tuple[str, str, Callable[[Any], Any] | None]] =
     ("http_ssl_cert_crt_key", "http-ssl-cert", tuple),
     ("http_timeout", "http-timeout", None),
     # stream transport arguments
+    ("hls_duration", "hls-duration", None),  # deprecated options must come first
     ("ringbuffer_size", "ringbuffer-size", None),
     ("mux_subtitles", "mux-subtitles", None),
     ("stream_segment_attempts", "stream-segment-attempts", None),
     ("stream_segment_threads", "stream-segment-threads", None),
     ("stream_segment_timeout", "stream-segment-timeout", None),
+    ("stream_segmented_duration", "stream-segmented-duration", None),
     ("stream_timeout", "stream-timeout", None),
     ("hls_live_edge", "hls-live-edge", None),
     ("hls_live_restart", "hls-live-restart", None),
     ("hls_start_offset", "hls-start-offset", None),
-    ("hls_duration", "hls-duration", None),
     ("hls_playlist_reload_attempts", "hls-playlist-reload-attempts", None),
     ("hls_playlist_reload_time", "hls-playlist-reload-time", None),
     ("hls_segment_queue_threshold", "hls-segment-queue-threshold", None),
@@ -1520,6 +1557,7 @@ _ARGUMENT_TO_SESSIONOPTION: list[tuple[str, str, Callable[[Any], Any] | None]] =
     ("webbrowser_cdp_port", "webbrowser-cdp-port", None),
     ("webbrowser_cdp_timeout", "webbrowser-cdp-timeout", None),
     ("webbrowser_headless", "webbrowser-headless", None),
+    ("ffmpeg_validation_timeout", "ffmpeg-validation-timeout", None),
 ]
 
 

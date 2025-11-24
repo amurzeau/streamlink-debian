@@ -19,14 +19,12 @@ class TestSegment:
     @pytest.mark.parametrize(
         ("segmentdata", "expected"),
         [
-            ({"uri": "https://foo/bar", "num": 123, "duration": 0.0, "init": True, "content": False}, "initialization"),
-            ({"uri": "https://foo/bar", "num": 123, "duration": 0.0, "init": True, "content": True}, "123"),
-            ({"uri": "https://foo/bar", "num": -1, "duration": 0.0, "init": True, "content": True}, "bar"),
-            ({"uri": "https://foo/bar", "num": 123, "duration": 0.0}, "123"),
-            ({"uri": "https://foo/bar", "num": -1, "duration": 0.0}, "bar"),
-            ({"uri": "https://foo/bar/", "num": -1, "duration": 0.0}, "bar"),
-            ({"uri": "https://foo/bar/baz.qux", "num": -1, "duration": 0.0}, "baz.qux"),
-            ({"uri": "https://foo/bar/baz.qux?asdf", "num": -1, "duration": 0.0}, "baz.qux"),
+            ({"num": -1, "init": True, "uri": "https://foo/bar", "duration": 0.0}, "initialization"),
+            ({"num": 123, "uri": "https://foo/bar", "duration": 0.0}, "123"),
+            ({"num": -1, "uri": "https://foo/bar", "duration": 0.0}, "bar"),
+            ({"num": -1, "uri": "https://foo/bar/", "duration": 0.0}, "bar"),
+            ({"num": -1, "uri": "https://foo/bar/baz.qux", "duration": 0.0}, "baz.qux"),
+            ({"num": -1, "uri": "https://foo/bar/baz.qux?asdf", "duration": 0.0}, "baz.qux"),
         ],
     )
     def test_name(self, segmentdata: dict, expected: str):
@@ -139,7 +137,7 @@ class TestMPDParser:
                     "ident": representation.ident,
                     "mimeType": representation.mimeType,
                     "segments": [
-                        (segment.uri, segment.num, segment.duration, segment.available_at, segment.init, segment.content)
+                        (segment.num, segment.init, segment.uri, segment.duration, segment.available_at)
                         for segment in itertools.islice(representation.segments(), 100)
                     ],
                 }
@@ -153,17 +151,17 @@ class TestMPDParser:
             {
                 "ident": (None, None, "1"),
                 "mimeType": "audio/mp4",
-                "segments": [("http://cdn1.example.com/7657412348.mp4", -1, 3256.0, availability, True, True)],
+                "segments": [(-1, False, "http://cdn1.example.com/7657412348.mp4", 3256.0, availability)],
             },
             {
                 "ident": (None, None, "5"),
                 "mimeType": "application/ttml+xml",
-                "segments": [("http://cdn1.example.com/796735657.xml", -1, 3256.0, availability, True, True)],
+                "segments": [(-1, False, "http://cdn1.example.com/796735657.xml", 3256.0, availability)],
             },
             {
                 "ident": (None, None, "6"),
                 "mimeType": "video/mp4",
-                "segments": [("http://cdn1.example.com/8563456473.mp4", -1, 3256.0, availability, True, True)],
+                "segments": [(-1, False, "http://cdn1.example.com/8563456473.mp4", 3256.0, availability)],
             },
         ]
 
@@ -282,17 +280,16 @@ class TestMPDParser:
             mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd")
 
         segments = [
-            (segment.uri, segment.num, segment.duration, segment.available_at, segment.init, segment.content)
+            (segment.num, segment.init, segment.uri, segment.duration, segment.available_at)
             for segment in itertools.islice(mpd.periods[0].adaptationSets[0].representations[0].segments(), 100)
         ]
         assert segments == [
             (
-                f"http://test/video_1920x1080_avc1-{expected_time}.m4s",
                 9,
+                False,
+                f"http://test/video_1920x1080_avc1-{expected_time}.m4s",
                 6.0,
                 datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=UTC),
-                False,
-                True,
             ),
         ]
 
@@ -312,58 +309,46 @@ class TestMPDParser:
             ("http://test/chunk_ctvideo_ridp0va0br4332748_cn3_mpd.m4s", expected_availability),
         ]
 
-    def test_dynamic_segment_list_continued(self, caplog: pytest.LogCaptureFixture):
-        caplog.set_level("WARNING", "streamlink.stream.dash")
-
+    def test_dynamic_segment_list_continued(self):
         # init manifest
         with xml("dash/test_dynamic_segment_list_p1.mpd") as mpd_xml:
             mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd")
-        segments_iterator = mpd.periods[0].adaptationSets[0].representations[0].segments(init=True)
-
-        assert [(segment.uri, segment.num) for segment in segments_iterator] == [
+        segments = list(mpd.periods[0].adaptationSets[0].representations[0].segments(init=True))
+        assert [(segment.uri, segment.num) for segment in segments] == [
             ("http://test/init.m4s", -1),
             ("http://test/13.m4s", 13),
             ("http://test/14.m4s", 14),
             ("http://test/15.m4s", 15),
-        ], "Queues the init segment and the correct number of segments from the live-edge"
-        assert mpd.timelines["0", "0", "0"] == 16, "Remembers the next segment number"
-        assert [(record.name, record.levelname, record.message) for record in caplog.records] == []
+        ]
 
         # regular continuation
         with xml("dash/test_dynamic_segment_list_p2.mpd") as mpd_xml:
-            mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd", timelines=mpd.timelines)
-        segments_iterator = mpd.periods[0].adaptationSets[0].representations[0].segments(init=False)
-
-        assert [(segment.uri, segment.num) for segment in segments_iterator] == [
+            mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd")
+        segments = list(mpd.periods[0].adaptationSets[0].representations[0].segments(sequence=segments[-1].num + 1, init=False))
+        assert [(segment.uri, segment.num) for segment in segments] == [
             ("http://test/16.m4s", 16),
             ("http://test/17.m4s", 17),
             ("http://test/18.m4s", 18),
-        ], "All segments from the remembered segment number were queued"
-        assert mpd.timelines["0", "0", "0"] == 19, "Remembers the next segment number"
-        assert [(record.name, record.levelname, record.message) for record in caplog.records] == []
+        ]
 
         # regular continuation with a different offset
         with xml("dash/test_dynamic_segment_list_p3.mpd") as mpd_xml:
-            mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd", timelines=mpd.timelines)
-        segments_iterator = mpd.periods[0].adaptationSets[0].representations[0].segments(init=False)
-
-        assert [(segment.uri, segment.num) for segment in segments_iterator] == [
+            mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd")
+        segments = list(mpd.periods[0].adaptationSets[0].representations[0].segments(sequence=segments[-1].num + 1, init=False))
+        assert [(segment.uri, segment.num) for segment in segments] == [
             ("http://test/19.m4s", 19),
             ("http://test/20.m4s", 20),
             ("http://test/21.m4s", 21),
             ("http://test/22.m4s", 22),
             ("http://test/23.m4s", 23),
             ("http://test/24.m4s", 24),
-        ], "All segments from the remembered segment number were queued"
-        assert mpd.timelines["0", "0", "0"] == 25, "Remembers the next segment number"
-        assert [(record.name, record.levelname, record.message) for record in caplog.records] == []
+        ]
 
         # skipped multiple segments
         with xml("dash/test_dynamic_segment_list_p4.mpd") as mpd_xml:
-            mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd", timelines=mpd.timelines)
-        segments_iterator = mpd.periods[0].adaptationSets[0].representations[0].segments(init=False)
-
-        assert [(segment.uri, segment.num) for segment in segments_iterator] == [
+            mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd")
+        segments = list(mpd.periods[0].adaptationSets[0].representations[0].segments(sequence=segments[-1].num + 1, init=False))
+        assert [(segment.uri, segment.num) for segment in segments] == [
             ("http://test/30.m4s", 30),
             ("http://test/31.m4s", 31),
             ("http://test/32.m4s", 32),
@@ -374,24 +359,13 @@ class TestMPDParser:
             ("http://test/37.m4s", 37),
             ("http://test/38.m4s", 38),
             ("http://test/39.m4s", 39),
-        ], "All segments from the remembered segment number were queued"
-        assert mpd.timelines["0", "0", "0"] == 40, "Remembers the next segment number"
-        assert [(record.name, record.levelname, record.message) for record in caplog.records] == [
-            (
-                "streamlink.stream.dash.manifest",
-                "warning",
-                "Skipped segments 25-29 after manifest reload. This is unsupported and will result in incoherent output data.",
-            ),
         ]
-
-        caplog.records.clear()
 
         # skipped single segment
         with xml("dash/test_dynamic_segment_list_p5.mpd") as mpd_xml:
-            mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd", timelines=mpd.timelines)
-        segments_iterator = mpd.periods[0].adaptationSets[0].representations[0].segments(init=False)
-
-        assert [(segment.uri, segment.num) for segment in segments_iterator] == [
+            mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd")
+        segments = list(mpd.periods[0].adaptationSets[0].representations[0].segments(sequence=segments[-1].num + 1, init=False))
+        assert [(segment.uri, segment.num) for segment in segments] == [
             ("http://test/41.m4s", 41),
             ("http://test/42.m4s", 42),
             ("http://test/43.m4s", 43),
@@ -402,14 +376,6 @@ class TestMPDParser:
             ("http://test/48.m4s", 48),
             ("http://test/49.m4s", 49),
             ("http://test/50.m4s", 50),
-        ], "All segments from the remembered segment number were queued"
-        assert mpd.timelines["0", "0", "0"] == 51, "Remembers the next segment number"
-        assert [(record.name, record.levelname, record.message) for record in caplog.records] == [
-            (
-                "streamlink.stream.dash.manifest",
-                "warning",
-                "Skipped segment 40 after manifest reload. This is unsupported and will result in incoherent output data.",
-            ),
         ]
 
     def test_dynamic_segment_list_no_duration(self):
