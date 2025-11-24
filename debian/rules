@@ -22,8 +22,9 @@ export PYBUILD_TEST_ARGS=--rootdir=. -o cache_dir=$(CURDIR)/.pytest_cache
 export LC_ALL=C.UTF-8
 export LANGUAGE=C.UTF-8
 
+# Build docs with intersphinx disabled as it requires internet
 override_dh_auto_build:
-	PYTHONPATH=$(CURDIR)/src make --directory=docs html man
+	PYTHONPATH=$(CURDIR)/src make --directory=docs NO_INTERSPHINX=1 html man
 	sed -i 's/^\.ft C$$/.ft CW/' docs/_build/man/streamlink.1
 	dh_auto_build
 
