@@ -27,8 +27,7 @@ ${DISTRIBUTION}-backports repository"
     CHANGELOG_INTROLINE="Changes since the previous backported version in ${DISTRIBUTION}:"
     CHANGELOG_BACKPORT="
 Differences from testing package ($TESTING_VERSION):
-  * d/patches: reintroduce pytest 7 patch to add missing
-    ExceptionInfo.group_contains method.
+  * None
 
 "
 else
