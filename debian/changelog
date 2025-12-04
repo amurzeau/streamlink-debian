@@ -1,3 +1,11 @@
+streamlink (8.0.0-1~bpo13+1) trixie-backports; urgency=medium
+
+  * Rebuild for trixie-backports.
+  * d/create_rfs_mail.sh: update differences with unstable
+  * d/patches: add compatibility with pytest 8.3 on Trixie
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 04 Dec 2025 19:44:09 +0100
+
 streamlink (8.0.0-1) unstable; urgency=medium
 
   * New upstream version 8.0.0
