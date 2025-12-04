@@ -27,7 +27,7 @@ ${DISTRIBUTION}-backports repository"
     CHANGELOG_INTROLINE="Changes since the previous backported version in ${DISTRIBUTION}:"
     CHANGELOG_BACKPORT="
 Differences from testing package ($TESTING_VERSION):
-  * None
+  * d/patches: add compatibility with pytest 8.3 on Trixie
 
 "
 else
