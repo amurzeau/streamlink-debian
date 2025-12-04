@@ -35,7 +35,6 @@ classifiers = [
   "Operating System :: Microsoft :: Windows",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -54,7 +53,7 @@ dynamic = [
   "gui-scripts",
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
   "certifi",
   "exceptiongroup ; python_version<'3.11'",
@@ -63,11 +62,11 @@ dependencies = [
   "pycountry",
   "pycryptodome >=3.4.3,<4",
   "PySocks >=1.5.6,!=1.5.7",
-  "requests >=2.26.0,<3",
+  "requests >=2.30.0,<3",
   "trio >=0.25.0,<1 ; python_version>='3.13'",
   "trio >=0.22.0,<1 ; python_version<'3.13'",
   "trio-websocket >=0.9.0,<1",
-  "urllib3 >=1.26.0,<3",
+  "urllib3 >=2.0.0,<3",
   "websocket-client >=1.2.1,<2",
 ]
 
@@ -75,7 +74,8 @@ dependencies = [
 decompress = [
   # don't define brotli or zstandard library versions here
   # and instead rely on urllib3's version requirements
-  "urllib3[brotli,zstd] >=1.26.0,<3"
+  "urllib3[brotli     ] >=2.0.0,<3 ; python_version>='3.14'",
+  "urllib3[brotli,zstd] >=2.0.0,<3 ; python_version<'3.14'",
 ]
 
 [project.urls]
@@ -96,20 +96,22 @@ dev = [
 ]
 test = [
   { include-group = "dev" },
-  "pytest >=8.0.0",
-  "pytest-trio",
-  "freezegun >=1.5.0",
-  "requests-mock",
-  "coverage[toml]",
+  # pytest and plugins
+  "pytest >=8.4.0",
   "pytest-cov",
+  "pytest-trio",
+  "requests-mock",
+  # other
+  "coverage[toml]",
+  "freezegun >=1.5.0",
 ]
 lint = [
-  "ruff ==0.12.11",
+  "ruff ==0.14.1",
 ]
 typing = [
   { include-group = "test" },
   { include-group = "docs" },
-  "mypy[faster-cache] ==1.17.1",
+  "mypy[faster-cache] ==1.18.2",
   "typing-extensions >=4.0.0",
   "lxml-stubs",
   "trio-typing",
@@ -122,7 +124,7 @@ typing = [
 docs = [
   { include-group = "dev" },
   "sphinx >=6.0.0,<9",
-  "furo ==2025.07.19",
+  "furo ==2025.09.25",
   "myst-parser >=1.0.0,<5",
   "sphinx-design >=0.5.0,<=0.6.1",
 ]
@@ -190,6 +192,13 @@ method = { module = "build_backend.onbuild", value = "onbuild" }
 # https://docs.pytest.org/en/latest/reference/customize.html#configuration
 # https://docs.pytest.org/en/latest/reference/reference.html#ini-options-ref
 [tool.pytest.ini_options]
+minversion = "8.4.0"
+addopts = """
+--disable-plugin-autoload
+-p pytest_cov
+-p trio
+-p requests_mock
+"""
 testpaths = [
   "build_backend",
   "tests",
@@ -237,7 +246,6 @@ line-length = 128
 output-format = "full"
 preview = true
 extend-exclude = [
-  "docs/conf.py",
   "src/streamlink/packages/",
   "src/streamlink_cli/packages/",
 ]
@@ -287,6 +295,8 @@ select = [
   "PIE",
   # flake8-print
   "T20",
+  # flake8-type-checking
+  "TC",
   # flake8-pytest-style
   "PT",
   # flake8-use-pathlib
@@ -311,16 +321,17 @@ ignore = [
   "RUF022",  # unsorted-dunder-all
   "RUF027",  # missing-f-string-syntax
 ]
+future-annotations = true
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"docs/**" = ["INP", "RUF012"]
+"docs/**" = ["INP"]
 "script/**" = ["INP"]
 "src/streamlink/__init__.py" = ["I"]
 "src/streamlink/_version.py" = ["I"]
 "src/streamlink/plugins/*" = ["RUF012"]
 "src/streamlink/session/http_useragents.py" = ["E501"]
-"src/streamlink/webbrowser/cdp/devtools/*" = ["E303", "E501", "F401"]
+"src/streamlink/webbrowser/cdp/devtools/*" = ["E303", "E501", "F401", "TC"]
 "src/streamlink_cli/main.py" = ["PLW0603"]
 "tests/**" = ["RUF012"]
 
@@ -351,7 +362,7 @@ allow-multiline = false
 
 # https://mypy.readthedocs.io/en/stable/config_file.html
 [tool.mypy]
-python_version = 3.9
+python_version = "3.10"
 show_error_codes = true
 show_error_context = true
 show_column_numbers = true

@@ -4,7 +4,7 @@ import pytest
 
 from streamlink.stream.dash import DASHStream
 from streamlink.stream.file import FileStream
-from streamlink.stream.hls import HLSStream
+from streamlink.stream.hls import M3U8, HLSStream
 from streamlink.stream.http import HTTPStream
 from streamlink.stream.stream import Stream
 
@@ -37,9 +37,16 @@ def test_file_stream_handle(session):
     assert str(cm.value) == "<FileStream [file]> cannot be translated to a manifest URL"
 
 
-def test_file_stream_path(session):
-    stream = FileStream(session, "/path/to/file")
-    assert stream.to_url() == "/path/to/file"
+@pytest.mark.parametrize(
+    "path",
+    [
+        pytest.param("/path/to/file", id="POSIX", marks=pytest.mark.posix_only),
+        pytest.param("C:\\path\\to\\file", id="Windows", marks=pytest.mark.windows_only),
+    ],
+)
+def test_file_stream_path(session, path):
+    stream = FileStream(session, path)
+    assert stream.to_url() == path
     with pytest.raises(TypeError) as cm:
         stream.to_manifest_url()
     assert str(cm.value) == "<FileStream [file]> cannot be translated to a manifest URL"
@@ -62,7 +69,9 @@ def test_hls_stream(session, common_args):
 
 
 def test_hls_stream_master(session, common_args):
-    stream = HLSStream(session, "http://host/stream.m3u8?foo=bar", "http://host/master.m3u8?foo=bar", **common_args)
+    multivariant = M3U8("http://host/master.m3u8?foo=bar")
+    multivariant.is_master = True
+    stream = HLSStream(session, "http://host/stream.m3u8?foo=bar", multivariant=multivariant, **common_args)
     assert stream.to_url() == "http://host/stream.m3u8?foo=bar&queryparamkey=queryparamval"
     assert stream.to_manifest_url() == "http://host/master.m3u8?foo=bar&queryparamkey=queryparamval"
 

@@ -3,6 +3,7 @@ Test-Command: PYTHONPATH=/usr/share/streamlink pytest-3
 Depends: streamlink,
  python3-freezegun,
  python3-pytest,
+ python3-pytest-cov,
  python3-pytest-trio,
  python3-requests-mock,
  python3-setuptools

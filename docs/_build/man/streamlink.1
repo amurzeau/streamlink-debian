@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Sep 08, 2025" "7.6.0" "Streamlink"
+.TH "STREAMLINK" "1" "Nov 11, 2025" "8.0.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -497,8 +497,14 @@ Please see the \(dq\fI\%Metadata variables\fP\(dq section of Streamlink\(aqs CLI
 as well as the \(dq\fI\%Plugins\fP\(dq section for the list of metadata variables defined in each plugin.
 .sp
 Only the following players are supported:
-.sp
-mpv, potplayer, vlc
+.INDENT 7.0
+.IP \(bu 2
+mpv
+.IP \(bu 2
+PotPlayer
+.IP \(bu 2
+VLC
+.UNINDENT
 .sp
 Example:
 .INDENT 7.0
@@ -790,6 +796,16 @@ Default is: \fB10.0\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
+.B \-\-stream\-segmented\-duration [[XX:]XX:]XX[.XX] | [XXh][XXm][XX[.XX]s]
+Limit the output duration of segmented streams, like HLS and DASH.
+The actual duration may be slightly longer, as it is rounded to the nearest segment.
+.sp
+Set to 0 to disable.
+.sp
+Default is: \fB0\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B \-\-stream\-timeout TIMEOUT
 The maximum time to wait for an unfiltered stream to continue outputting data.
 .sp
@@ -947,10 +963,7 @@ Default is: \fB0\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-hls\-duration [[XX:]XX:]XX[.XX] | [XXh][XXm][XX[.XX]s]
-Limit the playback duration, useful for watching segments of a stream.
-The actual duration may be slightly longer, as it is rounded to the nearest HLS segment.
-.sp
-Default is: \fBunlimited\fP\&.
+Deprecated in favor of \fI\%\-\-stream\-segmented\-duration\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1038,6 +1051,15 @@ and the initial start time offset value be kept.
 .TP
 .B \-\-ffmpeg\-start\-at\-zero
 Enable the \fB\-start_at_zero\fP FFmpeg option when using \fI\%\-\-ffmpeg\-copyts\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-ffmpeg\-validation\-timeout SECONDS
+Timeout in seconds for FFmpeg version validation.
+.sp
+Default is: \fB4.0\fP\&.
+.sp
+Increase this on low\-power systems if FFmpeg startup is slow.
 .UNINDENT
 .SS HTTP options
 .INDENT 0.0
@@ -1371,6 +1393,19 @@ Low latency streams have to be enabled by the broadcasters on Twitch themselves.
 Regular streams can cause buffering issues with this option enabled due to the reduced \fI\%\-\-hls\-live\-edge\fP value.
 .UNINDENT
 .UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-twitch\-supported\-codecs CODECS
+A comma\-separated list of codec names which signals Twitch the client\(aqs stream codec preference.
+Which streams and which codecs are available depends on the specific channel and broadcast.
+.sp
+Default is: \fB\(dqh264\(dq\fP\&.
+.sp
+Supported codecs are h264, h265 and av1. Set to \(dqh264,h265,av1\(dq to enable all codecs.
+.sp
+Higher quality streams may only be available by enabling h265 or av1.
+Lower quality streams which are re\-encoded on Twitch\(aqs end may still be h264, even if not requested.
 .UNINDENT
 .INDENT 0.0
 .TP

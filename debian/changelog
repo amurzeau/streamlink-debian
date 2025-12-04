@@ -1,3 +1,21 @@
+streamlink (8.0.0-1) unstable; urgency=medium
+
+  * New upstream version 8.0.0
+  * d/patches: update patches
+  * d/patches: replace intersphinx removal patch with NO_INTERSPHINX
+    env var at build
+  * d/control: add new build dependency on python3-pytest-cov
+  * d/control: remove Rules-Requires-Root=no field which is the default
+    since trixie
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 24 Nov 2025 23:17:01 +0100
+
+streamlink (7.6.0-2) unstable; urgency=medium
+
+  * d/patches: fix docutils errors and warning (Closes: #1118304)
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 23 Oct 2025 22:25:54 +0200
+
 streamlink (7.6.0-1~bpo13+1) trixie-backports; urgency=medium
 
   * Rebuild for trixie-backports.

@@ -33,12 +33,12 @@ Build-Depends: debhelper-compat (= 13),
 # Tests dependencies
  python3-freezegun,
  python3-pytest,
+ python3-pytest-cov,
  python3-pytest-trio,
  python3-requests-mock
 Homepage: https://streamlink.github.io/
 Vcs-Git: https://salsa.debian.org/amurzeau/streamlink.git
 Vcs-Browser: https://salsa.debian.org/amurzeau/streamlink
-Rules-Requires-Root: no
 
 Package: python3-streamlink
 Architecture: all

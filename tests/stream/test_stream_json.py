@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import pytest
@@ -5,12 +8,15 @@ import pytest
 # noinspection PyUnresolvedReferences
 from requests.utils import DEFAULT_ACCEPT_ENCODING  # type: ignore[attr-defined]
 
-from streamlink import Streamlink
 from streamlink.stream.dash import DASHStream
 from streamlink.stream.file import FileStream
-from streamlink.stream.hls import HLSStream
+from streamlink.stream.hls import M3U8, HLSStream
 from streamlink.stream.http import HTTPStream
 from streamlink.stream.stream import Stream
+
+
+if TYPE_CHECKING:
+    from streamlink import Streamlink
 
 
 @pytest.fixture()
@@ -56,11 +62,18 @@ def test_base_stream(session):
     assert stream.json == """{"type": "stream"}"""
 
 
-def test_file_stream_path(session):
-    stream = FileStream(session, "/path/to/file")
+@pytest.mark.parametrize(
+    "path",
+    [
+        pytest.param("/path/to/file", id="POSIX", marks=pytest.mark.posix_only),
+        pytest.param("C:\\path\\to\\file", id="Windows", marks=pytest.mark.windows_only),
+    ],
+)
+def test_file_stream_path(session: Streamlink, path: str):
+    stream = FileStream(session, path)
     assert stream.__json__() == {
         "type": "file",
-        "path": "/path/to/file",
+        "path": path,
     }
 
 
@@ -92,7 +105,9 @@ def test_hls_stream(session, common_args, expected_headers):
 
 
 def test_hls_stream_master(session, common_args, expected_headers):
-    stream = HLSStream(session, "http://host/stream.m3u8?foo=bar", "http://host/master.m3u8?foo=bar", **common_args)
+    multivariant = M3U8("http://host/master.m3u8?foo=bar")
+    multivariant.is_master = True
+    stream = HLSStream(session, "http://host/stream.m3u8?foo=bar", multivariant=multivariant, **common_args)
     assert stream.__json__() == {
         "type": "hls",
         "url": "http://host/stream.m3u8?foo=bar&sessionqueryparamkey=sessionqueryparamval&queryparamkey=queryparamval",

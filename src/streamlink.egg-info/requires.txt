@@ -4,9 +4,9 @@ lxml<7,>=4.6.4
 pycountry
 pycryptodome<4,>=3.4.3
 PySocks!=1.5.7,>=1.5.6
-requests<3,>=2.26.0
+requests<3,>=2.30.0
 trio-websocket<1,>=0.9.0
-urllib3<3,>=1.26.0
+urllib3<3,>=2.0.0
 websocket-client<2,>=1.2.1
 
 [:python_version < "3.11"]
@@ -19,4 +19,9 @@ trio<1,>=0.22.0
 trio<1,>=0.25.0
 
 [decompress]
-urllib3[brotli,zstd]<3,>=1.26.0
+
+[decompress:python_version < "3.14"]
+urllib3[brotli,zstd]<3,>=2.0.0
+
+[decompress:python_version >= "3.14"]
+urllib3[brotli]<3,>=2.0.0

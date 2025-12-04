@@ -1,16 +1,23 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-from re import Match
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeAlias
 
 import pytest
 
-from streamlink.plugin.plugin import Matcher, Plugin
+from streamlink.plugin.plugin import Plugin
 
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from collections.abc import Sequence
+    from re import Match
+
+    from streamlink.plugin.plugin import Matcher
+
+    TUrl: TypeAlias = str
+    TName: TypeAlias = str
+    TUrlNamed: TypeAlias = tuple[TName, TUrl]
+    TUrlOrNamedUrl: TypeAlias = TUrl | TUrlNamed
+    TMatchGroup: TypeAlias = dict[str, str] | Sequence[str | None]
 
 
 generic_negative_matches = [
@@ -18,13 +25,6 @@ generic_negative_matches = [
     "https://example.com/",
     "https://example.com/index.html",
 ]
-
-
-TUrl: TypeAlias = str
-TName: TypeAlias = str
-TUrlNamed: TypeAlias = "tuple[TName, TUrl]"
-TUrlOrNamedUrl: TypeAlias = "TUrl | TUrlNamed"
-TMatchGroup: TypeAlias = "dict[str, str] | Sequence[str | None]"
 
 
 _plugin_can_handle_url_classnames: set[str] = set()
