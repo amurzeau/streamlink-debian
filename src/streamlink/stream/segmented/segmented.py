@@ -4,6 +4,7 @@ import logging
 import queue
 from concurrent import futures
 from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
 from threading import Event, current_thread
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeAlias, TypeVar
 
@@ -11,11 +12,13 @@ from streamlink.buffers import RingBuffer
 from streamlink.stream.segmented.segment import Segment
 from streamlink.stream.stream import StreamIO
 from streamlink.utils.thread import NamedThread
+from streamlink.utils.times import now
 
 
 if TYPE_CHECKING:
     from collections.abc import Generator
     from concurrent.futures import Future
+    from datetime import datetime
 
     from streamlink.stream.stream import Stream
 
@@ -182,6 +185,8 @@ class SegmentedStreamWorker(AwaitableMixin, NamedThread, Generic[TSegment, TResu
     writer: SegmentedStreamWriter[TSegment, TResult]
     stream: Stream
 
+    _QUEUE_DEADLINE_MIN = 5.0
+
     def __init__(self, reader: SegmentedStreamReader, name: str | None = None, **kwargs) -> None:
         super().__init__(daemon=True, name=name)
 
@@ -196,6 +201,9 @@ class SegmentedStreamWorker(AwaitableMixin, NamedThread, Generic[TSegment, TResu
         self.duration: float = 0.0
         self.duration_limit: float = self.session.options.get("stream-segmented-duration")
 
+        self._queue_deadline_factor: float = self.session.options.get("stream-segmented-queue-deadline")
+        self._queue_last: datetime = now()
+
     def close(self) -> None:
         """
         Shuts down the thread.
@@ -209,6 +217,37 @@ class SegmentedStreamWorker(AwaitableMixin, NamedThread, Generic[TSegment, TResu
         self.closed = True
         self._wait.set()
 
+    @property
+    def _queue_deadline_wait(self) -> float:  # pragma: no cover
+        """
+        The max time in seconds to wait for new segments while fetching data in a polling implementation.
+        Will be multiplied by the ``stream-segmented-queue-deadline`` session option in the queue deadline check.
+        Needs to be overridden by subclasses which intent to support queue deadlines.
+        """
+        return 0.0
+
+    def check_queue_deadline(self, queued: bool) -> bool:
+        """
+        Check whether new segments were queued in a specific time frame during the current iteration of resource fetching,
+        so the stream can be stopped early. Should be called in a subclass's ``iter_segments()`` after fetching data.
+        :return: True if the stream should be stopped early, False otherwise.
+        """
+
+        if queued:
+            self._queue_last = now()
+            return False
+
+        deadline = max(0.0, self._queue_deadline_wait) * self._queue_deadline_factor
+        if deadline <= 0.0:
+            return False
+
+        deadline = max(self._QUEUE_DEADLINE_MIN, deadline)
+        if now() <= self._queue_last + timedelta(seconds=deadline):
+            return False
+
+        log.warning(f"No new segments for more than {deadline:.2f}s. Stopping...")
+        return True
+
     def check_sequence_gap(self, segment: TSegment) -> None:
         size = segment.num - self.sequence
         if size > 0:
@@ -219,31 +258,47 @@ class SegmentedStreamWorker(AwaitableMixin, NamedThread, Generic[TSegment, TResu
             warning = "This is unsupported and will result in incoherent output data."
             log.warning(f"{msg}{warning}")
 
-    def iter_segments(self) -> Generator[TSegment, None, None]:
+    def iter_segments(self) -> Generator[TSegment, bool, None]:
         """
         The iterator that generates segments for the worker thread.
         Should be overridden by the inheriting class.
         """
 
         return
-        # noinspection PyUnreachableCode
+        # noinspection PyUnreachableCode,PyTypeChecker
         yield
 
     def run(self) -> None:
-        for segment in self.iter_segments():
-            if self.closed:  # pragma: no cover
-                break
+        self._queue_last = now()
 
-            self.check_sequence_gap(segment)
+        iter_segments = self.iter_segments()
+        queued: bool | None = None
 
-            self.sequence = segment.num + 1
-            self.duration += segment.duration
+        try:
+            while True:
+                if queued is None:
+                    segment = next(iter_segments)
+                else:
+                    segment = iter_segments.send(queued)
 
-            self.writer.put(segment)
+                if self.closed:  # pragma: no cover
+                    break
 
-            if self.duration >= self.duration_limit > 0.0:
-                log.info(f"Stopping stream early after {self.duration_limit:.2f}s")
-                break
+                log.debug("Queuing %r", segment)
+
+                self.check_sequence_gap(segment)
+
+                self.sequence = segment.num + 1
+                self.duration += segment.duration
+
+                self.writer.put(segment)
+                queued = True
+
+                if self.duration >= self.duration_limit > 0.0:
+                    log.info(f"Stopping stream early after {self.duration_limit:.2f}s")
+                    break
+        except StopIteration:
+            pass
 
         # End of stream, tells the writer to exit
         self.writer.put(None)

@@ -484,6 +484,23 @@ _shtab_streamlink_cli_options=(
 
             Default is 0.
         ]:stream_segmented_duration:"
+  "--stream-segmented-queue-deadline[
+            A multiplication factor of the time frame in which new segments must be queued in order to prevent playback issues
+            due to lack of video\/audio data. If this segment-queue-deadline has not been met, the stream will be stopped early.
+
+            The intention of this segment-queue-deadline is to be able to stop early when the end of a stream is not announced
+            by the server, so Streamlink doesn\'t have to wait until a buffer read-timeout occurs. See --stream-timeout.
+
+            The base time this multiplication factor is applied to depends on the specific
+            stream implementation and the respective values returned by the streaming server.
+            This deadline check is done after trying to fetch new data.
+
+            Set to \`\`0\`\` to disable.
+
+            Default is 3.0.
+
+            By default, wait three times as long for new segments to be made available than the server\'s advertised time frame.
+        ]:stream_segmented_queue_deadline:"
   "--stream-timeout[
             The maximum time to wait for an unfiltered stream to continue outputting data.
 
@@ -529,17 +546,7 @@ _shtab_streamlink_cli_options=(
             Default is default.
         ]:hls_playlist_reload_time:"
   "--hls-segment-queue-threshold[
-            The multiplication factor of the HLS playlist\'s target duration after which the stream will be stopped early
-            if no new segments were queued after refreshing the playlist (multiple times). The target duration defines the
-            maximum duration a single segment can have, meaning new segments must be available during this time frame,
-            otherwise playback issues can occur.
-
-            The intention of this queue threshold is to be able to stop early when the end of a stream doesn\'t get
-            announced by the server, so Streamlink doesn\'t have to wait until a read-timeout occurs. See --stream-timeout.
-
-            Set to \`\`0\`\` to disable.
-
-            Default is 3.
+            Deprecated in favor of --stream-segmented-queue-deadline.
         ]:hls_segment_queue_threshold:"
   "--hls-segment-ignore-names[
             A comma-delimited list of segment names that will get filtered out.
@@ -856,12 +863,19 @@ _shtab_streamlink_cli_options=(
   ":Stream to play.:"
 )
 
+# guard to ensure default positional specs are added only once per session
+_shtab_streamlink_cli_defaults_added=0
+
 
 _shtab_streamlink_cli() {
-  local context state line curcontext="$curcontext" one_or_more='(-)*' remainder='(*)'
+  local context state line curcontext="$curcontext" one_or_more='(*)' remainder='(-)*' default='*::: :->streamlink'
 
-  if ((${_shtab_streamlink_cli_options[(I)${(q)one_or_more}*]} + ${_shtab_streamlink_cli_options[(I)${(q)remainder}*]} == 0)); then  # noqa: E501
-    _shtab_streamlink_cli_options+=(': :_shtab_streamlink_cli_commands' '*::: :->streamlink')
+  # Add default positional/remainder specs only if none exist, and only once per session
+  if (( ! _shtab_streamlink_cli_defaults_added )); then
+    if (( ${_shtab_streamlink_cli_options[(I)${(q)one_or_more}*]} +          ${_shtab_streamlink_cli_options[(I)${(q)remainder}*]} +          ${_shtab_streamlink_cli_options[(I)${(q)default}]} == 0 )); then
+      _shtab_streamlink_cli_options+=(': :_shtab_streamlink_cli_commands' '*::: :->streamlink')
+    fi
+    _shtab_streamlink_cli_defaults_added=1
   fi
   _arguments -C -s $_shtab_streamlink_cli_options
 
