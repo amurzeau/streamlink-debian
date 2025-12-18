@@ -9,7 +9,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/pyproject.toml b/pyproject.toml
-index 99656c5..d9d20e7 100644
+index 3310058..ce03729 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -97,7 +97,7 @@ dev = [
@@ -29,6 +29,6 @@ index 99656c5..d9d20e7 100644
 +minversion = "8.0.0"
  addopts = """
 ---disable-plugin-autoload
- -p pytest_cov
  -p trio
  -p requests_mock
+ """
