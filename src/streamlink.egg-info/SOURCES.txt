@@ -271,6 +271,7 @@ src/streamlink/utils/args.py
 src/streamlink/utils/cache.py
 src/streamlink/utils/crypto.py
 src/streamlink/utils/data.py
+src/streamlink/utils/dataclass.py
 src/streamlink/utils/formatter.py
 src/streamlink/utils/l10n.py
 src/streamlink/utils/module.py
@@ -599,6 +600,7 @@ tests/utils/test_args.py
 tests/utils/test_cache.py
 tests/utils/test_crypto.py
 tests/utils/test_data.py
+tests/utils/test_dataclass.py
 tests/utils/test_formatter.py
 tests/utils/test_l10n.py
 tests/utils/test_module.py

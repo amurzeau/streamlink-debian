@@ -1,3 +1,11 @@
+streamlink (8.1.0-1) unstable; urgency=medium
+
+  * New upstream version 8.1.0
+  * d/patches: update patches
+  * Revert "d/control: add new build dependency on python3-pytest-cov"
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 15 Dec 2025 20:14:44 +0100
+
 streamlink (8.0.0-1~bpo13+1) trixie-backports; urgency=medium
 
   * Rebuild for trixie-backports.

@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Nov 11, 2025" "8.0.0" "Streamlink"
+.TH "STREAMLINK" "1" "Dec 14, 2025" "8.1.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -806,6 +806,25 @@ Default is: \fB0\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
+.B \-\-stream\-segmented\-queue\-deadline FACTOR
+A multiplication factor of the time frame in which new segments must be queued in order to prevent playback issues
+due to lack of video/audio data. If this segment\-queue\-deadline has not been met, the stream will be stopped early.
+.sp
+The intention of this segment\-queue\-deadline is to be able to stop early when the end of a stream is not announced
+by the server, so Streamlink doesn\(aqt have to wait until a buffer read\-timeout occurs. See \fI\%\-\-stream\-timeout\fP\&.
+.sp
+The base time this multiplication factor is applied to depends on the specific
+stream implementation and the respective values returned by the streaming server.
+This deadline check is done after trying to fetch new data.
+.sp
+Set to \fB0\fP to disable.
+.sp
+Default is: \fB3.0\fP\&.
+.sp
+By default, wait three times as long for new segments to be made available than the server\(aqs advertised time frame.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B \-\-stream\-timeout TIMEOUT
 The maximum time to wait for an unfiltered stream to continue outputting data.
 .sp
@@ -873,17 +892,7 @@ Default is: \fBdefault\fP\&.
 .INDENT 0.0
 .TP
 .B \-\-hls\-segment\-queue\-threshold FACTOR
-The multiplication factor of the HLS playlist\(aqs target duration after which the stream will be stopped early
-if no new segments were queued after refreshing the playlist (multiple times). The target duration defines the
-maximum duration a single segment can have, meaning new segments must be available during this time frame,
-otherwise playback issues can occur.
-.sp
-The intention of this queue threshold is to be able to stop early when the end of a stream doesn\(aqt get
-announced by the server, so Streamlink doesn\(aqt have to wait until a read\-timeout occurs. See \fI\%\-\-stream\-timeout\fP\&.
-.sp
-Set to \fB0\fP to disable.
-.sp
-Default is: \fB3\fP\&.
+Deprecated in favor of \fI\%\-\-stream\-segmented\-queue\-deadline\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP

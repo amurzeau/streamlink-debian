@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, NamedTuple
 
 from streamlink.stream.segmented.segment import Segment
+from streamlink.utils.dataclass import FormattedDataclass
 from streamlink.utils.l10n import Language
 
 
@@ -37,7 +38,8 @@ class ByteRange(NamedTuple):  # version >= 4
 
 
 # EXT-X-DATERANGE
-class DateRange(NamedTuple):
+@dataclass(kw_only=True)
+class DateRange(metaclass=FormattedDataclass):
     id: str | None
     classname: str | None
     start_date: datetime | None
@@ -45,27 +47,29 @@ class DateRange(NamedTuple):
     duration: timedelta | None
     planned_duration: timedelta | None
     end_on_next: bool
-    x: dict[str, str]
+    x: dict[str, str] = field(repr=False)
 
 
 # EXT-X-KEY
-class Key(NamedTuple):
+@dataclass(kw_only=True)
+class Key:
     method: str
-    uri: str | None
-    iv: bytes | None  # version >= 2
+    uri: str | None = field(repr=False)
+    iv: bytes | None = field(repr=False)  # version >= 2
     key_format: str | None  # version >= 5
     key_format_versions: str | None  # version >= 5
 
 
 # EXT-X-MAP
-class Map(NamedTuple):
-    uri: str
+@dataclass(kw_only=True)
+class Map:
+    uri: str = field(repr=False)
     key: Key | None
     byterange: ByteRange | None
 
 
 # EXT-X-MEDIA
-@dataclass
+@dataclass(kw_only=True)
 class Media:
     uri: str | None
     type: str
@@ -102,7 +106,8 @@ class Start(NamedTuple):
 
 
 # EXT-X-STREAM-INF
-class StreamInfo(NamedTuple):
+@dataclass(kw_only=True)
+class StreamInfo:
     bandwidth: int
     program_id: str | None  # version < 6
     codecs: list[str]
@@ -113,7 +118,8 @@ class StreamInfo(NamedTuple):
 
 
 # EXT-X-I-FRAME-STREAM-INF
-class IFrameStreamInfo(NamedTuple):
+@dataclass(kw_only=True)
+class IFrameStreamInfo:
     bandwidth: int
     program_id: str | None
     codecs: list[str]
