@@ -1,5 +1,27 @@
 # Changelog
 
+## streamlink 8.1.2 (2026-01-18)
+
+- Fixed: warnings when parsing HLS playlists with private-use language subtags ([#6780](https://github.com/streamlink/streamlink/pull/6780))
+- Updated plugins:
+  - youtube: fixed live streams ([#6777](https://github.com/streamlink/streamlink/pull/6777))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/8.1.1...8.1.2)
+
+
+## streamlink 8.1.1 (2026-01-17)
+
+- Fixed: `--stream-segmented-queue-deadline` not being applied correctly to the Streamlink session options ([#6758](https://github.com/streamlink/streamlink/pull/6758))
+- Changed: `--hls-segment-ignore-names` to not hardcode `.ts` HLS segment file name extensions ([#6747](https://github.com/streamlink/streamlink/pull/6747))
+- Updated plugins:
+  - dailymotion: fixed 403 HLS playlist responses ([#6773](https://github.com/streamlink/streamlink/pull/6773))
+  - pluto: fixed url matchers and ad detection ([#6767](https://github.com/streamlink/streamlink/pull/6767))
+  - soop: fixed CDN mapping for `ld_cdn` based regions ([#6749](https://github.com/streamlink/streamlink/pull/6749))
+- Build: removed unneeded `wheel` dependency from `build-system.requires` and the `build` dependency group ([#6754](https://github.com/streamlink/streamlink/pull/6754))
+
+[Full changelog](https://github.com/streamlink/streamlink/compare/8.1.0...8.1.1)
+
+
 ## streamlink 8.1.0 (2025-12-14)
 
 - Deprecated: `--hls-segment-queue-threshold` in favor of `--stream-segmented-queue-deadline` ([#6734](https://github.com/streamlink/streamlink/pull/6734))

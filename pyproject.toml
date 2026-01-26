@@ -1,7 +1,6 @@
 [build-system]
 requires = [
   "setuptools >=77",
-  "wheel",
   # The versioningit build-requirement gets removed from the source distribution,
   # as the version string is already built into it (see the onbuild versioningit hook):
   # "versioningit >=2.0.0,<4",
@@ -106,12 +105,12 @@ test = [
   "freezegun >=1.5.0",
 ]
 lint = [
-  "ruff ==0.14.7",
+  "ruff ==0.14.11",
 ]
 typing = [
   { include-group = "test" },
   { include-group = "docs" },
-  "mypy[faster-cache] ==1.19.0",
+  "mypy[faster-cache] ==1.19.1",
   "typing-extensions >=4.0.0",
   "lxml-stubs",
   "trio-typing",
@@ -132,7 +131,6 @@ build = [
   { include-group = "dev" },
   "shtab",
   "build",
-  "wheel",
 ]
 script = [
   "inflection",
@@ -311,6 +309,7 @@ ignore = [
   "A003",  # builtin-attribute-shadowing
   "A005",  # stdlib-module-shadowing
   "ASYNC109",  # async-function-with-timeout
+  "B901",  # return-in-generator
   "C408",  # unnecessary-collection-call
   "ISC003",  # explicit-string-concatenation
   "PLC1901",  # compare-to-empty-string
@@ -324,15 +323,17 @@ future-annotations = true
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"build_backend/__init__.py" = ["RUF067"]
 "docs/**" = ["INP"]
 "script/**" = ["INP"]
-"src/streamlink/__init__.py" = ["I"]
+"src/streamlink/__init__.py" = ["I", "RUF067"]
 "src/streamlink/_version.py" = ["I"]
 "src/streamlink/plugins/*" = ["RUF012"]
 "src/streamlink/session/http_useragents.py" = ["E501"]
 "src/streamlink/webbrowser/cdp/devtools/*" = ["E303", "E501", "F401", "TC"]
 "src/streamlink_cli/main.py" = ["PLW0603"]
 "tests/**" = ["RUF012"]
+"tests/**/__init__.py" = ["RUF067"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["streamlink", "streamlink_cli"]
