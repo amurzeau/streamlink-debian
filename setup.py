@@ -27,6 +27,11 @@ if CURRENT_PYTHON < REQUIRED_PYTHON:
 
 
 from pathlib import Path  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
+
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def is_wheel_for_windows(argv):
@@ -50,7 +55,7 @@ if is_wheel_for_windows(sys.argv):
 
 
 # optional data files
-data_files = [
+data_files: "list[tuple[str, Sequence[str]]]" = [
     # shell completions:
     #  requires pre-built completion files via shtab ("build" dependency group)
     #  `./script/build-shell-completions.sh`
@@ -85,5 +90,5 @@ if __name__ == "__main__":
         cmdclass=get_cmdclasses(cmdclass),
         entry_points=entry_points,
         data_files=data_files,
-        version="8.1.0",
+        version="8.1.2",
     )

@@ -295,9 +295,14 @@ class TestCallable:
     def subject(v):
         return v is not None
 
+    class Subject:
+        def __call__(self, v):
+            return v is not None
+
     def test_success(self):
         value = object()
         assert validate.validate(self.subject, value) is value
+        assert validate.validate(self.Subject(), value) is value
 
     def test_failure(self):
         with pytest.raises(ValidationError) as cm:
@@ -307,6 +312,16 @@ class TestCallable:
             """
                 ValidationError(Callable):
                   subject(None) is not true
+            """,
+        )
+
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(self.Subject(), None)
+        assert_validationerror(
+            cm.value,
+            """
+                ValidationError(Callable):
+                  Subject(None) is not true
             """,
         )
 
@@ -626,7 +641,7 @@ class TestTransformSchema:
         with pytest.raises(ValidationError) as cm:
             # noinspection PyTypeChecker
             validate.validate(
-                validate.transform("not a callable"),
+                validate.transform("not a callable"),  # type: ignore
                 "foo",
             )
         assert_validationerror(
@@ -986,6 +1001,10 @@ class TestLengthValidator:
             ((3,), [1, 2, 3]),
             ((3,), "abcd"),
             ((3,), [1, 2, 3, 4]),
+            ((3, "invalid"), "abc"),
+            ((3, "invalid"), [1, 2, 3]),
+            ((3, "invalid"), "abcd"),
+            ((3, "invalid"), [1, 2, 3, 4]),
             ((3, "lt"), "ab"),
             ((3, "lt"), [1, 2]),
             ((3, "le"), "ab"),
@@ -1010,6 +1029,8 @@ class TestLengthValidator:
         [
             ((3,), "ab", "Length must be >=3, but value is 2"),
             ((3,), [1, 2], "Length must be >=3, but value is 2"),
+            ((3, "invalid"), "ab", "Length must be >=3, but value is 2"),
+            ((3, "invalid"), [1, 2], "Length must be >=3, but value is 2"),
             ((3, "lt"), "abc", "Length must be <3, but value is 3"),
             ((3, "lt"), [1, 2, 3], "Length must be <3, but value is 3"),
             ((3, "le"), "abcd", "Length must be <=3, but value is 4"),
