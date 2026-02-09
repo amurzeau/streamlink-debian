@@ -11,6 +11,7 @@ websocket-client<2,>=1.2.1
 
 [:python_version < "3.11"]
 exceptiongroup
+typing-extensions>=4.1.0
 
 [:python_version < "3.13"]
 trio<1,>=0.22.0

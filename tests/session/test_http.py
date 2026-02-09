@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import ssl
+from operator import itemgetter
+from socket import AF_INET, AF_INET6
 from ssl import SSLContext
 from typing import TYPE_CHECKING
 from unittest.mock import Mock, PropertyMock, call
 
+import freezegun
 import pytest
 import requests
 import requests_mock as rm
+import urllib3
+from requests.adapters import HTTPAdapter
 from urllib3.response import HTTPResponse
 
 from streamlink.exceptions import PluginError, StreamlinkDeprecationWarning
@@ -16,9 +21,12 @@ from streamlink.session.http_useragents import DEFAULT
 
 
 if TYPE_CHECKING:
-    from requests.adapters import HTTPAdapter
+    from pathlib import Path
 
     from streamlink import Streamlink
+
+
+_original_allowed_gai_family = urllib3.util.connection.allowed_gai_family  # type: ignore[attr-defined]
 
 
 class TestUrllib3Overrides:
@@ -224,6 +232,165 @@ class TestHTTPSession:
         res = getattr(httpsession, method)("http://mocked", encoding=encoding)
         assert res.encoding == expected
         assert res.text == "Bär"
+
+    def test_set_interface(self):
+        session = HTTPSession()
+        session.mount("custom://", TLSNoDHAdapter())
+
+        a_http, a_https, a_custom, a_file = itemgetter("http://", "https://", "custom://", "file://")(session.adapters)
+        assert isinstance(a_http, HTTPAdapter)
+        assert isinstance(a_https, HTTPAdapter)
+        assert isinstance(a_custom, HTTPAdapter)
+        assert not isinstance(a_file, HTTPAdapter)
+
+        assert a_http.poolmanager.connection_pool_kw.get("source_address") is None
+        assert a_https.poolmanager.connection_pool_kw.get("source_address") is None
+        assert a_custom.poolmanager.connection_pool_kw.get("source_address") is None
+
+        session.set_interface(interface="my-interface")
+        assert a_http.poolmanager.connection_pool_kw.get("source_address") == ("my-interface", 0)
+        assert a_https.poolmanager.connection_pool_kw.get("source_address") == ("my-interface", 0)
+        assert a_custom.poolmanager.connection_pool_kw.get("source_address") == ("my-interface", 0)
+
+        session.set_interface(interface="")
+        assert a_http.poolmanager.connection_pool_kw.get("source_address") is None
+        assert a_https.poolmanager.connection_pool_kw.get("source_address") is None
+        assert a_custom.poolmanager.connection_pool_kw.get("source_address") is None
+
+        session.set_interface(interface=None)
+        assert a_http.poolmanager.connection_pool_kw.get("source_address") is None
+        assert a_https.poolmanager.connection_pool_kw.get("source_address") is None
+        assert a_custom.poolmanager.connection_pool_kw.get("source_address") is None
+
+        # doesn't raise
+        session.set_interface(interface=None)
+
+    def test_set_address_family(self, monkeypatch: pytest.MonkeyPatch):
+        session = HTTPSession()
+        mock_urllib3_util_connection = Mock(allowed_gai_family=_original_allowed_gai_family)
+        monkeypatch.setattr("streamlink.session.http.urllib3_util_connection", mock_urllib3_util_connection)
+
+        assert mock_urllib3_util_connection.allowed_gai_family is _original_allowed_gai_family
+
+        session.set_address_family(family=AF_INET)
+        assert mock_urllib3_util_connection.allowed_gai_family is not _original_allowed_gai_family
+        assert mock_urllib3_util_connection.allowed_gai_family() is AF_INET
+
+        session.set_address_family(family=None)
+        assert mock_urllib3_util_connection.allowed_gai_family is _original_allowed_gai_family
+
+        session.set_address_family(family=AF_INET6)
+        assert mock_urllib3_util_connection.allowed_gai_family is not _original_allowed_gai_family
+        assert mock_urllib3_util_connection.allowed_gai_family() is AF_INET6
+
+        session.set_address_family(family=None)
+        assert mock_urllib3_util_connection.allowed_gai_family is _original_allowed_gai_family
+
+    def test_disable_dh(self):
+        session = HTTPSession()
+
+        assert isinstance(session.adapters["https://"], HTTPAdapter)
+        assert not isinstance(session.adapters["https://"], TLSNoDHAdapter)
+
+        assert not session.adapters["https://"].poolmanager.connection_pool_kw.get("source_address")
+        session.adapters["https://"].poolmanager.connection_pool_kw.update(source_address=("0.0.0.0", 0))
+
+        session.disable_dh(disable=True)
+        assert isinstance(session.adapters["https://"], TLSNoDHAdapter)
+        assert session.adapters["https://"].poolmanager.connection_pool_kw.get("source_address") == ("0.0.0.0", 0)
+
+        session.disable_dh(disable=False)
+        assert isinstance(session.adapters["https://"], HTTPAdapter)
+        assert not isinstance(session.adapters["https://"], TLSNoDHAdapter)
+        assert session.adapters["https://"].poolmanager.connection_pool_kw.get("source_address") == ("0.0.0.0", 0)
+
+
+class TestHTTPCookies:
+    def test_invalid_file(self, tmp_path: Path):
+        session = HTTPSession()
+        cookies_file = tmp_path / "invalid-file"
+        with pytest.raises(FileNotFoundError, match=r" is not a valid cookies file path$"):
+            session.set_cookies_from_file(cookies_file)
+        assert session.cookies == {}
+
+    def test_invalid_format(self, tmp_path: Path):
+        session = HTTPSession()
+        cookies_file = tmp_path / "invalid-file"
+        cookies_file.write_text("""foo\nbar\n""")
+        with pytest.raises(Exception, match=r" does not look like a Netscape format cookies file$"):
+            session.set_cookies_from_file(cookies_file)
+        assert session.cookies == {}
+
+    @freezegun.freeze_time("2000-01-01T00:00:00Z")
+    def test_cookies(self, tmp_path: Path, requests_mock: rm.Mocker):
+        session = HTTPSession()
+        cookies_file = tmp_path / "cookies.txt"
+        content = "".join([
+            "# Netscape HTTP Cookie File\n",
+            "host.local	FALSE	/a	FALSE	946684801	foo	bar\n",
+            "host.local	FALSE	/b	FALSE	946684801	baz	qux\n",
+            "host.local	FALSE	/	FALSE	946684799	expired	1\n",
+            ".host.tld	TRUE	/	TRUE	946684801	abc	def\n",
+        ])
+        cookies_file.write_text(content)
+        session.set_cookies_from_file(cookies_file)
+        assert session.cookies.get_dict(domain="host.local") == {
+            "foo": "bar",
+            "baz": "qux",
+        }
+        assert session.cookies.get_dict(domain="host.local", path="/a") == {
+            "foo": "bar",
+        }
+        assert session.cookies.get_dict(domain=".host.tld") == {
+            "abc": "def",
+        }
+
+        matcher = requests_mock.register_uri(rm.ANY, rm.ANY, status_code=200)
+
+        # domain, path, expired
+        assert session.get("http://host.local/a").status_code == 200
+        assert matcher.request_history[-1]._request.headers.get("cookie") == "foo=bar"
+        assert session.get("http://host.local/b").status_code == 200
+        assert matcher.request_history[-1]._request.headers.get("cookie") == "baz=qux"
+        assert session.get("http://foo.host.local/").status_code == 200
+        assert matcher.request_history[-1]._request.headers.get("cookie") is None
+
+        # subdomain, secure
+        assert session.get("https://sub.host.tld/").status_code == 200
+        assert matcher.request_history[-1]._request.headers.get("cookie") == "abc=def"
+        assert session.get("http://sub.host.tld/").status_code == 200
+        assert matcher.request_history[-1]._request.headers.get("cookie") is None
+
+    @freezegun.freeze_time("2000-01-01T00:00:00Z")
+    def test_cookies_override(self, tmp_path: Path):
+        session = HTTPSession()
+        file_a = tmp_path / "a"
+        file_b = tmp_path / "b"
+        file_a.write_text(
+            "".join([
+                "# Netscape HTTP Cookie File\n",
+                "host.local	FALSE	/	FALSE	946684801	foo	bar\n",
+                "host.local	FALSE	/	FALSE	946684801	abc	def\n",
+            ]),
+        )
+        file_b.write_text(
+            "".join([
+                "# Netscape HTTP Cookie File\n",
+                "host.local	FALSE	/	FALSE	946684801	foo	baz\n",
+            ]),
+        )
+
+        assert session.cookies.get_dict(domain="host.local") == {}
+        session.set_cookies_from_file(file_a)
+        assert session.cookies.get_dict(domain="host.local") == {
+            "foo": "bar",
+            "abc": "def",
+        }
+        session.set_cookies_from_file(file_b)
+        assert session.cookies.get_dict(domain="host.local") == {
+            "foo": "baz",
+            "abc": "def",
+        }
 
 
 class TestHTTPAdapters:

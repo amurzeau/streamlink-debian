@@ -65,6 +65,8 @@ dependencies = [
   "trio >=0.25.0,<1 ; python_version>='3.13'",
   "trio >=0.22.0,<1 ; python_version<'3.13'",
   "trio-websocket >=0.9.0,<1",
+  # typing-extensions >=4.6.0 is already a transitive runtime dependency of exceptiongroup >=1.3.0
+  "typing-extensions >=4.1.0 ; python_version<'3.11'",
   "urllib3 >=2.0.0,<3",
   "websocket-client >=1.2.1,<2",
 ]
@@ -105,11 +107,12 @@ test = [
   "freezegun >=1.5.0",
 ]
 lint = [
-  "ruff ==0.14.11",
+  "ruff ==0.15.0",
 ]
 typing = [
   { include-group = "test" },
   { include-group = "docs" },
+  { include-group = "script" },
   "mypy[faster-cache] ==1.19.1",
   "typing-extensions >=4.0.0",
   "lxml-stubs",
@@ -122,10 +125,10 @@ typing = [
 ]
 docs = [
   { include-group = "dev" },
-  "sphinx >=6.0.0,<9",
-  "furo ==2025.09.25",
-  "myst-parser >=1.0.0,<5",
-  "sphinx-design >=0.5.0,<=0.6.1",
+  "sphinx >=7.0.0,<10",
+  "furo ==2025.12.19",
+  "myst-parser >=4.0.0,<6",
+  "sphinx-design >=0.6.0,<0.8",
 ]
 build = [
   { include-group = "dev" },

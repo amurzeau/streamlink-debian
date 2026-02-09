@@ -76,19 +76,19 @@ if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).parent))
 
     from build_backend.commands import cmdclass
-    from setuptools import setup
+    from setuptools import Command, setup  # noqa: TC002
 
     try:
         # versioningit is only required when building from git (see pyproject.toml)
         from versioningit import get_cmdclasses
     except ImportError:  # pragma: no cover
 
-        def get_cmdclasses(_):  # type: ignore[misc]
-            return _
+        def get_cmdclasses(bases: "dict[str, type[Command]] | None" = None) -> "dict[str, type[Command]]":
+            return bases or {}
 
     setup(
         cmdclass=get_cmdclasses(cmdclass),
         entry_points=entry_points,
         data_files=data_files,
-        version="8.1.2",
+        version="8.2.0",
     )

@@ -673,6 +673,18 @@ _shtab_streamlink_cli_options=(
 
             Can be repeated to add multiple cookies.
         ]:http_cookie:"
+  "*--http-cookies-file[
+            A path to a cookies file whose cookie data will be added to HTTP requests.
+
+            Can be repeated to add multiple cookie files.
+
+            The file format must adhere to the Netscape HTTP Cookie File format (MozillaCookieJar, curl, etc.),
+            also known as cookies.txt. Be aware that this format loses information about RFC 2965 cookies,
+            and also about newer or non-standard cookie-attributes such as port.
+
+            Unlike --http-cookie, which sends data with every request, this option enables granular control
+            by respecting domain, path, and other cookie attributes.
+        ]:http_cookies_file:"
   "*--http-header[
             A header to add to each HTTP request.
 
