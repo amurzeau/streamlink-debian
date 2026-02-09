@@ -380,6 +380,7 @@ tests/cli/main/test_player_argv.py
 tests/cli/main/test_resolve_stream_name.py
 tests/cli/main/test_setup_config_args.py
 tests/cli/main/test_setup_plugins.py
+tests/cli/main/test_setup_session_options.py
 tests/cli/main/test_show_matchers.py
 tests/cli/main/test_version_check.py
 tests/cli/output/__init__.py
@@ -602,6 +603,7 @@ tests/utils/test_crypto.py
 tests/utils/test_data.py
 tests/utils/test_dataclass.py
 tests/utils/test_formatter.py
+tests/utils/test_init.py
 tests/utils/test_l10n.py
 tests/utils/test_module.py
 tests/utils/test_named_pipe.py

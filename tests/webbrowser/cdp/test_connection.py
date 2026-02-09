@@ -10,11 +10,12 @@ from unittest.mock import AsyncMock
 import pytest
 import trio
 from trio.testing import wait_all_tasks_blocked
-from trio_websocket import CloseReason, ConnectionClosed, ConnectionTimeout  # type: ignore[import]
+from trio_websocket import CloseReason, ConnectionClosed, ConnectionTimeout
 
 from streamlink.compat import ExceptionGroup
 from streamlink.webbrowser.cdp.connection import MAX_BUFFER_SIZE, CDPConnection, CDPSession
 from streamlink.webbrowser.cdp.devtools.target import SessionID, TargetID
+from streamlink.webbrowser.cdp.devtools.util import CDPEvent
 from streamlink.webbrowser.cdp.exceptions import CDPError
 from tests.webbrowser.cdp import FakeWebsocketConnection
 
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
     from trio.testing import MockClock
+    from typing_extensions import Self
 
     from streamlink.webbrowser.cdp.connection import CDPEventListener
     from streamlink.webbrowser.cdp.devtools.util import T_JSON_DICT
@@ -54,13 +56,14 @@ def bad_command() -> Generator[T_JSON_DICT, T_JSON_DICT, None]:
     yield {}
 
 
+# The event name registration is monkey-patched by the test fixture, so we leave it empty
 @dataclass
-class FakeEvent:
+class FakeEvent(CDPEvent, event=None):
     value: str
 
     @classmethod
-    def from_json(cls, data: T_JSON_DICT):
-        return cls(data["value"])
+    def from_json(cls, json: T_JSON_DICT) -> Self:
+        return cls(json["value"])
 
 
 @pytest.fixture()
@@ -593,12 +596,11 @@ class TestSession:
 
 class TestHandleEvent:
     @pytest.fixture(autouse=True)
-    def event_parsers(self, monkeypatch: pytest.MonkeyPatch):
+    def _event_parsers(self, monkeypatch: pytest.MonkeyPatch):
         event_parsers: dict[str, type] = {
             "Fake.fakeEvent": FakeEvent,
         }
         monkeypatch.setattr("streamlink.webbrowser.cdp.devtools.util._event_parsers", event_parsers)
-        return event_parsers
 
     @pytest.mark.trio()
     @pytest.mark.parametrize(

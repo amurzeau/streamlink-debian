@@ -2,21 +2,14 @@ from __future__ import annotations
 
 import re
 from inspect import currentframe, getframeinfo
-from operator import itemgetter
 from socket import AF_INET, AF_INET6
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import pytest
-import urllib3
-from requests.adapters import HTTPAdapter
 
 from streamlink.exceptions import StreamlinkDeprecationWarning
 from streamlink.session import Streamlink
-from streamlink.session.http import TLSNoDHAdapter
 from streamlink.session.options import StreamlinkOptions
-
-
-_original_allowed_gai_family = urllib3.util.connection.allowed_gai_family  # type: ignore[attr-defined]
 
 
 class TestOptionsDocumentation:
@@ -103,84 +96,89 @@ def test_options_locale(monkeypatch: pytest.MonkeyPatch, session: Streamlink):
     assert localization.language.name == "German"
 
 
-class TestOptionsInterface:
-    def test_options_interface(self, session: Streamlink):
-        session.http.mount("custom://", TLSNoDHAdapter())
+def test_options_interface(monkeypatch: pytest.MonkeyPatch, session: Streamlink):
+    mock = Mock()
+    monkeypatch.setattr(session.http, "set_interface", mock)
 
-        a_http, a_https, a_custom, a_file = itemgetter("http://", "https://", "custom://", "file://")(session.http.adapters)
-        assert isinstance(a_http, HTTPAdapter)
-        assert isinstance(a_https, HTTPAdapter)
-        assert isinstance(a_custom, HTTPAdapter)
-        assert not isinstance(a_file, HTTPAdapter)
+    assert session.get_option("interface") is None
 
-        assert session.get_option("interface") is None
-        assert a_http.poolmanager.connection_pool_kw.get("source_address") is None
-        assert a_https.poolmanager.connection_pool_kw.get("source_address") is None
-        assert a_custom.poolmanager.connection_pool_kw.get("source_address") is None
+    session.set_option("interface", "my-interface")
+    assert mock.call_args_list.pop() == call(interface="my-interface")
+    assert session.get_option("interface") == "my-interface"
 
-        session.set_option("interface", "my-interface")
-        assert session.get_option("interface") == "my-interface"
-        assert a_http.poolmanager.connection_pool_kw.get("source_address") == ("my-interface", 0)
-        assert a_https.poolmanager.connection_pool_kw.get("source_address") == ("my-interface", 0)
-        assert a_custom.poolmanager.connection_pool_kw.get("source_address") == ("my-interface", 0)
+    session.set_option("interface", None)
+    assert mock.call_args_list.pop() == call(interface=None)
+    assert session.get_option("interface") is None
 
-        session.set_option("interface", None)
-        assert session.get_option("interface") is None
-        assert a_http.poolmanager.connection_pool_kw.get("source_address") is None
-        assert a_https.poolmanager.connection_pool_kw.get("source_address") is None
-        assert a_custom.poolmanager.connection_pool_kw.get("source_address") is None
-
-        # doesn't raise
-        session.set_option("interface", None)
+    # doesn't raise
+    session.set_option("interface", None)
+    assert mock.call_args_list.pop() == call(interface=None)
+    assert session.get_option("interface") is None
 
 
 def test_options_ipv4_ipv6(monkeypatch: pytest.MonkeyPatch, session: Streamlink):
-    mock_urllib3_util_connection = Mock(allowed_gai_family=_original_allowed_gai_family)
-    monkeypatch.setattr("streamlink.session.options.urllib3_util_connection", mock_urllib3_util_connection)
+    mock = Mock()
+    monkeypatch.setattr(session.http, "set_address_family", mock)
 
     assert session.get_option("ipv4") is False
     assert session.get_option("ipv6") is False
-    assert mock_urllib3_util_connection.allowed_gai_family is _original_allowed_gai_family
 
     session.set_option("ipv4", True)
+    assert mock.call_args_list.pop() == call(family=AF_INET)
     assert session.get_option("ipv4") is True
     assert session.get_option("ipv6") is False
-    assert mock_urllib3_util_connection.allowed_gai_family is not _original_allowed_gai_family
-    assert mock_urllib3_util_connection.allowed_gai_family() is AF_INET
 
     session.set_option("ipv4", False)
+    assert mock.call_args_list.pop() == call(family=None)
     assert session.get_option("ipv4") is False
     assert session.get_option("ipv6") is False
-    assert mock_urllib3_util_connection.allowed_gai_family is _original_allowed_gai_family
 
     session.set_option("ipv6", True)
+    assert mock.call_args_list.pop() == call(family=AF_INET6)
     assert session.get_option("ipv4") is False
     assert session.get_option("ipv6") is True
-    assert mock_urllib3_util_connection.allowed_gai_family is not _original_allowed_gai_family
-    assert mock_urllib3_util_connection.allowed_gai_family() is AF_INET6
 
     session.set_option("ipv6", False)
+    assert mock.call_args_list.pop() == call(family=None)
     assert session.get_option("ipv4") is False
     assert session.get_option("ipv6") is False
-    assert mock_urllib3_util_connection.allowed_gai_family is _original_allowed_gai_family
 
     session.set_option("ipv4", True)
+    assert mock.call_args_list.pop() == call(family=AF_INET)
     session.set_option("ipv6", False)
+    assert mock.call_args_list == []
     assert session.get_option("ipv4") is True
     assert session.get_option("ipv6") is False
-    assert mock_urllib3_util_connection.allowed_gai_family is _original_allowed_gai_family
+    session.set_option("ipv4", False)
+    assert mock.call_args_list.pop() == call(family=None)
+    assert session.get_option("ipv4") is False
+    assert session.get_option("ipv6") is False
+
+    session.set_option("ipv6", True)
+    assert mock.call_args_list.pop() == call(family=AF_INET6)
+    session.set_option("ipv4", False)
+    assert mock.call_args_list == []
+    assert session.get_option("ipv4") is False
+    assert session.get_option("ipv6") is True
+    session.set_option("ipv6", False)
+    assert mock.call_args_list.pop() == call(family=None)
+    assert session.get_option("ipv4") is False
+    assert session.get_option("ipv6") is False
 
 
-def test_options_http_disable_dh(session: Streamlink):
-    assert isinstance(session.http.adapters["https://"], HTTPAdapter)
-    assert not isinstance(session.http.adapters["https://"], TLSNoDHAdapter)
+def test_options_http_disable_dh(monkeypatch: pytest.MonkeyPatch, session: Streamlink):
+    mock = Mock()
+    monkeypatch.setattr(session.http, "disable_dh", mock)
+
+    assert not session.get_option("http-disable-dh")
 
     session.set_option("http-disable-dh", True)
-    assert isinstance(session.http.adapters["https://"], TLSNoDHAdapter)
+    assert mock.call_args_list.pop() == call(disable=True)
+    assert session.get_option("http-disable-dh")
 
     session.set_option("http-disable-dh", False)
-    assert isinstance(session.http.adapters["https://"], HTTPAdapter)
-    assert not isinstance(session.http.adapters["https://"], TLSNoDHAdapter)
+    assert mock.call_args_list.pop() == call(disable=False)
+    assert not session.get_option("http-disable-dh")
 
 
 class TestOptionsHttpProxy:
@@ -265,6 +263,14 @@ class TestOptionsHttpProxy:
     def test_https_proxy_set_directly(self, session: Streamlink):
         # The DeprecationWarning's origin must point to this call, even without the set_option() wrapper
         session.options.set("https-proxy", "https://foo")
+
+
+def test_options_http_cookies_files(monkeypatch: pytest.MonkeyPatch, session: Streamlink):
+    mock = Mock()
+    monkeypatch.setattr(session.http, "set_cookies_from_file", mock)
+
+    session.set_option("http-cookies-files", ["foo", "bar"])
+    assert mock.call_args_list == [call("foo"), call("bar")]
 
 
 class TestOptionsKeyEqualsValue:
