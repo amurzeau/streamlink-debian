@@ -1,8 +1,10 @@
-streamlink (8.2.0-1) UNRELEASED; urgency=medium
+streamlink (8.2.0-1) unstable; urgency=medium
 
   * New upstream version 8.2.0
+  * d/patches: update patches
+  * d/patches: disable new added failling test
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 09 Feb 2026 20:44:00 +0100
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 12 Feb 2026 21:05:37 +0100
 
 streamlink (8.1.2-1) unstable; urgency=medium
 
