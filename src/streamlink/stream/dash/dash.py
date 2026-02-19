@@ -6,7 +6,7 @@ import logging
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from time import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from requests import Response
 
@@ -33,6 +33,8 @@ log = logging.getLogger(".".join(__name__.split(".")[:-1]))
 
 
 class DASHStreamWriter(SegmentedStreamWriter[DASHSegment, Response]):
+    WRITE_CHUNK_SIZE: int = 8192
+
     reader: DASHStreamReader
     stream: DASHStream
 
@@ -69,8 +71,8 @@ class DASHStreamWriter(SegmentedStreamWriter[DASHSegment, Response]):
         except StreamError as err:
             log.error(f"{self.reader.mime_type} segment {name}: failed ({err})")
 
-    def write(self, segment, res, chunk_size=8192):
-        for chunk in res.iter_content(chunk_size):
+    def write(self, segment: DASHSegment, result: Response, *data):
+        for chunk in result.iter_content(self.WRITE_CHUNK_SIZE):
             if self.closed:
                 log.warning(f"{self.reader.mime_type} segment {segment.name}: aborted")
                 return
@@ -162,7 +164,7 @@ class DASHStreamWorker(SegmentedStreamWorker[DASHSegment, Response]):
         self.reader.buffer.wait_free()
         log.debug(f"Reloading manifest {self.reader.ident!r}")
         res = self.session.http.get(
-            self.mpd.url,
+            cast("str", self.mpd.url),
             exception=StreamError,
             retries=self.manifest_reload_retries,
             **self.stream.args,
@@ -176,6 +178,11 @@ class DASHStreamWorker(SegmentedStreamWorker[DASHSegment, Response]):
         )
 
         new_rep = new_mpd.get_representation(self.reader.ident)
+        if not new_rep:
+            log.error(f"Failed to find matching DASH representation: {self.reader.ident!r}")
+            self.close()
+            return False
+
         with freeze_timeline(new_mpd):
             changed = len(list(itertools.islice(new_rep.segments(), 1))) > 0
 

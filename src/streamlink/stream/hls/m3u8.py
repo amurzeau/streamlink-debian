@@ -8,7 +8,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 from urllib.parse import urljoin, urlparse
 
-from isodate import ISO8601Error, parse_datetime  # type: ignore[import]
+from isodate import ISO8601Error, parse_datetime  # type: ignore[import]  # ty:ignore[unused-ignore-comment]
 from requests import Response
 
 from streamlink.logger import ALL
@@ -33,11 +33,6 @@ if TYPE_CHECKING:
     from datetime import datetime
 
     from streamlink.logger import StreamlinkLogger
-
-    try:
-        from typing import Self  # type: ignore[attr-defined]
-    except ImportError:
-        from typing_extensions import Self
 
 
 log: StreamlinkLogger = logging.getLogger(__name__)  # type: ignore[assignment]
@@ -119,7 +114,8 @@ class M3U8Parser(Generic[TM3U8_co, THLSSegment_co, THLSPlaylist_co], metaclass=M
     __segment__: ClassVar[type[HLSSegment]] = HLSSegment
     __playlist__: ClassVar[type[HLSPlaylist]] = HLSPlaylist
 
-    _TAGS: ClassVar[Mapping[str, Callable[[Self, str], None]]]
+    # TODO: fix this (can't use Self in a ClassVar)
+    _TAGS: ClassVar[Mapping[str, Callable[[M3U8Parser, str], None]]]
 
     _extinf_re = re.compile(r"(?P<duration>\d+(\.\d+)?)(,(?P<title>.+))?")
     _attr_re = re.compile(
@@ -150,7 +146,8 @@ class M3U8Parser(Generic[TM3U8_co, THLSSegment_co, THLSPlaylist_co], metaclass=M
     _res_re = re.compile(r"(\d+)x(\d+)")
 
     def __init__(self, base_uri: str | None = None):
-        self.m3u8: TM3U8_co = self.__m3u8__(base_uri)  # type: ignore[assignment]  # PEP 696 might solve this
+        # PEP 696 might solve this
+        self.m3u8: TM3U8_co = self.__m3u8__(base_uri)  # type: ignore[assignment]  # ty:ignore[unused-ignore-comment]
 
         self._expect_playlist: bool = False
         self._streaminf: dict[str, str] | None = None
@@ -176,7 +173,7 @@ class M3U8Parser(Generic[TM3U8_co, THLSSegment_co, THLSPlaylist_co], metaclass=M
         res = streaminf.get("RESOLUTION")
         resolution = None if not res else cls.parse_resolution(res)
 
-        codecs = (streaminf.get("CODECS") or "").split(",")
+        codecs = str(streaminf.get("CODECS") or "").split(",")
 
         if streaminfoclass is IFrameStreamInfo:
             return IFrameStreamInfo(

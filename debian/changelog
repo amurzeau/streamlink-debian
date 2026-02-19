@@ -1,3 +1,19 @@
+streamlink (8.2.0-1) unstable; urgency=medium
+
+  * New upstream version 8.2.0
+  * d/patches: backport test fix from upstream
+  * d/control: update to standard version 4.7.3
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 16 Feb 2026 21:30:45 +0100
+
+streamlink (8.1.2-1) unstable; urgency=medium
+
+  * New upstream version 8.1.2
+  * d/copyright: update copyright years
+  * d/patches: update patches
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Mon, 26 Jan 2026 20:41:51 +0100
+
 streamlink (8.1.0-1~bpo13+1) trixie-backports; urgency=medium
 
   * Rebuild for trixie-backports.

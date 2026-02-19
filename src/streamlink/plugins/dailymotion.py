@@ -10,14 +10,24 @@ $metadata title
 
 import logging
 import re
+from ssl import OP_NO_TICKET
 
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
+from streamlink.session.http import SSLContextAdapter
 from streamlink.stream.hls import HLSStream
 from streamlink.stream.http import HTTPStream
 
 
 log = logging.getLogger(__name__)
+
+
+class DailymotionAdapter(SSLContextAdapter):
+    def get_ssl_context(self):
+        ctx = super().get_ssl_context()
+        ctx.options &= ~OP_NO_TICKET
+
+        return ctx
 
 
 @pluginmatcher(
@@ -35,6 +45,10 @@ log = logging.getLogger(__name__)
 class DailyMotion(Plugin):
     _URL_API_USER_VIDEO = "https://api.dailymotion.com/user/{user}/videos"
     _URL_STREAM_INFO = "https://www.dailymotion.com/player/metadata/video/{media_id}"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session.http.mount("https://", DailymotionAdapter())
 
     def _get_streams_from_media(self, media_id, params=None):
         media = self.session.http.get(
@@ -82,6 +96,11 @@ class DailyMotion(Plugin):
         self.id = media_id
         self.author = media["owner"]["username"]
         self.title = media["title"]
+
+        # required for preventing 403 responses when using a French IP address
+        self.session.http.headers.update({
+            "priority": "u=1, i",
+        })
 
         for quality, streams in media["qualities"].items():
             for stream in streams:

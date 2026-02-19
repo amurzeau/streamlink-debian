@@ -1,8 +1,7 @@
 Source: streamlink
 Maintainer: Alexis Murzeau <amubtdx@gmail.com>
 Section: python
-Priority: optional
-Standards-Version: 4.7.2
+Standards-Version: 4.7.3
 Build-Depends: debhelper-compat (= 13),
  dh-sequence-python3,
  dh-sequence-sphinxdoc,

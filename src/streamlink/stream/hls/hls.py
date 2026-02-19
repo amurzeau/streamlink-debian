@@ -30,15 +30,12 @@ if TYPE_CHECKING:
     from concurrent.futures import Future
     from datetime import datetime
 
+    from typing_extensions import Self
+
     from streamlink.buffers import RingBuffer
     from streamlink.session import Streamlink
     from streamlink.stream.hls.m3u8 import M3U8
     from streamlink.stream.hls.segment import ByteRange, HLSPlaylist, Key, Map, Media
-
-    try:
-        from typing import Self  # type: ignore[attr-defined]
-    except ImportError:
-        from typing_extensions import Self
 
 
 log = logging.getLogger(".".join(__name__.split(".")[:-1]))
@@ -96,8 +93,7 @@ class HLSStreamWriter(SegmentedStreamWriter[HLSSegment, Response]):
         ignore_names = {*options.get("hls-segment-ignore-names")}
         if ignore_names:
             segments = "|".join(map(re.escape, ignore_names))
-            # noinspection RegExpUnnecessaryNonCapturingGroup
-            self.ignore_names = re.compile(rf"(?:{segments})\.ts", re.IGNORECASE)
+            self.ignore_names = re.compile(segments, re.IGNORECASE)
 
     @staticmethod
     def num_to_iv(n: int) -> bytes:
@@ -739,8 +735,8 @@ class HLSStream(HTTPStream):
             raise OSError(f"Failed to parse playlist: {err}") from err
 
         stream_name: str | None
-        stream: HLSStream | MuxedHLSStream
-        streams: dict[str, HLSStream | MuxedHLSStream] = {}
+        stream: Self | MuxedHLSStream[Self]
+        streams: dict[str, Self | MuxedHLSStream[Self]] = {}
 
         for playlist in multivariant.playlists:
             if playlist.is_iframe:
