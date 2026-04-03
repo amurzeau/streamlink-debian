@@ -1,11 +1,10 @@
-streamlink (8.2.1-1) UNRELEASED; urgency=medium
+streamlink (8.2.1-1) unstable; urgency=medium
 
-  * d/patches: backport test fix
-  * d/control: update to standard version 4.7.3
-  * Update changelog for 8.2.0-1 release
   * New upstream version 8.2.1
+  * d/patches: update patches
+  * d/tests/control: bsdmainutils => bsdextrautils for hexdump
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 03 Apr 2026 20:52:21 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Fri, 03 Apr 2026 21:09:52 +0200
 
 streamlink (8.2.0-1) unstable; urgency=medium
 
