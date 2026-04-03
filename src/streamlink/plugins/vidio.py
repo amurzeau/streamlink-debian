@@ -6,17 +6,17 @@ $metadata id
 $metadata title
 """
 
-import logging
 import re
 from uuid import uuid4
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.dash import DASHStream
 from streamlink.stream.hls import HLSStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -80,7 +80,7 @@ class Vidio(Plugin):
         params = {}
         if has_token:
             token, hls_url, dash_url = self._get_stream_token(self.id, "dash")
-            log.trace(f"{token=}")
+            log.trace("token=%s", token)
             params.update([param.split("=", 1) for param in (token.split("&") if token else [])])
 
         if hls_url:

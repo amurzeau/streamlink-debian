@@ -7,15 +7,15 @@ $metadata category
 $metadata title
 """
 
-import logging
 import re
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import useragents, validate
 from streamlink.stream.http import HTTPStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -76,12 +76,12 @@ class NimoTV(Plugin):
 
         mStreamPkg = bytes.fromhex(mStreamPkg)
         try:
-            appid = self._re_appid.search(mStreamPkg).group(1).decode("utf-8")
-            domain = self._re_domain.search(mStreamPkg).group(1).decode("utf-8")
-            id_ = self._re_id.search(mStreamPkg).group(1).decode("utf-8")
-            tp = self._re_tp.search(mStreamPkg).group(1).decode("utf-8")
-            ws_secret = self._re_wsSecret.search(mStreamPkg).group(1).decode("utf-8")
-            ws_time = self._re_wsTime.search(mStreamPkg).group(1).decode("utf-8")
+            appid = self._re_appid.search(mStreamPkg).group(1).decode("utf-8")  # type: ignore[attr-defined]
+            domain = self._re_domain.search(mStreamPkg).group(1).decode("utf-8")  # type: ignore[attr-defined]
+            id_ = self._re_id.search(mStreamPkg).group(1).decode("utf-8")  # type: ignore[attr-defined]
+            tp = self._re_tp.search(mStreamPkg).group(1).decode("utf-8")  # type: ignore[attr-defined]
+            ws_secret = self._re_wsSecret.search(mStreamPkg).group(1).decode("utf-8")  # type: ignore[attr-defined]
+            ws_time = self._re_wsTime.search(mStreamPkg).group(1).decode("utf-8")  # type: ignore[attr-defined]
         except AttributeError:
             log.error("invalid mStreamPkg")
             return
@@ -107,7 +107,7 @@ class NimoTV(Plugin):
             elif v in ("720p", "480p", "360p"):
                 params["sphd"] = 1
 
-            log.trace(f"{v} params={params!r}")
+            log.trace("%s params=%r", v, params)
             # some qualities might not exist, but it will select a different lower quality
             yield v, HTTPStream(self.session, url, params=params)
 

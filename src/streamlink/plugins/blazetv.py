@@ -9,15 +9,15 @@ $metadata title
 $region United Kingdom
 """
 
-import logging
 import re
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -92,7 +92,7 @@ class BlazeTV(Plugin):
             self.title = data["title"]
             self.category = f"S{data['season']}E{data['episode']}"
 
-        log.trace(f"token_data={token_data!r}")
+        log.trace("token_data=%r", token_data)
 
         hls_url = self.session.http.get(
             token_data["url"],

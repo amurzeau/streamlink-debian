@@ -6,16 +6,16 @@ $type live, vod
 $region Norway
 """
 
-import logging
 import re
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 from streamlink.stream.http import HTTPStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -70,6 +70,7 @@ class NRK(Plugin):
     def _get_assets(self, manifest_type, program_id):
         return self.session.http.get(
             self._URL_MANIFEST.format(manifest_type=manifest_type, program_id=program_id),
+            headers={"Accept": "application/vnd.nrk.psapi+json; version=9; player=tv-player; device=player-core"},
             schema=validate.Schema(
                 validate.parse_json(),
                 {

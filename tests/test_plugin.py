@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import logging
 import re
 import time
 from contextlib import nullcontext
@@ -13,7 +12,8 @@ import freezegun
 import pytest
 import requests.cookies
 
-from streamlink.options import Options
+from streamlink.logger import StreamlinkLogger
+from streamlink.options import Argument, Options
 from streamlink.plugin import (
     HIGH_PRIORITY,
     NORMAL_PRIORITY,
@@ -62,11 +62,10 @@ class TestPlugin:
     @pytest.mark.parametrize(
         ("pluginclass", "module", "logger"),
         [
-            (Plugin, "plugin", "streamlink.plugin.plugin"),
-            (FakePlugin, "test_plugin", "tests.test_plugin"),
-            (RenamedPlugin, "baz", "foo.bar.baz"),
-            (CustomConstructorOnePlugin, "test_plugin", "tests.test_plugin"),
-            (CustomConstructorTwoPlugin, "test_plugin", "tests.test_plugin"),
+            (FakePlugin, "test_plugin", "streamlink.tests.test_plugin"),
+            (RenamedPlugin, "baz", "streamlink.foo.bar.baz"),
+            (CustomConstructorOnePlugin, "test_plugin", "streamlink.tests.test_plugin"),
+            (CustomConstructorTwoPlugin, "test_plugin", "streamlink.tests.test_plugin"),
         ],
     )
     def test_constructor(
@@ -92,7 +91,7 @@ class TestPlugin:
 
         assert plugin.module == module
 
-        assert isinstance(plugin.logger, logging.Logger)
+        assert isinstance(plugin.logger, StreamlinkLogger)
         assert plugin.logger.name == logger
 
         assert mock_cache.call_args_list == [call(filename="plugin-cache.json", key_prefix=module, disabled=False)]
@@ -168,6 +167,7 @@ class TestPluginMatcher:
             Matcher(re.compile(r"baz"), HIGH_PRIORITY, "baz"),
         ]
 
+    # noinspection PyAbstractClass
     def test_matchers_inheritance(self):
         @pluginmatcher(re.compile(r"foo"))
         @pluginmatcher(re.compile(r"bar"))
@@ -191,7 +191,7 @@ class TestPluginMatcher:
             Matcher(re.compile(r"bar"), NORMAL_PRIORITY),
         ]
 
-    # noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal,PyAbstractClass
     def test_matchers_inheritance_named_duplicate(self):
         @pluginmatcher(name="foo", pattern=re.compile(r"foo"))
         class PluginOne(FakePlugin):
@@ -303,11 +303,14 @@ class TestPluginArguments:
         assert all(callable(value) for value in _PLUGINARGUMENT_TYPE_REGISTRY.values())
 
     @pytest.mark.parametrize("pluginclass", [DecoratedPlugin, ClassAttrPlugin])
-    def test_arguments(self, pluginclass):
+    def test_arguments(self, pluginclass: type[Plugin]):
         assert pluginclass.arguments is not None
         assert tuple(arg.name for arg in pluginclass.arguments) == ("foo", "bar", "baz"), "Argument name"
         assert tuple(arg.dest for arg in pluginclass.arguments) == ("_foo", "_bar", "_baz"), "Argument keyword"
         assert tuple(arg.options.get("help") for arg in pluginclass.arguments) == ("FOO", "BAR", "BAZ"), "argparse keyword"
+        assert isinstance(pluginclass.get_argument("foo"), Argument)
+        assert pluginclass.get_argument("doesnotexist") is None
+        assert Plugin.get_argument("no-arguments") is None
 
     @pytest.mark.parametrize("pluginclass", [DecoratedPlugin, ClassAttrPlugin])
     def test_arguments_mixed(self, pluginclass):
@@ -478,9 +481,10 @@ class TestCookies:
             yield cache
 
     @pytest.fixture()
-    def logger(self, pluginclass: type[Plugin]):
-        with patch("streamlink.plugin.plugin.logging") as mock_logging:
-            yield mock_logging.getLogger(pluginclass.__module__)
+    def logger(self, monkeypatch: pytest.MonkeyPatch, pluginclass: type[Plugin]):
+        mock_getlogger = Mock()
+        monkeypatch.setattr("streamlink.plugin.plugin.getLogger", mock_getlogger)
+        return mock_getlogger(pluginclass.__module__)
 
     @pytest.fixture()
     def plugin(self, pluginclass: type[Plugin], session: Streamlink, plugincache: Mock, logger: Mock):

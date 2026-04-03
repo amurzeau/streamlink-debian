@@ -8,17 +8,17 @@ $metadata id
 $metadata title
 """
 
-import logging
 import re
 from urllib.parse import urlparse
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 from streamlink.utils.url import update_scheme
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -149,7 +149,7 @@ class MDStrm(Plugin):
             else:
                 log.debug("Failed to find 'parent._dai_session'")
 
-        log.trace(f"{params!r}")
+        log.trace("%r", params)
         self.id = options["id"]
         self.title = options["title"]
         return HLSStream.parse_variant_playlist(

@@ -7,16 +7,16 @@ $metadata title
 $region Czechia
 """
 
-import logging
 import re
 from uuid import uuid4
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.dash import DASHStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -50,7 +50,7 @@ class Ceskatelevize(Plugin):
                 "streamType": "dash",
                 "quality": "web",
                 "maxQualityCount": 5,
-                "sessionId": uuid4(),
+                "sessionId": str(uuid4()),
             },
             schema=validate.Schema(
                 validate.parse_json(),
@@ -83,32 +83,26 @@ class Ceskatelevize(Plugin):
     def get_streams_sport(self):
         schema = validate.Schema(
             validate.parse_html(),
-            validate.xml_xpath_string(".//section[@id='live']/@data-ctcomp-data"),
+            validate.xml_xpath_string(".//script[@id='__NEXT_DATA__'][text()][1]/text()"),
             validate.none_or_all(
+                str,
                 validate.parse_json(),
                 {
-                    "items": [
-                        {
-                            "items": [
-                                {
-                                    validate.optional("video"): {
-                                        "data": {
-                                            "source": {
-                                                "playlist": [
-                                                    {
-                                                        "id": str,
-                                                        "drm": int,
-                                                    },
-                                                ],
-                                            },
-                                        },
-                                    },
-                                },
-                            ],
+                    "props": {
+                        "pageProps": {
+                            "liveData": validate.any(
+                                # Prefer explicit broadcast id (eg "CH_4")
+                                validate.all({"id": str}, validate.get("id")),
+                                # Fallback to encoder (also "CH_4")
+                                validate.all(
+                                    {"current": {"encoder": str}},
+                                    validate.get(("current", "encoder")),
+                                ),
+                            ),
                         },
-                    ],
+                    },
                 },
-                validate.get(("items", 0, "items", 0, "video", "data", "source", "playlist", 0, "id")),
+                validate.get(("props", "pageProps", "liveData")),
             ),
         )
 

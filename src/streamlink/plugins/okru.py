@@ -8,11 +8,11 @@ $metadata author
 $metadata title
 """
 
-import logging
 import re
 from urllib.parse import unquote
 
 from streamlink.exceptions import NoStreamsError
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.dash import DASHStream
@@ -20,7 +20,7 @@ from streamlink.stream.hls import HLSStream
 from streamlink.stream.http import HTTPStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -46,12 +46,12 @@ class OKru(Plugin):
     }
 
     @classmethod
-    def stream_weight(cls, key):
-        weight = cls.QUALITY_WEIGHTS.get(key)
+    def stream_weight(cls, stream: str) -> tuple[float, str]:
+        weight = cls.QUALITY_WEIGHTS.get(stream)
         if weight:
             return weight, "okru"
 
-        return super().stream_weight(key)
+        return super().stream_weight(stream)
 
     def _canonicalize_mobile_url(self):
         url = self.session.http.get(
@@ -125,7 +125,7 @@ class OKru(Plugin):
         if not metadata and metadata_url:
             metadata = self.session.http.post(metadata_url).text
 
-        log.trace(f"{metadata!r}")
+        log.trace("%r", metadata)
 
         data = schema_metadata.validate(metadata)
 

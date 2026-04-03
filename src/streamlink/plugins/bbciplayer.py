@@ -6,12 +6,12 @@ $region United Kingdom
 """
 
 import base64
-import logging
 import re
 from collections import defaultdict
 from hashlib import sha1
 from urllib.parse import urlparse, urlunparse
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, PluginError, pluginargument, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.dash import DASHStream
@@ -19,7 +19,7 @@ from streamlink.stream.hls import HLSStream
 from streamlink.utils.parse import parse_json
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -122,7 +122,7 @@ class BBCiPlayer(Plugin):
         return m and parse_json(m.group(1), schema=self.mediator_schema)
 
     def find_tvip(self, url, master=False):
-        log.debug("Looking for {0} tvip on {1}".format("master" if master else "", url))
+        log.debug("Looking for %s tvip on %s", ("master" if master else ""), url)
         res = self.session.http.get(url)
         m = self.state_re.search(res.text)
         data = m and parse_json(m.group(1))
