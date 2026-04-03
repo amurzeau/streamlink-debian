@@ -4,14 +4,14 @@ $url zeenews.india.com
 $type live
 """
 
-import logging
 import re
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.stream.hls import HLSStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -26,7 +26,7 @@ class ZeeNews(Plugin):
     def _get_streams(self):
         res = self.session.http.get(self.TOKEN_URL)
         token = self.session.http.json(res)["video_token"]
-        log.debug("video_token: {0}".format(token))
+        log.debug(f"video_token: {token}")
         yield from HLSStream.parse_variant_playlist(self.session, self.HLS_URL.format(token)).items()
 
 

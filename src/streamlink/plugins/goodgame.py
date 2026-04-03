@@ -8,16 +8,16 @@ $metadata category
 $metadata title
 """
 
-import logging
 import re
 import sys
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -37,7 +37,7 @@ class GoodGame(Plugin):
     _API_STREAM = "https://goodgame.ru/api/4/users/{channel}/stream"
 
     @classmethod
-    def stream_weight(cls, stream):
+    def stream_weight(cls, stream: str) -> tuple[float, str]:
         if stream == "source":
             return sys.maxsize, stream
         return super().stream_weight(stream)

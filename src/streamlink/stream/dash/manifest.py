@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import logging
 import math
 import re
 from collections import defaultdict
@@ -13,6 +12,7 @@ from urllib.parse import urljoin, urlparse, urlunparse
 
 from isodate import Duration, parse_datetime, parse_duration  # type: ignore[import]  # ty:ignore[unused-ignore-comment]
 
+from streamlink.logger import getLogger
 from streamlink.stream.dash.segment import DASHSegment, TimelineSegment
 from streamlink.utils.times import UTC, fromtimestamp, now
 
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     TTimelineIdent: TypeAlias = tuple[str | None, str | None, str]
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 EPOCH_START = fromtimestamp(0)
 ONE_SECOND = timedelta(seconds=1)
@@ -669,7 +669,7 @@ class _SegmentBaseType(MPDNode):
 
     _ancestors = (Period, AdaptationSet, Representation)
 
-    def __init__(self, *args, period: "Period", **kwargs) -> None:
+    def __init__(self, *args, period: Period, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.period = period
@@ -800,7 +800,7 @@ class SegmentList(_MultipleSegmentBaseType):
         """Calculate the optimal segment number to start based on the suggestedPresentationDelay"""
         suggested_delay = self.root.suggestedPresentationDelay
 
-        if self.duration_seconds == 0.0:
+        if not self.duration:
             log.info(f"Unknown segment duration. Falling back to an offset of {MPD.DEFAULT_LIVE_EDGE_SEGMENTS} segments.")
             offset = MPD.DEFAULT_LIVE_EDGE_SEGMENTS
         else:
@@ -979,13 +979,13 @@ class SegmentTemplate(_MultipleSegmentBaseType):
             return
 
         if not self.segmentTimeline:
-            log.debug(f"Generating segment numbers for {self.root.type} playlist: {ident!r}")
+            log.debug("Generating segment numbers for %s playlist: %r", self.root.type, ident)
             duration = self.duration_seconds
             for number, available_at in self.segment_numbers(timestamp=timestamp):
                 url = self.make_url(base_url, self.fmt_media(Number=number, **kwargs))
                 yield url, number, duration, available_at
         else:
-            log.debug(f"Generating segment timeline for {self.root.type} playlist: {ident!r}")
+            log.debug("Generating segment timeline for %s playlist: %r", self.root.type, ident)
             for number, segment, available_at in self.segment_timeline(ident):
                 url = self.make_url(base_url, self.fmt_media(Time=segment.t, Number=number, **kwargs))
                 duration = segment.d / self.timescale

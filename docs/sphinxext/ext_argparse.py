@@ -13,7 +13,7 @@ import argparse
 import re
 from importlib import import_module
 from textwrap import dedent
-from typing import Any, Callable, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from docutils import nodes
 from docutils.parsers.rst import Directive
@@ -21,6 +21,10 @@ from docutils.parsers.rst.directives import unchanged
 from docutils.statemachine import StringList
 from sphinx.errors import ExtensionError
 from sphinx.util.nodes import nested_parse_with_titles
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 _block_re = re.compile(r":\n{2}\s{2}")
@@ -72,7 +76,7 @@ class ArgparseDirective(Directive):
         helptext = dedent(helptext)
 
         helptext = _inline_code_block_re.sub(
-            lambda m: ":code:`{0}`".format(m.group(1).replace("\\", "\\\\")),
+            lambda m: ":code:`{}`".format(m.group(1).replace("\\", "\\\\")),
             helptext,
         )
 
@@ -149,8 +153,7 @@ class ArgparseDirective(Directive):
             options = f"\n{' ' * len(directive)}".join(options)
             yield f"{directive}{options}"
             yield ""
-            for line in self.process_help(action.help).split("\n"):
-                yield line
+            yield from self.process_help(action.help).split("\n")
             yield ""
 
     def generate_parser_rst(self, parser, parent=None, depth=0):

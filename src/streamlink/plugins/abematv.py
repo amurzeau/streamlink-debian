@@ -7,7 +7,6 @@ $region Japan
 
 import hashlib
 import hmac
-import logging
 import re
 import struct
 import time
@@ -19,6 +18,7 @@ from requests import Response
 from requests.adapters import BaseAdapter
 
 from streamlink.exceptions import NoStreamsError
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import useragents, validate
 from streamlink.stream.hls import HLSStream, HLSStreamReader, HLSStreamWriter
@@ -26,7 +26,7 @@ from streamlink.utils.crypto import AES
 from streamlink.utils.url import update_qsd
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 class AbemaTVHLSStreamWriter(HLSStreamWriter):
@@ -248,7 +248,7 @@ class AbemaTV(Plugin):
                 return {}
             playlisturl = self._SLOTM3U8.format(slots)
 
-        log.debug("URL={0}".format(playlisturl))
+        log.debug(f"URL={playlisturl}")
 
         # hook abematv private protocol
         self.session.http.mount("abematv-license://", AbemaTVLicenseAdapter(self.session, deviceid, self.usertoken))

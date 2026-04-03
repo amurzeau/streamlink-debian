@@ -152,15 +152,12 @@ class Segment(_Segment):
         self.date = DATETIME_BASE + timedelta(seconds=num)
 
     def build(self, namespace):
-        return "#EXT-X-PROGRAM-DATE-TIME:{0}\n{1}".format(
-            self.date.strftime(DATETIME_FORMAT),
-            super().build(namespace),
-        )
+        return f"#EXT-X-PROGRAM-DATE-TIME:{self.date.strftime(DATETIME_FORMAT)}\n{super().build(namespace)}"
 
 
 class SegmentPrefetch(Segment):
     def build(self, namespace):
-        return "#EXT-X-TWITCH-PREFETCH:{0}".format(self.url(namespace))
+        return f"#EXT-X-TWITCH-PREFETCH:{self.url(namespace)}"
 
 
 class _TwitchHLSStreamWriter(EventedHLSStreamWriter, TwitchHLSStreamWriter):
@@ -190,6 +187,15 @@ def test_stream_weight(requests_mock: rm.Mocker, session: Streamlink):
     assert list(data.keys()) == ["audio", "160p30", "360p30", "480p30", "720p30", "720p60", "source", "worst", "best"]
     assert data["best"] is data["source"]
     assert data["worst"] is data["160p30"]
+
+
+def test_multivariant(session: Streamlink, requests_mock: rm.Mocker):
+    with text("hls/test_multivariant_twitch_usher_v2.m3u8") as fd:
+        content = fd.read()
+        requests_mock.get("http://mocked/multivariant.m3u8", text=content)
+        streams = TwitchHLSStream.parse_variant_playlist(session, "http://mocked/multivariant.m3u8")
+
+    assert sorted(streams.keys()) == ["1080p60", "160p", "360p", "480p", "720p60", "audio_only"]
 
 
 @patch("streamlink.stream.hls.HLSStreamWorker.wait", MagicMock(return_value=True))
@@ -285,7 +291,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         data = self.await_read(read_all=True)
         assert data == self.content(segments, cond=lambda s: s.num >= 4), "Filters out preroll ad segments"
         assert all(self.called(s) for s in segments.values()), "Downloads all segments"
-        assert self.thread.reader.worker.duration == 2.0, "Ad segments don't affect the output duration"
+        assert self.thread.reader.worker.duration == pytest.approx(2.0), "Ad segments don't affect the output duration"
         assert mock_log.info.mock_calls == [
             call("Will skip ad segments"),
             call("Waiting for pre-roll ads to finish, be patient"),
@@ -312,7 +318,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         data = self.await_read(read_all=True)
         assert data == self.content(segments, cond=lambda s: s.num != 2 and s.num != 3), "Filters out mid-stream ad segments"
         assert all(self.called(s) for s in segments.values()), "Downloads all segments"
-        assert self.thread.reader.worker.duration == 4.0, "Ad segments don't affect the output duration"
+        assert self.thread.reader.worker.duration == pytest.approx(4.0), "Ad segments don't affect the output duration"
         assert mock_log.info.mock_calls == [
             call("Will skip ad segments"),
             call("Detected advertisement break of 2 seconds"),
@@ -362,7 +368,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         data = self.await_read(read_all=True)
         assert data == self.content(segments, cond=lambda s: s.num not in (0, 1, 4, 5, 6, 7, 8)), "Filters out all ad segments"
         assert all(self.called(s) for s in segments.values()), "Downloads all segments"
-        assert self.thread.reader.worker.duration == 3.0, "Ad segments don't affect the output duration"
+        assert self.thread.reader.worker.duration == pytest.approx(3.0), "Ad segments don't affect the output duration"
         assert mock_log.info.mock_calls == [
             call("Will skip ad segments"),
             call("Waiting for pre-roll ads to finish, be patient"),
@@ -415,7 +421,7 @@ class TestTwitchHLSStream(TestMixinStreamHLS, unittest.TestCase):
         assert mock_log.info.mock_calls == [
             call("Will skip ad segments"),
         ]
-        assert self.thread.reader.worker._reload_time == 3.0
+        assert self.thread.reader.worker._reload_time == pytest.approx(3.0)
 
     @patch("streamlink.plugins.twitch.log")
     def test_hls_low_latency_no_prefetch(self, mock_log):
@@ -617,7 +623,7 @@ class TestUsherService:
         [
             pytest.param(
                 {"service": "channel", "args": ("TWITCH",)},
-                "/api/channel/hls/twitch.m3u8",
+                "/api/v2/channel/hls/twitch.m3u8",
                 [
                     (
                         "streamlink.plugins.twitch",
@@ -629,7 +635,7 @@ class TestUsherService:
             ),
             pytest.param(
                 {"service": "video", "args": ("1234567890",)},
-                "/vod/1234567890",
+                "/vod/v2/1234567890.m3u8",
                 [],
                 id="video",
             ),

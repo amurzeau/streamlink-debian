@@ -9,17 +9,17 @@ $metadata title
 
 from __future__ import annotations
 
-import logging
 import re
 import uuid
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.http import HTTPStream
 from streamlink.utils.url import update_scheme
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -33,12 +33,12 @@ class Douyin(Plugin):
     QUALITY_WEIGHTS: dict[str, int] = {}
 
     @classmethod
-    def stream_weight(cls, key):
-        weight = cls.QUALITY_WEIGHTS.get(key)
+    def stream_weight(cls, stream: str) -> tuple[float, str]:
+        weight = cls.QUALITY_WEIGHTS.get(stream)
         if weight:
-            return weight, key
+            return weight, stream
 
-        return super().stream_weight(key)
+        return super().stream_weight(stream)
 
     SCHEMA_ROOM_STORE = validate.all(
         {
@@ -152,7 +152,7 @@ class Douyin(Plugin):
             url = update_scheme("https://", url, force=True)
             yield name, HTTPStream(self.session, url)
 
-        log.debug(f"{self.QUALITY_WEIGHTS=!r}")
+        log.debug("self.QUALITY_WEIGHTS=%r", self.QUALITY_WEIGHTS)
 
 
 __plugin__ = Douyin

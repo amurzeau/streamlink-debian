@@ -7,10 +7,10 @@ $metadata title
 $region France, Andorra, Monaco
 """
 
-import logging
 import re
 from urllib.parse import urlparse
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import useragents, validate
 from streamlink.stream.dash import DASHStream
@@ -18,7 +18,7 @@ from streamlink.stream.hls import HLSStream
 from streamlink.utils.times import localnow
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -79,7 +79,9 @@ class Pluzz(Plugin):
         self.session.http.headers.update({
             "User-Agent": useragents.CHROME,
         })
-        CHROME_VERSION = re.compile(r"Chrome/(\d+)").search(useragents.CHROME).group(1)
+        if not (m := re.compile(r"Chrome/(\d+)").search(useragents.CHROME)):
+            return
+        CHROME_VERSION = m.group(1)
 
         if not (video_id := self._get_video_id()):
             return

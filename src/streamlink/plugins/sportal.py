@@ -4,14 +4,14 @@ $url sportal.bg
 $type live
 """
 
-import logging
 import re
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.stream.hls import HLSStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -27,7 +27,7 @@ class Sportal(Plugin):
             return
 
         hls_url = m.group("url")
-        log.debug("URL={0}".format(hls_url))
+        log.debug(f"URL={hls_url}")
         log.warning("SSL certificate verification is disabled.")
         return HLSStream.parse_variant_playlist(self.session, hls_url, verify=False).items()
 

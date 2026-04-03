@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import base64
 import hashlib
-import logging
 import random
 import re
 import sys
@@ -19,13 +18,14 @@ import time
 from html import unescape as html_unescape
 from urllib.parse import parse_qsl, unquote
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.http import HTTPStream
 from streamlink.utils.url import update_scheme
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -46,12 +46,12 @@ class Huya(Plugin):
     }
 
     @classmethod
-    def stream_weight(cls, key):
-        weight = cls.QUALITY_WEIGHTS.get(key)
+    def stream_weight(cls, stream: str) -> tuple[float, str]:
+        weight = cls.QUALITY_WEIGHTS.get(stream)
         if weight:
             return weight, "huya"
 
-        return super().stream_weight(key)
+        return super().stream_weight(stream)
 
     def _get_streams(self):
         data = self.session.http.get(
@@ -143,7 +143,7 @@ class Huya(Plugin):
                 self.QUALITY_WEIGHTS[name] = weight
                 yield name, HTTPStream(self.session, url, params=params)
 
-        log.debug(f"QUALITY_WEIGHTS: {self.QUALITY_WEIGHTS!r}")
+        log.debug("QUALITY_WEIGHTS: %r", self.QUALITY_WEIGHTS)
 
     def _get_stream_params(self, fm, fs, ctype, ws_time, stream_name, i_bit_rate):
         uid = random.randint(12340000, 12349999)

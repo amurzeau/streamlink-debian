@@ -10,10 +10,10 @@ $metadata title
 $notes VOD content and protected videos are not supported
 """
 
-import logging
 import re
 from urllib.parse import urlparse, urlunparse
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, PluginError, pluginmatcher
 from streamlink.plugin.api import useragents, validate
 from streamlink.stream.ffmpegmux import MuxedStream
@@ -23,7 +23,7 @@ from streamlink.utils.data import search_dict
 from streamlink.utils.parse import parse_json
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -101,7 +101,7 @@ class YouTube(Plugin):
         self.session.http.headers.update({"User-Agent": useragents.CHROME})
 
     @classmethod
-    def stream_weight(cls, stream):
+    def stream_weight(cls, stream: str) -> tuple[float, str]:
         match_3d = re.match(r"(\w+)_3d", stream)
         match_hfr = re.match(r"(\d+p)(\d+)", stream)
         if match_3d:
@@ -198,7 +198,7 @@ class YouTube(Plugin):
             ),
         )
         videoDetails = schema.validate(data)
-        log.trace(f"videoDetails = {videoDetails!r}")
+        log.trace("videoDetails = %r", videoDetails)
         return videoDetails
 
     @classmethod
@@ -342,7 +342,7 @@ class YouTube(Plugin):
                 "context": {
                     "client": {
                         "clientName": "ANDROID",
-                        "clientVersion": "19.45.36",
+                        "clientVersion": "21.08.266",
                         "platform": "DESKTOP",
                         "clientScreen": "EMBED",
                         "clientFormFactor": "UNKNOWN_FORM_FACTOR",

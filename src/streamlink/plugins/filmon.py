@@ -7,13 +7,13 @@ $notes Some VODs are mp4 which may not stream, use -o to download
 
 from __future__ import annotations
 
-import logging
 import re
 import time
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse, urlunparse
 
 from streamlink.exceptions import PluginError, StreamError
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.session.http import TLSSecLevel1Adapter
@@ -25,16 +25,17 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 class FilmOnHLSStreamWorker(HLSStreamWorker):
+    stream: FilmOnHLS
+
     def _fetch_playlist(self):
         try:
             return super()._fetch_playlist()
         except StreamError as err:
-            # noinspection PyUnresolvedReferences
-            if err.err.response.status_code in (403, 502):
+            if hasattr(err, "err") and err.err.response.status_code in (403, 502):  # type: ignore
                 self.stream.watch_timeout = 0
                 self.playlist_reload_time = 0
                 log.debug(f"Force-reloading the channel playlist on error: {err}")
@@ -49,7 +50,7 @@ class FilmOnHLS(HLSStream):
     __shortname__ = "hls-filmon"
     __reader__ = FilmOnHLSStreamReader
 
-    def __init__(self, session, url: str, api: "FilmOnAPI", channel=None, vod_id=None, quality="high", **args):
+    def __init__(self, session, url: str, api: FilmOnAPI, channel=None, vod_id=None, quality="high", **args):
         if channel is None and vod_id is None:
             raise PluginError("Channel or vod_id must be set")
 
@@ -197,12 +198,12 @@ class Filmon(Plugin):
         self.session.options.set("hls-playlist-reload-time", "segment")
 
     @classmethod
-    def stream_weight(cls, key):
-        weight = cls.quality_weights.get(key)
+    def stream_weight(cls, stream: str) -> tuple[float, str]:
+        weight = cls.quality_weights.get(stream)
         if weight:
             return weight, "filmon"
 
-        return super().stream_weight(key)
+        return super().stream_weight(stream)
 
     def _get_streams(self):
         channel = self.match.group("channel")

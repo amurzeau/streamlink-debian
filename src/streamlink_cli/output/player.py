@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import os
 import re
 import shlex
@@ -14,6 +13,7 @@ from typing import TYPE_CHECKING, ClassVar, TextIO, cast
 
 from streamlink.compat import is_win32
 from streamlink.exceptions import StreamlinkWarning
+from streamlink.logger import getLogger
 from streamlink_cli.output.abc import Output
 from streamlink_cli.utils import Formatter
 
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from streamlink_cli.output.http import HTTPOutput
 
 
-log = logging.getLogger("streamlink.cli.output")
+log = getLogger("streamlink.cli.output")
 
 
 class PlayerArgsMeta(type):
@@ -304,7 +304,10 @@ class PlayerOutput(Output):
             self._open_subprocess(args)
 
     def _open_call(self, args: list[str]):
-        log.debug(f"Calling: {args!r}{f', env: {self.env!r}' if self.env else ''}")
+        if self.env:
+            log.debug("Calling: %r, env: %r", args, self.env)
+        else:
+            log.debug("Calling: %r", args)
 
         environ = dict(os.environ)
         environ.update(self.env)
@@ -317,7 +320,10 @@ class PlayerOutput(Output):
         )
 
     def _open_subprocess(self, args: list[str]):
-        log.debug(f"Opening subprocess: {args!r}{f', env: {self.env!r}' if self.env else ''}")
+        if self.env:
+            log.debug("Opening subprocess: %r, env: %r", args, self.env)
+        else:
+            log.debug("Opening subprocess: %r", args)
 
         environ = dict(os.environ)
         environ.update(self.env)
