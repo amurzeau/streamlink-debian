@@ -11,6 +11,7 @@ from unittest.mock import Mock, call, patch
 
 import freezegun
 import pytest
+import requests_mock as rm
 from requests.exceptions import InvalidSchema
 
 from streamlink.exceptions import StreamlinkDeprecationWarning
@@ -31,8 +32,6 @@ from tests.resources import text
 
 
 if TYPE_CHECKING:
-    import requests_mock as rm
-
     from streamlink.session import Streamlink
 
 
@@ -112,16 +111,27 @@ def test_repr(session: Streamlink):
 class TestHLSVariantPlaylist:
     @pytest.fixture()
     def streams(self, request: pytest.FixtureRequest, requests_mock: rm.Mocker, session: Streamlink):
-        url = f"http://mocked/{request.node.originalname}/master.m3u8"
-        playlist = getattr(request, "param", "")
+        params = getattr(request, "param", {})
+        base = f"http://mocked/{request.node.originalname}"
 
-        with text(playlist) as fd:
-            content = fd.read()
-        requests_mock.get(url, text=content)
+        multivariant_url = f"{base}/multivariant.m3u8"
+        multivariant_playlist = params.pop("multivariant")
+        assert multivariant_playlist
+        with text(multivariant_playlist) as fd:
+            requests_mock.get(multivariant_url, text=fd.read())
 
-        return HLSStream.parse_variant_playlist(session, url)
+        for media_name, media_params in params.pop("media", {}).items():
+            media_playlist = media_params.pop("file")
+            assert media_playlist
+            with text(media_playlist) as fd:
+                requests_mock.get(f"{base}/{media_name}", text=fd.read(), **media_params)
 
-    @pytest.mark.parametrize("streams", ["hls/test_master.m3u8"], indirect=True)
+        for segment_name, segment_params in params.pop("segments", {}).items():
+            requests_mock.request(method=rm.ANY, url=f"{base}/{segment_name}", **segment_params)
+
+        return HLSStream.parse_variant_playlist(session, multivariant_url, **params)
+
+    @pytest.mark.parametrize("streams", [{"multivariant": "hls/test_master.m3u8"}], indirect=True)
     def test_variant_playlist(self, request: pytest.FixtureRequest, streams: dict[str, HLSStream]):
         assert list(streams.keys()) == ["720p", "720p_alt", "480p", "360p", "160p", "1080p (source)", "90k"]
         assert all(isinstance(stream, HLSStream) for stream in streams.values())
@@ -129,14 +139,92 @@ class TestHLSVariantPlaylist:
 
         base = f"http://mocked/{request.node.originalname}"
         stream = next(iter(streams.values()))
-        assert repr(stream) == f"<HLSStream ['hls', '{base}/720p.m3u8', '{base}/master.m3u8']>"
+        assert repr(stream) == f"<HLSStream ['hls', '{base}/720p.m3u8', '{base}/multivariant.m3u8']>"
 
         assert stream.multivariant is not None
-        assert stream.multivariant.uri == f"{base}/master.m3u8"
+        assert stream.multivariant.uri == f"{base}/multivariant.m3u8"
 
-    @pytest.mark.parametrize("streams", ["hls/test_multivariant_twitch_usher_v2.m3u8"], indirect=True)
+    @pytest.mark.parametrize("streams", [{"multivariant": "hls/test_multivariant_twitch_usher_v2.m3u8"}], indirect=True)
     def test_framerate(self, streams: dict[str, HLSStream]):
         assert sorted(streams.keys()) == ["1080p60", "160k", "160p", "360p", "480p", "720p60"]
+
+    @pytest.mark.parametrize(
+        ("streams", "expected"),
+        [
+            pytest.param(
+                {
+                    "check_streams": True,
+                    "multivariant": "hls/test_simple_multivariant.m3u8",
+                    "media": {
+                        "720p/playlist.m3u8": {"file": "hls/test_simple_media.m3u8"},
+                        "1080p/playlist.m3u8": {"file": "hls/test_simple_media.m3u8"},
+                    },
+                    "segments": {
+                        "720p/segment2.ts": {"content": b"content"},
+                        "1080p/segment2.ts": {"content": b"content"},
+                    },
+                },
+                ["1080p (source)", "720p"],
+                id="all-valid",
+            ),
+            pytest.param(
+                {
+                    "check_streams": True,
+                    "multivariant": "hls/test_simple_multivariant.m3u8",
+                    "media": {
+                        "720p/playlist.m3u8": {"file": "hls/test_simple_media.m3u8"},
+                    },
+                },
+                ["720p"],
+                id="playlist-failure",
+            ),
+            pytest.param(
+                {
+                    "check_streams": True,
+                    "multivariant": "hls/test_simple_multivariant.m3u8",
+                    "media": {
+                        "720p/playlist.m3u8": {"file": "hls/test_simple_multivariant.m3u8"},
+                        "1080p/playlist.m3u8": {"file": "hls/test_simple_multivariant.m3u8"},
+                    },
+                },
+                [],
+                id="nested-multivariant",
+            ),
+            pytest.param(
+                {
+                    "check_streams": "segments",
+                    "multivariant": "hls/test_simple_multivariant.m3u8",
+                    "media": {
+                        "720p/playlist.m3u8": {"file": "hls/test_simple_media.m3u8"},
+                        "1080p/playlist.m3u8": {"file": "hls/test_simple_media.m3u8"},
+                    },
+                    "segments": {
+                        "720p/segment1.ts": {"content": b"content"},
+                    },
+                },
+                ["1080p (source)", "720p"],
+                id="segment-failure-first-success",
+            ),
+            pytest.param(
+                {
+                    "check_streams": "segments",
+                    "multivariant": "hls/test_simple_multivariant.m3u8",
+                    "media": {
+                        "720p/playlist.m3u8": {"file": "hls/test_simple_media.m3u8"},
+                        "1080p/playlist.m3u8": {"file": "hls/test_simple_media.m3u8"},
+                    },
+                    "segments": {
+                        "1080p/segment1.ts": {"content": b"content"},
+                    },
+                },
+                [],
+                id="segment-failure-first-failure",
+            ),
+        ],
+        indirect=["streams"],
+    )
+    def test_check_streams(self, streams: dict[str, HLSStream], expected: list[str]):
+        assert sorted(streams.keys()) == expected
 
 
 class EventedWorkerHLSStreamReader(HLSStreamReader):
@@ -164,10 +252,11 @@ class TestHLSStream(TestMixinStreamHLS, unittest.TestCase):
         return session
 
     def test_thread_names(self):
+        testid = self.id()
         self.subject(playlists=[Playlist(0, [Segment(0)], end=True)])
-        assert self.thread.reader.worker.name == "HLSStreamWorker-0"
-        assert self.thread.reader.writer.name == "HLSStreamWriter-0"
-        assert self.thread.reader.writer.executor._thread_name_prefix == "HLSStreamWriter-0-executor"
+        assert self.thread.reader.worker.name == f"HLSStreamWorker-{testid}-0"
+        assert self.thread.reader.writer.name == f"HLSStreamWriter-{testid}-0"
+        assert self.thread.reader.writer.executor._thread_name_prefix == f"HLSStreamWriter-{testid}-0-executor"
         self.await_read(read_all=True)
 
     def test_playlist_end(self):
@@ -314,7 +403,7 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
     OPTIONS = {"stream-timeout": 1}
 
     def tearDown(self) -> None:
-        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment]
+        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment, ty:invalid-assignment]
         # don't await the handshakes on error
         worker.handshake_wait.go()
         worker.handshake_reload.go()
@@ -332,7 +421,7 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
                 Playlist(0, targetduration=5, segments=[Segment(0), Segment(1)]),
             ],
         )
-        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment]
+        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment, ty:invalid-assignment]
         targetduration = ONE_SECOND * 5
 
         with (
@@ -396,7 +485,7 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
                 Playlist(0, targetduration=5, segments=[Segment(0)]),
             ],
         )
-        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment]
+        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment, ty:invalid-assignment]
         targetduration = ONE_SECOND * 5
 
         with freezegun.freeze_time(EPOCH) as frozen_time:
@@ -440,7 +529,7 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
                 Playlist(0, targetduration=1, segments=[Segment(0)]),
             ],
         )
-        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment]
+        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment, ty:invalid-assignment]
         targetduration = ONE_SECOND
 
         with (
@@ -485,8 +574,8 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
             #   which is why the test's reader thread keeps running until the test teardown,
             #   but this somehow breaks the assertion down below, so close everything manually...
             #   These tests will have to be rewritten eventually in pytest-style, without having to mock log calls.
-            self.thread.close()
-            self.thread.join(1)
+            self.close()
+            self.await_close()
 
             assert mock_log.warning.call_args_list == [call("No new segments for more than 5.00s. Stopping...")]
 
@@ -501,7 +590,7 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
                 Playlist(4, targetduration=5, segments=[Segment(4)], end=True),
             ],
         )
-        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment]
+        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment, ty:invalid-assignment]
         targetduration = ONE_SECOND * 5
 
         with freezegun.freeze_time(EPOCH) as frozen_time:
@@ -1214,8 +1303,9 @@ class TestHlsReloadTime(TestMixinStreamHLS, unittest.TestCase):
             if not get_reload_time_called.wait(timeout=5):  # pragma: no cover
                 raise RuntimeError("Missing _get_reload_time() call")
 
-            # wait for the worker thread to terminate, so that deterministic assertions can be done about the reload time
-            self.thread.reader.worker.join()
+            # close threads first, so that deterministic assertions can be done about the reload time
+            self.close()
+            self.await_close()
 
             return self.thread.reader.worker._reload_time
 

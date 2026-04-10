@@ -28,7 +28,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Mar 05, 2026" "8.2.1" "Streamlink"
+.TH "STREAMLINK" "1" "Apr 10, 2026" "8.3.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -299,7 +299,24 @@ Load additional plugins from a list of comma\-separated directories. (deprecated
 .INDENT 0.0
 .TP
 .B \-\-interface INTERFACE
-Set the network interface.
+Select the network interface, either by IP address or by interface name.
+.sp
+The following optional prefixes are supported:
+.INDENT 7.0
+.IP \(bu 2
+\fBif!<name>\fP interface name
+.IP \(bu 2
+\fBhost!<name>\fP IP address or hostname
+.IP \(bu 2
+\fBifhost!<interface>!<host>\fP interface name and IP address or hostname
+.UNINDENT
+.sp
+\fBNote:\fP
+.INDENT 7.0
+.INDENT 3.5
+On Windows, only IP addresses are supported and prefixes are ignored.
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1341,12 +1358,12 @@ Purge cached RaiPlay credentials to initiate a new session and reauthenticate.
 .INDENT 0.0
 .TP
 .B \-\-soop\-username USERNAME
-The username used to register with sooplive.co.kr.
+The username used to register with sooplive.com.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B \-\-soop\-password PASSWORD
-A sooplive.co.kr account password to use with \fB\-\-soop\-username\fP\&.
+A sooplive.com account password to use with \fB\-\-soop\-username\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
