@@ -575,6 +575,8 @@ tests/resources/hls/test_media_language.m3u8
 tests/resources/hls/test_media_language_special.m3u8
 tests/resources/hls/test_multivariant_bandwidth.m3u8
 tests/resources/hls/test_multivariant_twitch_usher_v2.m3u8
+tests/resources/hls/test_simple_media.m3u8
+tests/resources/hls/test_simple_multivariant.m3u8
 tests/session/__init__.py
 tests/session/test_http.py
 tests/session/test_options.py
