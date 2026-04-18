@@ -11,11 +11,11 @@ from ctypes.wintypes import (
     WCHAR,
     WORD,
 )
-from typing import TYPE_CHECKING, Callable, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
     from ctypes import CDLL
     from io import TextIOWrapper
 
@@ -177,7 +177,7 @@ class WindowsConsole:
 
     def __new__(cls, *args, **kwargs):
         try:
-            from ctypes import windll  # type: ignore[import]  # noqa: PLC0415
+            from ctypes import windll  # type: ignore[import, ty:unresolved-import]  # noqa: PLC0415
         except ImportError:  # pragma: no cover
             return None
 

@@ -48,7 +48,7 @@ class FakeStream(_TestableWithHandshake, StreamIO):
 
     def __init__(self) -> None:
         super().__init__()
-        self.data: deque[bytes | Callable] = deque()
+        self.data: deque[bytes | Callable[[], bytes]] = deque()
 
     # noinspection PyUnusedLocal
     def read(self, *args):
@@ -56,7 +56,10 @@ class FakeStream(_TestableWithHandshake, StreamIO):
             if not self.data:
                 return b""
             data = self.data.popleft()
-            return data() if callable(data) else data
+            if callable(data) and not isinstance(data, bytes):
+                return data()
+            else:
+                return data
 
 
 class FakeOutput(_TestableWithHandshake):
@@ -219,8 +222,8 @@ class TestPlayerOutput:
 
         # wait for runner thread to terminate first before asserting log records
         assert_thread_termination(runnerthread, "Runner thread has terminated")
-        assert [(record.module, record.levelname, record.message) for record in caplog.records] == [
-            ("streamrunner", "info", "Stream ended"),
+        assert [(record.module, record.threadName, record.levelname, record.message) for record in caplog.records] == [
+            ("streamrunner", "Runner thread", "info", "Stream ended"),
         ]
 
     @pytest.mark.trio()
@@ -273,8 +276,8 @@ class TestPlayerOutput:
 
         # wait for runner thread to terminate first before asserting log records
         assert_thread_termination(runnerthread, "Runner thread has terminated")
-        assert [(record.module, record.levelname, record.message) for record in caplog.records] == [
-            ("streamrunner", "info", "Stream ended"),
+        assert [(record.module, record.threadName, record.levelname, record.message) for record in caplog.records] == [
+            ("streamrunner", "Runner thread", "info", "Stream ended"),
         ]
 
     @pytest.mark.trio()
@@ -348,9 +351,9 @@ class TestPlayerOutput:
 
         # wait for runner thread to terminate first before asserting log records
         assert_thread_termination(runnerthread, "Runner thread has terminated")
-        assert [(record.module, record.levelname, record.message) for record in caplog.records] == [
-            ("streamrunner", "info", "Player closed"),
-            ("streamrunner", "info", "Stream ended"),
+        assert [(record.module, record.threadName, record.levelname, record.message) for record in caplog.records] == [
+            ("streamrunner", "EventedPlayerPollThread", "info", "Player closed"),
+            ("streamrunner", "Runner thread", "info", "Stream ended"),
         ]
 
     @pytest.mark.trio()
@@ -403,9 +406,9 @@ class TestPlayerOutput:
 
         # wait for runner thread to terminate first before asserting log records
         assert_thread_termination(runnerthread, "Runner thread has terminated")
-        assert [(record.module, record.levelname, record.message) for record in caplog.records] == [
-            ("streamrunner", "info", "Player closed"),
-            ("streamrunner", "info", "Stream ended"),
+        assert [(record.module, record.threadName, record.levelname, record.message) for record in caplog.records] == [
+            ("streamrunner", "EventedPlayerPollThread", "info", "Player closed"),
+            ("streamrunner", "Runner thread", "info", "Stream ended"),
         ]
 
     @pytest.mark.trio()
@@ -445,8 +448,8 @@ class TestPlayerOutput:
 
         # wait for runner thread to terminate first before asserting log records
         assert_thread_termination(runnerthread, "Runner thread has terminated")
-        assert [(record.module, record.levelname, record.message) for record in caplog.records] == [
-            ("streamrunner", "info", "Stream ended"),
+        assert [(record.module, record.threadName, record.levelname, record.message) for record in caplog.records] == [
+            ("streamrunner", "Runner thread", "info", "Stream ended"),
         ]
 
 
@@ -497,8 +500,8 @@ class TestHTTPServer:
 
         # wait for runner thread to terminate first before asserting log records
         assert_thread_termination(runnerthread, "Runner thread has terminated")
-        assert [(record.module, record.levelname, record.message) for record in caplog.records] == [
-            ("streamrunner", "info", "Stream ended"),
+        assert [(record.module, record.threadName, record.levelname, record.message) for record in caplog.records] == [
+            ("streamrunner", "Runner thread", "info", "Stream ended"),
         ]
 
     @pytest.mark.parametrize(
@@ -549,11 +552,10 @@ class TestHTTPServer:
 
         # wait for runner thread to terminate first before asserting log records
         assert_thread_termination(runnerthread, "Runner thread has terminated")
-        expectedlogs = (
-            ([("streamrunner", "info", "HTTP connection closed")] if logs else [])
-            + [("streamrunner", "info", "Stream ended")]
-        )  # fmt: skip
-        assert [(record.module, record.levelname, record.message) for record in caplog.records] == expectedlogs
+        assert [(record.module, record.threadName, record.levelname, record.message) for record in caplog.records] == [
+            *([("streamrunner", "Runner thread", "info", "HTTP connection closed")] if logs else []),
+            ("streamrunner", "Runner thread", "info", "Stream ended"),
+        ]
 
 
 class TestProgress:
@@ -612,6 +614,6 @@ class TestProgress:
 
         # wait for runner thread to terminate first before asserting log records
         assert_thread_termination(runnerthread, "Runner thread has terminated")
-        assert [(record.module, record.levelname, record.message) for record in caplog.records] == [
-            ("streamrunner", "info", "Stream ended"),
+        assert [(record.module, record.threadName, record.levelname, record.message) for record in caplog.records] == [
+            ("streamrunner", "Runner thread", "info", "Stream ended"),
         ]

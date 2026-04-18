@@ -5,15 +5,15 @@ $type live
 $region Denmark
 """
 
-import logging
 import re
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -61,7 +61,7 @@ class DRDK(Plugin):
 
     def _get_streams(self):
         path = self.match.group(1)
-        log.debug("Path={0}".format(path))
+        log.debug(f"Path={path}")
 
         return self._get_live(path)
 

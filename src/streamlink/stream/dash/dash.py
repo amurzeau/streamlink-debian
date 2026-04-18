@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import itertools
-import logging
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from time import time
@@ -11,6 +10,7 @@ from typing import TYPE_CHECKING, Any, cast
 from requests import Response
 
 from streamlink.exceptions import PluginError, StreamError
+from streamlink.logger import getLogger
 from streamlink.stream.dash.manifest import MPD, freeze_timeline
 from streamlink.stream.dash.segment import DASHSegment
 from streamlink.stream.ffmpegmux import FFMPEGMuxer
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from streamlink.stream.dash.manifest import Representation
 
 
-log = logging.getLogger(".".join(__name__.split(".")[:-1]))
+log = getLogger(".".join(__name__.split(".")[:-1]))
 
 
 class DASHStreamWriter(SegmentedStreamWriter[DASHSegment, Response]):
@@ -162,7 +162,7 @@ class DASHStreamWorker(SegmentedStreamWorker[DASHSegment, Response]):
             return
 
         self.reader.buffer.wait_free()
-        log.debug(f"Reloading manifest {self.reader.ident!r}")
+        log.debug("Reloading manifest %r", self.reader.ident)
         res = self.session.http.get(
             cast("str", self.mpd.url),
             exception=StreamError,
@@ -424,11 +424,11 @@ class DASHStream(Stream):
 
         if rep_video:
             video = DASHStreamReader(self, rep_video, timestamp, name="video")
-            log.debug(f"Opening DASH reader for: {rep_video.ident!r} - {rep_video.mimeType}")
+            log.debug("Opening DASH reader for: %r - %s", rep_video.ident, rep_video.mimeType)
 
         if rep_audio:
             audio = DASHStreamReader(self, rep_audio, timestamp, name="audio")
-            log.debug(f"Opening DASH reader for: {rep_audio.ident!r} - {rep_audio.mimeType}")
+            log.debug("Opening DASH reader for: %r - %s", rep_audio.ident, rep_audio.mimeType)
 
         if video and audio and FFMPEGMuxer.is_usable(self.session):
             video.open()

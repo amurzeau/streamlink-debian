@@ -25,7 +25,7 @@ class HLSItemBase:
     path = ""
 
     def url(self, namespace):
-        return "http://mocked/{namespace}/{path}".format(namespace=namespace, path=self.path)
+        return f"http://mocked/{namespace}/{self.path}"
 
 
 class Playlist(HLSItemBase):
@@ -54,23 +54,23 @@ class Tag(HLSItemBase):
 
     @classmethod
     def val_quoted_string(cls, value):
-        return '"{0}"'.format(value)
+        return f'"{value}"'
 
     @classmethod
     def val_hex(cls, value):
-        return "0x{0}".format(hexlify(value).decode("ascii"))
+        return f"0x{hexlify(value).decode('ascii')}"
 
     def build(self, *args, **kwargs):
         attrs = None
         if isinstance(self.attrs, dict):
             attrs = ",".join([
-                "{0}={1}".format(key, value(self, *args, **kwargs) if callable(value) else value)
+                f"{key}={value(self, *args, **kwargs) if callable(value) else value}"
                 for (key, value) in self.attrs.items()
-            ])
+            ])  # fmt: skip
         elif self.attrs is not None:
             attrs = str(self.attrs)
 
-        return "#{name}{attrs}".format(name=self.name, attrs=":{0}".format(attrs) if attrs else "")
+        return f"#{self.name}{f':{attrs}' if attrs else ''}"
 
 
 class Segment(HLSItemBase):
@@ -79,18 +79,14 @@ class Segment(HLSItemBase):
         self.title = str(title or "")
         self.duration = float(duration or 1)
         self.path_relative = bool(path_relative)
-        self.content = "[{0}]".format(self.num).encode("ascii")
+        self.content = f"[{self.num}]".encode("ascii")
 
     @property
     def path(self):
-        return "segment{0}.ts".format(self.num)
+        return f"segment{self.num}.ts"
 
     def build(self, namespace):
-        return "#EXTINF:{duration:.3f},{title}\n{path}".format(
-            duration=self.duration,
-            title=self.title,
-            path=self.path if self.path_relative else self.url(namespace),
-        )
+        return f"#EXTINF:{self.duration:.3f},{self.title}\n{self.path if self.path_relative else self.url(namespace)}"
 
 
 class EventedHLSStreamWorker(_HLSStreamWorker):
@@ -140,7 +136,7 @@ class HLSStreamReadThread(Thread):
     Run the reader on a separate thread, so that each read can be controlled from within the main thread
     """
 
-    def __init__(self, session: Streamlink, stream: HLSStream, *args, **kwargs):
+    def __init__(self, session: Streamlink, stream: HLSStream, *args, testid: str | None = None, **kwargs):
         super().__init__(*args, **kwargs, daemon=True)
 
         self.read_once = Event()
@@ -150,7 +146,7 @@ class HLSStreamReadThread(Thread):
 
         self.session = session
         self.stream = stream
-        self.reader = stream.__reader__(stream)
+        self.reader = stream.__reader__(stream, name=testid)
 
         # ensure that at least one read was attempted before closing the writer thread early
         # otherwise, the writer will close the reader's buffer, making it not block on read and yielding empty results
@@ -159,7 +155,7 @@ class HLSStreamReadThread(Thread):
             return self.writer_close()
 
         self.writer_close = self.reader.writer.close
-        self.reader.writer.close = _await_read_then_close  # type: ignore[assignment]
+        self.reader.writer.close = _await_read_then_close  # type: ignore[assignment, ty:invalid-assignment]
 
     def run(self):
         while not self.reader.buffer.closed:
@@ -257,18 +253,18 @@ class TestMixinStreamHLS(unittest.TestCase):
         assert self.thread.reader.worker.closed, "Stream worker is closed"
 
     def await_reload(self, timeout=TIMEOUT_AWAIT_RELOAD) -> None:
-        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment]
+        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment, ty:invalid-assignment]
         assert worker.is_alive()
         assert worker.handshake_reload.step(timeout)
 
     def await_playlist_wait(self, timeout=TIMEOUT_AWAIT_PLAYLIST_WAIT) -> None:
-        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment]
+        worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment, ty:invalid-assignment]
         assert worker.is_alive()
         assert worker.handshake_wait.step(timeout)
 
     # make write calls on the write-thread and wait until it has finished
     def await_write(self, write_calls=1, timeout=TIMEOUT_AWAIT_WRITE) -> None:
-        writer: EventedHLSStreamWriter = self.thread.reader.writer  # type: ignore[assignment]
+        writer: EventedHLSStreamWriter = self.thread.reader.writer  # type: ignore[assignment, ty:invalid-assignment]
         assert writer.is_alive()
         for _ in range(write_calls):
             assert writer.handshake.step(timeout)
@@ -301,7 +297,13 @@ class TestMixinStreamHLS(unittest.TestCase):
 
         self.session = self.get_session(options, *args, **kwargs)
         self.stream = self.__stream__(self.session, self.url(playlists[0]), **(streamoptions or {}))
-        self.thread = self.__readthread__(self.session, self.stream, name=f"ReadThread-{self.id()}", **(threadoptions or {}))
+        self.thread = self.__readthread__(
+            self.session,
+            self.stream,
+            name=f"ReadThread-{self.id()}",
+            testid=self.id(),
+            **(threadoptions or {}),
+        )
 
         if start:
             self.start()
@@ -322,5 +324,5 @@ class TestMixinStreamHLS(unittest.TestCase):
         thread.handshake.go()
 
         # terminate threads explicitly, just in case
-        thread.reader.writer.close()
+        thread.writer_close()  # see writer.close() override in HLSStreamReadThread
         thread.reader.worker.close()

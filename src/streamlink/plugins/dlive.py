@@ -8,18 +8,18 @@ $metadata category
 $metadata title
 """
 
-import logging
 import re
 from textwrap import dedent
 from urllib.parse import parse_qsl, urlparse
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 from streamlink.utils.times import fromtimestamp, now
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 class DLiveHLSStream(HLSStream):
@@ -72,12 +72,12 @@ class DLive(Plugin):
     }
 
     @classmethod
-    def stream_weight(cls, key):
-        weight = cls.QUALITY_WEIGHTS.get(key)
+    def stream_weight(cls, stream: str) -> tuple[float, str]:
+        weight = cls.QUALITY_WEIGHTS.get(stream)
         if weight:
             return weight, "dlive"
 
-        return super().stream_weight(key)
+        return super().stream_weight(stream)
 
     def _get_streams_video(self, video):
         log.debug(f"Getting video HLS streams for {video}")

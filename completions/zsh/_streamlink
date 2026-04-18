@@ -147,7 +147,15 @@ _shtab_streamlink_cli_options=(
             Load additional plugins from a list of comma-separated directories. (deprecated)
         ]:plugin_dirs:"
   "--interface[
-            Set the network interface.
+            Select the network interface, either by IP address or by interface name.
+
+            The following optional prefixes are supported\:
+
+            - \`if\!\<name\>\` interface name
+            - \`host\!\<name\>\` IP address or hostname
+            - \`ifhost\!\<interface\>\!\<host\>\` interface name and IP address or hostname
+
+            Note\: On Windows, only IP addresses are supported and prefixes are ignored.
         ]:interface:"
   {-4,--ipv4}"[
             Resolve address names to IPv4 only. This option overrides --ipv6.
@@ -804,8 +812,8 @@ _shtab_streamlink_cli_options=(
   "--raiplay-email[The email used to register with raiplay.it.]:raiplay_email:"
   "--raiplay-password[A raiplay.it account password to use with --raiplay-email.]:raiplay_password:"
   "--raiplay-purge-credentials[Purge cached RaiPlay credentials to initiate a new session and reauthenticate.]"
-  "--soop-username[The username used to register with sooplive.co.kr.]:soop_username:"
-  "--soop-password[A sooplive.co.kr account password to use with --soop-username.]:soop_password:"
+  "--soop-username[The username used to register with sooplive.com.]:soop_username:"
+  "--soop-password[A sooplive.com account password to use with --soop-username.]:soop_password:"
   "--soop-purge-credentials[Purge cached Soop credentials to initiate a new session and reauthenticate.]"
   "--soop-stream-password[The password for the stream.]:soop_stream_password:"
   "--steam-email[A Steam account email address to access friends\/private streams]:steam_email:"

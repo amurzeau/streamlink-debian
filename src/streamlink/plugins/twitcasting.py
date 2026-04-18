@@ -5,12 +5,14 @@ $type live
 $metadata id
 """
 
+from __future__ import annotations
+
 import hashlib
-import logging
 import re
 import sys
 
 from streamlink.buffers import RingBuffer
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginargument, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.plugin.api.websocket import WebsocketClient
@@ -19,7 +21,7 @@ from streamlink.stream.stream import Stream, StreamIO
 from streamlink.utils.url import update_qsd
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 class TwitCastingHLSStreamWriter(HLSStreamWriter):
@@ -58,7 +60,7 @@ class TwitCasting(Plugin):
     }
 
     @classmethod
-    def stream_weight(cls, stream):
+    def stream_weight(cls, stream: str) -> tuple[float, str]:
         return (cls._WEIGHTS[stream], "none") if stream in cls._WEIGHTS else super().stream_weight(stream)
 
     def _api_query_streamserver(self):
@@ -141,7 +143,7 @@ class TwitCastingWsClient(WebsocketClient):
 
 
 class TwitCastingReader(StreamIO):
-    def __init__(self, stream: "TwitCastingStream", timeout=None):
+    def __init__(self, stream: TwitCastingStream, timeout=None):
         super().__init__()
         self.session = stream.session
         self.stream = stream

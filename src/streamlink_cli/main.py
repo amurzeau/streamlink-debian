@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any
 import streamlink.logger as logger
 from streamlink import NoPluginError, PluginError, StreamError, Streamlink, __version__ as streamlink_version
 from streamlink.exceptions import FatalPluginError, StreamlinkDeprecationWarning
+from streamlink.logger import getLogger
 from streamlink.utils.named_pipe import NamedPipe
 from streamlink.utils.times import LOCAL as LOCALTIMEZONE
 from streamlink_cli.argparser import (
@@ -58,14 +59,14 @@ if TYPE_CHECKING:
 QUIET_OPTIONS = ("json", "stream_url", "quiet")
 
 
-args: argparse.Namespace = None  # type: ignore[assignment]
-console: ConsoleOutput = None  # type: ignore[assignment]
-output: FileOutput | PlayerOutput = None  # type: ignore[assignment]
-stream_fd: StreamIO = None  # type: ignore[assignment]
-streamlink: Streamlink = None  # type: ignore[assignment]
+args: argparse.Namespace = None  # type: ignore[assignment, ty:invalid-assignment]
+console: ConsoleOutput = None  # type: ignore[assignment, ty:invalid-assignment]
+output: FileOutput | PlayerOutput = None  # type: ignore[assignment, ty:invalid-assignment]
+stream_fd: StreamIO = None  # type: ignore[assignment, ty:invalid-assignment]
+streamlink: Streamlink = None  # type: ignore[assignment, ty:invalid-assignment]
 
 
-log = logging.getLogger("streamlink.cli")
+log = getLogger("streamlink.cli")
 
 
 def get_formatter(plugin: Plugin):

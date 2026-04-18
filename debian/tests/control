@@ -9,7 +9,7 @@ Depends: streamlink,
 
 # Test streamlink against a generated on-disk HLS stream
 Test-Command: sh debian/tests/do-test.sh streamlink && sh debian/tests/check_manpage.sh streamlink
-Depends: streamlink, openssl, bsdmainutils, man-db
+Depends: streamlink, openssl, bsdextrautils, man-db
 Restrictions: allow-stderr
 
 # Test doc package

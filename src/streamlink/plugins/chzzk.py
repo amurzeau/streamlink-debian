@@ -8,10 +8,12 @@ $metadata category
 $metadata title
 """
 
-import logging
+from __future__ import annotations
+
 import re
 from urllib.parse import parse_qsl, urlparse
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.dash import DASHStream
@@ -19,14 +21,14 @@ from streamlink.stream.hls import HLSStream, HLSStreamReader, HLSStreamWorker
 from streamlink.utils.url import update_qsd
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 class ChzzkHLSStreamWorker(HLSStreamWorker):
     """Custom HLS stream worker that adds __bgda__ query parameter to segment URLs"""
 
-    reader: "ChzzkHLSStreamReader"
-    stream: "ChzzkHLSStream"
+    reader: ChzzkHLSStreamReader
+    stream: ChzzkHLSStream
 
     def process_segments(self, playlist):
         """Override process_segments to add __bgda__ parameter to segment URIs"""
@@ -44,8 +46,8 @@ class ChzzkHLSStreamWorker(HLSStreamWorker):
 class ChzzkHLSStreamReader(HLSStreamReader):
     __worker__ = ChzzkHLSStreamWorker
 
-    worker: "ChzzkHLSStreamWorker"
-    stream: "ChzzkHLSStream"
+    worker: ChzzkHLSStreamWorker
+    stream: ChzzkHLSStream
 
 
 class ChzzkHLSStream(HLSStream):

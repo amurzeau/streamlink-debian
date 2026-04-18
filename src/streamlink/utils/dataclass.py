@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import dataclasses
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Callable, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, TypeAlias, TypeVar
 from weakref import WeakKeyDictionary
 
 
 try:
-    from typing import dataclass_transform  # type: ignore[attr-defined]
+    from typing import dataclass_transform  # type: ignore[attr-defined, ty:unresolved-import]
 except ImportError:  # pragma: no cover
     from typing_extensions import dataclass_transform
 
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from _typeshed import DataclassInstance
 
     _Ta = TypeVar("_Ta")
@@ -74,6 +76,6 @@ class FormattedDataclass(type):
 
             return f"{self.__class__.__name__}({', '.join(items)})"
 
-        obj.__str__ = obj.__repr__ = serialize  # type: ignore[assignment]
+        obj.__str__ = obj.__repr__ = serialize  # type: ignore[assignment, ty:invalid-assignment]
 
         return obj

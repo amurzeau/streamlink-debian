@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from threading import RLock
-from typing import TYPE_CHECKING, Iterable, Iterator
+from typing import TYPE_CHECKING
 
 from streamlink.compat import is_win32
 from streamlink_cli.console.stream_wrapper import StreamWrapper
@@ -10,6 +10,7 @@ from streamlink_cli.console.windows import WindowsConsole
 
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator
     from io import TextIOWrapper
 
 
@@ -85,7 +86,7 @@ class ConsoleOutputStream(StreamWrapper):
     # TextIOWrapper violates the Liskov substitution principle by overriding the lines argument from _IOBase.
     # mypy doesn't like this and ty has checks built in which detect inconsistencies like this in parent classes.
     # So just suppress mypy's override error and suppress ty's unused-ignore-comment error.
-    def writelines(self, lines: Iterable[str], /) -> None:  # type: ignore[override]  # ty:ignore[unused-ignore-comment]
+    def writelines(self, lines: Iterable[str], /) -> None:  # type: ignore[override]
         with self._lock:
             if self._stream.closed:
                 raise ValueError("I/O operation on closed file.")

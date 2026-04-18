@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging
+import math
 import re
 import struct
 import warnings
@@ -12,10 +12,11 @@ from requests import Response
 from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError, InvalidSchema  # noqa: A004
 
 from streamlink.exceptions import StreamError, StreamlinkDeprecationWarning
+from streamlink.logger import getLogger
 from streamlink.stream.ffmpegmux import FFMPEGMuxer, MuxedStream
 from streamlink.stream.filtered import FilteredStream
 from streamlink.stream.hls.m3u8 import M3U8Parser, parse_m3u8
-from streamlink.stream.hls.segment import HLSSegment
+from streamlink.stream.hls.segment import HLSSegment, StreamInfo
 from streamlink.stream.http import HTTPStream
 from streamlink.stream.segmented import SegmentedStreamReader, SegmentedStreamWorker, SegmentedStreamWriter
 from streamlink.utils.cache import LRUCache
@@ -38,7 +39,7 @@ if TYPE_CHECKING:
     from streamlink.stream.hls.segment import ByteRange, HLSPlaylist, Key, Map, Media
 
 
-log = logging.getLogger(".".join(__name__.split(".")[:-1]))
+log = getLogger(".".join(__name__.split(".")[:-1]))
 
 
 class ByteRangeOffset:
@@ -196,7 +197,7 @@ class HLSStreamWriter(SegmentedStreamWriter[HLSSegment, Response]):
             log.error(f"Failed to fetch segment {segment.num}: {err}")
 
     def fetch_map(self, segment: HLSSegment) -> Response | None:
-        segment_map: Map = segment.map  # type: ignore[assignment]  # map is not None
+        segment_map: Map = segment.map  # type: ignore[assignment, ty:invalid-assignment]  # map is not None
         try:
             return self._fetch(
                 segment_map.uri,
@@ -580,7 +581,7 @@ class MuxedHLSStream(MuxedStream[TMuxedHLSStream_co]):
         maps.extend(f"{i}:a" for i in range(1, len(tracks)))
 
         # https://github.com/python/mypy/issues/18017
-        TStream: type[TMuxedHLSStream_co] = hlsstream if hlsstream is not None else HLSStream  # type: ignore[assignment]
+        TStream: type[TMuxedHLSStream_co] = hlsstream if hlsstream is not None else HLSStream  # type: ignore[assignment, ty:invalid-assignment]
         substreams = [
             TStream(
                 session,
@@ -675,11 +676,48 @@ class HLSStream(HTTPStream):
         return reader
 
     @classmethod
-    def _fetch_variant_playlist(cls, session, url: str, **request_args) -> Response:
+    def _fetch_playlist(cls, session: Streamlink, url: str, **request_args) -> Response:
         res = session.http.get(url, exception=OSError, **request_args)
         res.encoding = "utf-8"
 
         return res
+
+    @classmethod
+    def _check_streams(
+        cls,
+        session: Streamlink,
+        playlist: HLSPlaylist,
+        request_args: dict,
+        check_streams: bool | Literal["playlists", "segments"],
+        check_streams_segment_status: bool | None,
+    ) -> tuple[bool, bool | None]:
+        # optimization: previous segment-check failed -> assume that the current playlist is also inaccessible
+        if check_streams_segment_status is False:
+            return False, check_streams_segment_status
+
+        # noinspection PyBroadException
+        try:
+            res = cls._fetch_playlist(session, playlist.uri, **request_args)
+            media_playlist = parse_m3u8(res, parser=cls.__parser__)
+            if media_playlist.is_master or not media_playlist.segments:
+                raise ValueError
+        except KeyboardInterrupt:  # pragma: no cover
+            raise
+        except Exception:
+            return False, check_streams_segment_status
+
+        if check_streams != "segments" or check_streams_segment_status is not None:
+            return True, check_streams_segment_status
+
+        # noinspection PyBroadException
+        try:
+            session.http.head(media_playlist.segments[len(media_playlist.segments) // 2].uri, **request_args)
+        except KeyboardInterrupt:  # pragma: no cover
+            raise
+        except Exception:
+            return False, False
+
+        return True, True
 
     @classmethod
     def parse_variant_playlist(
@@ -688,7 +726,7 @@ class HLSStream(HTTPStream):
         url: str,
         name_key: str = "name",
         name_prefix: str = "",
-        check_streams: bool = False,
+        check_streams: bool | Literal["playlists", "segments"] = False,
         force_restart: bool = False,
         name_fmt: str | None = None,
         start_offset: float = 0,
@@ -702,7 +740,10 @@ class HLSStream(HTTPStream):
         :param url: The URL of the variant playlist
         :param name_key: Prefer to use this key as stream name, valid keys are: name, pixels, bitrate
         :param name_prefix: Add this prefix to the stream names
-        :param check_streams: Only allow streams that are accessible
+        :param check_streams: Only return streams which are accessible.
+                              Set to ``True`` or ``"playlists"`` to check whether media playlists are accessible,
+                              or set to ``"segments"`` to check segment accessibility as well.
+                              Only one segment of the first available media playlist is checked to optimize loading times.
         :param force_restart: Start at the first segment even for a live stream
         :param name_fmt: A format string for the name, allowed format keys are: name, pixels, bitrate
         :param start_offset: Number of seconds to be skipped from the beginning
@@ -727,7 +768,7 @@ class HLSStream(HTTPStream):
                 audio_select_codes.append(item)
 
         request_args = session.http.valid_request_args(**kwargs)
-        res = cls._fetch_variant_playlist(session, url, **request_args)
+        res = cls._fetch_playlist(session, url, **request_args)
 
         try:
             multivariant = parse_m3u8(res, parser=cls.__parser__)
@@ -737,6 +778,8 @@ class HLSStream(HTTPStream):
         stream_name: str | None
         stream: Self | MuxedHLSStream[Self]
         streams: dict[str, Self | MuxedHLSStream[Self]] = {}
+
+        check_streams_segment_status: bool | None = None
 
         for playlist in multivariant.playlists:
             if playlist.is_iframe:
@@ -800,11 +843,17 @@ class HLSStream(HTTPStream):
                 fallback_audio = [audio_streams[0]]
 
             if playlist.stream_info.resolution and playlist.stream_info.resolution.height:
-                names["pixels"] = f"{playlist.stream_info.resolution.height}p"
+                if (
+                    isinstance(playlist.stream_info, StreamInfo)
+                    and playlist.stream_info.framerate is not None
+                    and playlist.stream_info.framerate > 30.0
+                ):
+                    names["pixels"] = f"{playlist.stream_info.resolution.height}p{math.ceil(playlist.stream_info.framerate)}"
+                else:
+                    names["pixels"] = f"{playlist.stream_info.resolution.height}p"
 
             if playlist.stream_info.bandwidth:
                 bw = playlist.stream_info.bandwidth
-
                 if bw >= 1000:
                     names["bitrate"] = f"{int(bw / 1000.0)}k"
                 else:
@@ -835,13 +884,15 @@ class HLSStream(HTTPStream):
                 elif num_alts > 0:
                     stream_name = f"{stream_name}{num_alts + 1}"
 
-            if check_streams:
-                # noinspection PyBroadException
-                try:
-                    session.http.get(playlist.uri, **request_args)
-                except KeyboardInterrupt:
-                    raise
-                except Exception:
+            if check_streams in (True, "playlists", "segments"):
+                check_streams_success, check_streams_segment_status = cls._check_streams(
+                    session,
+                    playlist,
+                    request_args,
+                    check_streams,
+                    check_streams_segment_status,
+                )
+                if not check_streams_success:
                     continue
 
             external_audio = preferred_audio or default_audio or fallback_audio

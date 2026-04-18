@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import abc
-import logging
 import os
 import random
 import tempfile
@@ -10,15 +9,16 @@ from contextlib import suppress
 from pathlib import Path
 
 from streamlink.compat import is_win32
+from streamlink.logger import getLogger
 
 
 try:
-    from ctypes import byref, c_ulong, c_void_p, cast, windll  # type: ignore[attr-defined]
+    from ctypes import byref, c_ulong, c_void_p, cast, windll  # type: ignore[attr-defined, ty:unresolved-import]
 except ImportError:
     pass
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 _lock = threading.Lock()
 _id = 0

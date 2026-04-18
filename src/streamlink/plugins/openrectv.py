@@ -4,15 +4,15 @@ $url openrec.tv
 $type live, vod
 """
 
-import logging
 import re
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginargument, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -79,12 +79,18 @@ class OPENRECtv(Plugin):
         self.video_id = None
 
     def login(self, email, password):
-        res = self.session.http.post(self.login_url, data={"mail": email, "password": password})
-        data = self.session.http.json(res, self._login_schema)
+        data = self.session.http.post(
+            self.login_url,
+            data={"mail": email, "password": password},
+            schema=validate.Schema(
+                validate.parse_json(),
+                self._login_schema,
+            ),
+        )
         if data["status"] == 0:
-            log.debug("Logged in as {0}".format(data["data"]["user_name"]))
+            log.debug("Logged in as %s", data["data"]["user_name"])
         else:
-            log.error("Failed to login: {0}".format(data["error_message"]))
+            log.error("Failed to login: %s", data["error_message"])
         return data["status"] == 0
 
     def _get_movie_data(self):
@@ -102,7 +108,7 @@ class OPENRECtv(Plugin):
             log.debug("Got valid detail response")
             return data
         else:
-            log.error("Failed to get video stream: {0}".format(data["message"]))
+            log.error("Failed to get video stream: %s", data["message"])
 
     def _get_subscription_movie_data(self):
         url = self.subscription_info_url.format(id=self.video_id)
@@ -119,7 +125,7 @@ class OPENRECtv(Plugin):
             log.debug("Got valid subscription info")
             return data
         else:
-            log.error("Failed to get video stream: {0}".format(data["message"]))
+            log.error("Failed to get video stream: %s", data["message"])
 
     def get_author(self):
         mdata = self._get_movie_data()
@@ -138,7 +144,7 @@ class OPENRECtv(Plugin):
         mdata = self._get_movie_data()
 
         if mdata:
-            log.debug("Found video: {0} ({1})".format(mdata["title"], mdata["id"]))
+            log.debug("Found video: %s (%s)", mdata["title"], mdata["id"])
             m3u8_file = None
             # subscription
             if mdata["public_type"] == "member":

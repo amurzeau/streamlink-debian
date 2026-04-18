@@ -4,16 +4,16 @@ $url 17app.co
 $type live
 """
 
-import logging
 import re
 
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 from streamlink.stream.http import HTTPStream
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 @pluginmatcher(
@@ -42,7 +42,7 @@ class App17(Plugin):
             ),
             acceptable_status=(200, 403, 404, 420),
         )
-        log.trace(f"{data!r}")
+        log.trace("%r", data)
         if data.get("errorCode"):
             log.error(f"{data['errorCode']} - {data['errorMessage'].replace('Something wrong: ', '')}")
             return

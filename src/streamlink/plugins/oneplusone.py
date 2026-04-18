@@ -4,20 +4,20 @@ $url 1plus1.video
 $type live
 """
 
-import logging
 import re
 from base64 import b64decode
 from time import time
 from urllib.parse import urljoin, urlparse
 
 from streamlink.exceptions import NoStreamsError, PluginError
+from streamlink.logger import getLogger
 from streamlink.plugin import Plugin, pluginmatcher
 from streamlink.plugin.api import validate
 from streamlink.stream.hls import HLSStream
 from streamlink.utils.times import fromlocaltimestamp
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 class OnePlusOneHLS(HLSStream):
@@ -79,7 +79,7 @@ class OnePlusOneAPI:
         if not url_parts:
             raise NoStreamsError
 
-        log.trace(f"url_parts={url_parts}")
+        log.trace("url_parts=%s", url_parts)
         self.session.http.headers.update({"Referer": self.url})
 
         try:
@@ -121,8 +121,7 @@ class OnePlusOne(Plugin):
         url_hls = self.api.get_hls_url()
         if not url_hls:
             return
-        for q, s in HLSStream.parse_variant_playlist(self.session, url_hls).items():
-            yield q, OnePlusOneHLS(self.session, s.url, self_url=self.url)
+        return OnePlusOneHLS.parse_variant_playlist(self.session, url_hls, self_url=self.url)
 
 
 __plugin__ = OnePlusOne
