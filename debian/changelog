@@ -1,3 +1,9 @@
+streamlink (8.3.0-1~bpo13+1) trixie-backports; urgency=medium
+
+  * Rebuild for trixie-backports.
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Sat, 18 Apr 2026 10:15:13 +0200
+
 streamlink (8.3.0-1) unstable; urgency=medium
 
   * New upstream version 8.3.0
