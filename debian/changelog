@@ -1,3 +1,9 @@
+streamlink (8.4.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 8.4.0
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 06 May 2026 21:37:26 +0200
+
 streamlink (8.3.0-1) unstable; urgency=medium
 
   * New upstream version 8.3.0
