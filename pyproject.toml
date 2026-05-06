@@ -107,22 +107,22 @@ test = [
   "freezegun >=1.5.0",
 ]
 lint = [
-  "ruff ==0.15.9",
+  "ruff ==0.15.12",
 ]
 typing = [
   { include-group = "test" },
   { include-group = "docs" },
   { include-group = "script" },
-  "ty ==0.0.28",
-  "mypy[faster-cache] ==1.20.0",
+  "ty ==0.0.33",
+  "mypy[faster-cache] ==1.20.2",
   "typing-extensions >=4.0.0",
   "lxml-stubs",
   "trio-typing",
+  "types-docutils",
   "types-freezegun",
   "types-requests",
   "types-setuptools",
   "types-urllib3",
-  "docutils-stubs",
 ]
 docs = [
   { include-group = "dev" },
@@ -367,6 +367,9 @@ allow-multiline = false
 
 
 # https://docs.astral.sh/ty/reference/configuration/
+[tool.ty.environment]
+python-platform = "all"
+
 [tool.ty.src]
 exclude = [
   "src/streamlink/packages/**",

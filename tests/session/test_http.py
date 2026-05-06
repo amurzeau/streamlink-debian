@@ -18,7 +18,13 @@ from urllib3.connection import HTTPConnection
 from urllib3.response import HTTPResponse
 
 from streamlink.exceptions import PluginError, StreamlinkDeprecationWarning
-from streamlink.session.http import HTTPSession, SSLContextAdapter, TLSNoDHAdapter, TLSSecLevel1Adapter
+from streamlink.session.http import (
+    HTTPSession,
+    SSLContextAdapter,
+    TLSNoDHAdapter,
+    TLSSecLevel1Adapter,
+    urllib3_set_socket_options,
+)
 from streamlink.session.http_useragents import DEFAULT
 
 
@@ -100,6 +106,45 @@ class TestUrllib3Overrides:
         req = requests.Request(method="GET", url=url)
         prep = httpsession.prepare_request(req)
         assert prep.url == expected
+
+    @pytest.mark.parametrize(
+        ("sock", "options", "expected"),
+        [
+            pytest.param(
+                {},
+                [],
+                [],
+                id="no-options",
+            ),
+            pytest.param(
+                {},
+                [(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)],
+                [(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)],
+                id="no-filters",
+            ),
+            # see set_interface() on darwin
+            pytest.param(
+                {},
+                [(socket.IPPROTO_IP, 25, 1), (socket.IPPROTO_IPV6, 125, 1)],
+                [(socket.IPPROTO_IP, 25, 1)],
+                id="inet-filter-ipproto-ipv6",
+            ),
+            # see set_interface() on darwin
+            pytest.param(
+                {"family": socket.AF_INET6},
+                [(socket.IPPROTO_IP, 25, 1), (socket.IPPROTO_IPV6, 125, 1)],
+                [(socket.IPPROTO_IPV6, 125, 1)],
+                id="inet6-filter-ipproto-ip",
+            ),
+        ],
+    )
+    def test_set_socket_options(self, sock: dict, options: list, expected: list):
+        sock.setdefault("family", socket.AF_INET)
+        sock.setdefault("type", socket.SOCK_STREAM)
+        sock.setdefault("proto", socket.IPPROTO_TCP)
+        mock_socket = Mock(**sock)
+        urllib3_set_socket_options(mock_socket, options)
+        assert mock_socket.setsockopt.call_args_list == [call(*item) for item in expected]
 
 
 class TestHTTPSession:
@@ -235,54 +280,98 @@ class TestHTTPSession:
         assert res.encoding == expected
         assert res.text == "Bär"
 
-    # not defined in stdlib on Windows
-    SO_BINDTODEVICE = getattr(socket, "SO_BINDTODEVICE", 0)
+    # Linux
+    SOL_SOCKET = getattr(socket, "SOL_SOCKET", 1)
+    SO_BINDTODEVICE = getattr(socket, "SO_BINDTODEVICE", 25)
+
+    # Darwin
+    IPPROTO_IP = getattr(socket, "IPPROTO_IP", 0)
+    IPPROTO_IPV6 = getattr(socket, "IPPROTO_IPV6", 41)
+    IP_BOUND_IF = getattr(socket, "IP_BOUND_IF", 25)
+    IPV6_BOUND_IF = getattr(socket, "IPV6_BOUND_IF", 125)
 
     @pytest.mark.parametrize(
-        ("interface", "source_address", "socket_options"),
+        ("interface", "source_address", "socket_options", "log"),
         [
             pytest.param(
                 None,
                 None,
                 None,
+                [],
                 id="none",
             ),
             pytest.param(
                 "",
                 None,
                 None,
+                [],
                 id="empty",
             ),
             pytest.param(
                 "0.0.0.0",
                 ("0.0.0.0", 0),
                 None,
+                [],
                 id="ipv4",
             ),
             pytest.param(
                 "::1",
                 ("::1", 0),
                 None,
+                [],
                 id="ipv6",
             ),
             pytest.param(
                 "my-interface",
                 None,
-                [*HTTPConnection.default_socket_options, (socket.SOL_SOCKET, SO_BINDTODEVICE, b"my-interface")],
-                id="unix-iface",
-                marks=pytest.mark.posix_only,
+                [
+                    *HTTPConnection.default_socket_options,
+                    (SOL_SOCKET, SO_BINDTODEVICE, b"my-interface"),
+                ],
+                [],
+                id="linux-iface",
+                marks=pytest.mark.linux_only,
             ),
             pytest.param(
                 "if!my-interface",
                 None,
-                [*HTTPConnection.default_socket_options, (socket.SOL_SOCKET, SO_BINDTODEVICE, b"my-interface")],
-                id="unix-iface-prefix",
-                marks=pytest.mark.posix_only,
+                [
+                    *HTTPConnection.default_socket_options,
+                    (SOL_SOCKET, SO_BINDTODEVICE, b"my-interface"),
+                ],
+                [],
+                id="linux-iface-prefix",
+                marks=pytest.mark.linux_only,
+            ),
+            pytest.param(
+                "my-interface",
+                None,
+                [
+                    *HTTPConnection.default_socket_options,
+                    (IPPROTO_IP, IP_BOUND_IF, 1),
+                    (IPPROTO_IPV6, IPV6_BOUND_IF, 1),
+                ],
+                [],
+                id="darwin-iface",
+                marks=pytest.mark.darwin_only,
+            ),
+            pytest.param(
+                "if!my-interface",
+                None,
+                [
+                    *HTTPConnection.default_socket_options,
+                    (IPPROTO_IP, IP_BOUND_IF, 1),
+                    (IPPROTO_IPV6, IPV6_BOUND_IF, 1),
+                ],
+                [],
+                id="darwin-iface-prefix",
+                marks=pytest.mark.darwin_only,
             ),
             pytest.param(
                 "host!0.0.0.0",
                 ("0.0.0.0", 0),
                 None,
+                [],
                 id="unix-host-prefix",
                 marks=pytest.mark.posix_only,
             ),
@@ -290,27 +379,59 @@ class TestHTTPSession:
                 "host!foo",
                 ("foo", 0),
                 None,
+                [],
                 id="unix-host-prefix-hostname",
                 marks=pytest.mark.posix_only,
             ),
             pytest.param(
                 "ifhost!my-interface!0.0.0.0",
                 ("0.0.0.0", 0),
-                [*HTTPConnection.default_socket_options, (socket.SOL_SOCKET, SO_BINDTODEVICE, b"my-interface")],
-                id="unix-ifhost-prefix",
-                marks=pytest.mark.posix_only,
+                [
+                    *HTTPConnection.default_socket_options,
+                    (SOL_SOCKET, SO_BINDTODEVICE, b"my-interface"),
+                ],
+                [],
+                id="linux-ifhost-prefix",
+                marks=pytest.mark.linux_only,
             ),
             pytest.param(
                 "ifhost!my-interface",
                 None,
-                [*HTTPConnection.default_socket_options, (socket.SOL_SOCKET, SO_BINDTODEVICE, b"ifhost!my-interface")],
-                id="unix-ifhost-prefix-invalid",
-                marks=pytest.mark.posix_only,
+                [
+                    *HTTPConnection.default_socket_options,
+                    (SOL_SOCKET, SO_BINDTODEVICE, b"ifhost!my-interface"),
+                ],
+                [],
+                id="linux-ifhost-prefix-invalid",
+                marks=pytest.mark.linux_only,
+            ),
+            pytest.param(
+                "ifhost!my-interface!0.0.0.0",
+                ("0.0.0.0", 0),
+                [
+                    *HTTPConnection.default_socket_options,
+                    (IPPROTO_IP, IP_BOUND_IF, 1),
+                    (IPPROTO_IPV6, IPV6_BOUND_IF, 1),
+                ],
+                [],
+                id="darwin-ifhost-prefix",
+                marks=pytest.mark.darwin_only,
+            ),
+            pytest.param(
+                "ifhost!my-interface",
+                None,
+                None,
+                [
+                    ("streamlink.session.http", "error", "Invalid network interface name"),
+                ],
+                id="darwin-ifhost-prefix-invalid",
+                marks=pytest.mark.darwin_only,
             ),
             pytest.param(
                 "my-interface",
                 ("my-interface", 0),
                 None,
+                [],
                 id="win32-iface",
                 marks=pytest.mark.windows_only,
             ),
@@ -318,12 +439,30 @@ class TestHTTPSession:
                 "ifhost!my-interface!0.0.0.0",
                 ("ifhost!my-interface!0.0.0.0", 0),
                 None,
+                [],
                 id="win32-prefix",
                 marks=pytest.mark.windows_only,
             ),
         ],
     )
-    def test_set_interface(self, interface: str, source_address: tuple | None, socket_options: list[tuple] | None):
+    def test_set_interface(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+        interface: str,
+        source_address: tuple | None,
+        socket_options: list[tuple] | None,
+        log: list,
+    ):
+        def _mock_socket_if_nametoindex(iface: str):
+            match iface:
+                case "my-interface":
+                    return 1
+                case _:
+                    raise OSError("Invalid network interface name")
+
+        monkeypatch.setattr("socket.if_nametoindex", _mock_socket_if_nametoindex)
+
         session = HTTPSession()
         session.mount("custom://", TLSNoDHAdapter())
 
@@ -341,14 +480,22 @@ class TestHTTPSession:
         for adapter in a_http, a_https, a_custom:
             assert adapter.poolmanager.connection_pool_kw.get("source_address") == source_address
             assert adapter.poolmanager.connection_pool_kw.get("socket_options") == socket_options
+        assert [(record.name, record.levelname, record.message) for record in caplog.records] == log
+
+        a_new = TLSNoDHAdapter()
+        assert a_new.poolmanager.connection_pool_kw.get("source_address") is None
+        assert a_new.poolmanager.connection_pool_kw.get("socket_options") is None
+        session.mount("new://", a_new)
+        assert a_new.poolmanager.connection_pool_kw.get("source_address") == source_address
+        assert a_new.poolmanager.connection_pool_kw.get("socket_options") == socket_options
 
         session.set_interface(interface="")
-        for adapter in a_http, a_https, a_custom:
+        for adapter in a_http, a_https, a_custom, a_new:
             assert adapter.poolmanager.connection_pool_kw.get("source_address") is None
             assert adapter.poolmanager.connection_pool_kw.get("socket_options") is None
 
         session.set_interface(interface=None)
-        for adapter in a_http, a_https, a_custom:
+        for adapter in a_http, a_https, a_custom, a_new:
             assert adapter.poolmanager.connection_pool_kw.get("source_address") is None
             assert adapter.poolmanager.connection_pool_kw.get("socket_options") is None
 
