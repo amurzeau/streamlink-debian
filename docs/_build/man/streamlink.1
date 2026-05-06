@@ -28,7 +28,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "STREAMLINK" "1" "Apr 10, 2026" "8.3.0" "Streamlink"
+.TH "STREAMLINK" "1" "May 06, 2026" "8.4.0" "Streamlink"
 .SH NAME
 streamlink \- extracts streams from various services and pipes them into a video player of choice
 .SH SYNOPSIS
@@ -849,6 +849,13 @@ The maximum time to wait for an unfiltered stream to continue outputting data.
 This applies to all different kinds of stream types, such as DASH, HLS, HTTP, etc.
 .sp
 Default is: \fB60.0\fP\&.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-\-stream\-passthrough\-encrypted
+Pass through data from encrypted streams without decryption or encryption checks.
+.sp
+This applies to DASH and HLS streams, and will likely result in garbage output.
 .UNINDENT
 .INDENT 0.0
 .TP

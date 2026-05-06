@@ -516,6 +516,11 @@ _shtab_streamlink_cli_options=(
 
             Default is 60.0.
         ]:stream_timeout:"
+  "--stream-passthrough-encrypted[
+            Pass through data from encrypted streams without decryption or encryption checks.
+
+            This applies to DASH and HLS streams, and will likely result in garbage output.
+        ]"
   "--mux-subtitles[
             Automatically mux available subtitles into the output stream.
 

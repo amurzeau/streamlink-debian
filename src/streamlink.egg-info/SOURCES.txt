@@ -548,6 +548,7 @@ tests/resources/dash/test_3.mpd
 tests/resources/dash/test_8.mpd
 tests/resources/dash/test_9.mpd
 tests/resources/dash/test_baseurl_nested.mpd
+tests/resources/dash/test_baseurl_scheme_mismatch.mpd
 tests/resources/dash/test_baseurl_urljoin.mpd
 tests/resources/dash/test_dynamic_no_publish_time_timeline_with_start.mpd
 tests/resources/dash/test_dynamic_no_publish_time_timeline_without_start.mpd
@@ -562,6 +563,7 @@ tests/resources/dash/test_dynamic_timeline_continued_p2.mpd
 tests/resources/dash/test_no_segment_list_or_template.mpd
 tests/resources/dash/test_period_selection.mpd
 tests/resources/dash/test_segment_list.mpd
+tests/resources/dash/test_segment_scheme_mismatch.mpd
 tests/resources/dash/test_segments_byterange.mpd
 tests/resources/dash/test_segments_dynamic_number.mpd
 tests/resources/dash/test_static_no_publish_time.mpd
