@@ -5,40 +5,35 @@ Subject: Use fork-awesome a Debian doesn't have font-awesome 5
 Forwarded: not-needed
 Author: Alexis Murzeau <amubtdx@gmail.com>
 ---
- docs/_static/styles/custom.css | 4 ++--
- docs/conf.py                   | 5 ++---
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ docs/_static/styles/custom.css | 2 +-
+ docs/conf.py                   | 4 +---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/docs/_static/styles/custom.css b/docs/_static/styles/custom.css
-index 6c3fa52..bac0698 100644
+index 19adbde..e946ff6 100644
 --- a/docs/_static/styles/custom.css
 +++ b/docs/_static/styles/custom.css
-@@ -97,10 +97,10 @@ a[href^="https://"]:not(.muted-link):not(.sd-badge):not([href^="https://streamli
- 
- a[href^="http://"]:not(.no-external-link-icon):not(.muted-link):not(.sd-badge)::after,
- a[href^="https://"]:not(.no-external-link-icon):not(.muted-link):not(.sd-badge):not([href^="https://streamlink.github.io/"])::after {
--  content: "\f35d";
-+  content: "\f08e";
+@@ -100,7 +100,7 @@ a[href^="https://"]:not(.no-external-link-icon):not(.muted-link):not(.sd-badge):
+   content: "\f35d";
    display: inline-block;
    padding-left: .4em;
 -  font: 900 .6em "Font Awesome 6 Free";
-+  font: 900 .6em "forkawesome";
++  font: 900 .6em "Font Awesome 7 Free";
    vertical-align: middle;
    text-decoration: none;
  }
 diff --git a/docs/conf.py b/docs/conf.py
-index a9bc3da..1046642 100644
+index 628c2c9..49482da 100644
 --- a/docs/conf.py
 +++ b/docs/conf.py
-@@ -112,9 +112,8 @@ html_logo = "../icon.svg"
+@@ -112,9 +112,7 @@ html_logo = "../icon.svg"
  
  html_css_files = [
      "styles/custom.css",
 -    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/fontawesome.min.css",
 -    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/solid.min.css",
 -    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/brands.min.css",
-+    "styles/fork-awesome.css",
-+    "styles/v5-compat.css",
++    "fontawesome-free/css/all.css",
  ]
  
  html_static_path = ["_static"]

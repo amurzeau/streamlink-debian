@@ -68,7 +68,7 @@ Architecture: all
 Multi-Arch: foreign
 Depends: ${sphinxdoc:Depends},
   ${misc:Depends},
-  fonts-fork-awesome
+  node-fortawesome-fontawesome-free
 Suggests: python3-streamlink
 Description: CLI for extracting video streams from various websites (documentation)
  Streamlink is a CLI utility which pipes video streams from various services
