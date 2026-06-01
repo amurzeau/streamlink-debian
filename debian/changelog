@@ -1,3 +1,16 @@
+streamlink (8.4.0-2) unstable; urgency=medium
+
+  * Use node-fortawesome-fontawesome-free instead of fonts-fork-awesome
+    (Closes: #1134671)
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Thu, 14 May 2026 15:10:20 +0200
+
+streamlink (8.4.0-1) unstable; urgency=medium
+
+  * New upstream version 8.4.0 (Closes: CVE-2026-44353)
+
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 06 May 2026 21:42:33 +0200
+
 streamlink (8.3.0-1~bpo13+1) trixie-backports; urgency=medium
 
   * Rebuild for trixie-backports.
