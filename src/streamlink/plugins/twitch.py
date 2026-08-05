@@ -676,8 +676,10 @@ class TwitchClientIntegrity:
         headers: Mapping[str, str],
         device_id: str,
     ) -> tuple[str, int] | None:
-        from streamlink.compat import BaseExceptionGroup  # noqa: PLC0415
-        from streamlink.webbrowser.cdp import CDPClient, CDPClientSession, devtools  # noqa: PLC0415, TC001
+        # ruff: disable[import-outside-top-level]
+        from streamlink.compat import BaseExceptionGroup
+        from streamlink.webbrowser.cdp import CDPClient, CDPClientSession, devtools
+        # ruff: enable[import-outside-top-level]
 
         url = f"https://www.twitch.tv/{channel}"
         js_get_integrity_token = cls.JS_INTEGRITY_TOKEN \
@@ -693,7 +695,6 @@ class TwitchClientIntegrity:
                 cm.body = "<!doctype html>"
 
         async def acquire_client_integrity_token(client: CDPClient):
-            client_session: CDPClientSession
             async with client.session() as client_session:
                 client_session.add_request_handler(on_main, url_pattern=url, on_request=True)
                 async with client_session.navigate(url) as frame_id:
@@ -888,7 +889,7 @@ class Twitch(Plugin):
             setattr(self, method, method_factory(getattr(parent, method)))
 
     def _get_metadata(self):
-        try:
+        with suppress(PluginError, TypeError):
             if self.video_id:
                 data = self.api.metadata_video(self.video_id)
             elif self.clip_id:
@@ -898,8 +899,6 @@ class Twitch(Plugin):
             else:  # pragma: no cover
                 return
             self.id, self.author, self.category, self.title = data
-        except (PluginError, TypeError):
-            pass
 
     def _client_integrity_token(self, channel: str) -> tuple[str, str] | None:
         if self.options.get("purge-client-integrity"):
@@ -993,9 +992,8 @@ class Twitch(Plugin):
                 **extra_params,
             )
         except OSError as err:
-            # TODO: fix the "err" attribute set by HTTPSession.request()
-            orig = getattr(err, "err", None)
-            if isinstance(orig, HTTPError) and orig.response.status_code >= 400:
+            orig = err.__context__
+            if isinstance(orig, HTTPError) and orig.response is not None and orig.response.status_code >= 400:
                 # The playlist's error response may include JSON data with an error message
                 with suppress(PluginError):
                     error = validate.Schema(

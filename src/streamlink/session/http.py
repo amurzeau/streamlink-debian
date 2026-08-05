@@ -7,14 +7,14 @@ import warnings
 from http.cookiejar import MozillaCookieJar
 from ipaddress import ip_address
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast, runtime_checkable
 
 import urllib3
 import urllib3.util.connection as urllib3_util_connection
 from requests import Request, Session
 from requests.adapters import HTTPAdapter
 from urllib3.connection import HTTPConnection
-from urllib3.util import create_urllib3_context  # type: ignore[attr-defined, ty:unresolved-import]
+from urllib3.util import create_urllib3_context
 
 import streamlink.session.http_useragents as useragents
 from streamlink.compat import is_darwin, is_linux, is_win32
@@ -26,11 +26,16 @@ from streamlink.utils.parse import parse_json, parse_xml
 
 if TYPE_CHECKING:
     import re
-    from collections.abc import Iterator
+    from collections.abc import Iterable, Iterator, Mapping, Sequence
     from typing import TypeAlias
 
+    # noinspection PyProtectedMember
+    import requests._types as _rq_t
     from requests import PreparedRequest
     from requests.adapters import BaseAdapter
+    from requests.cookies import CookieJar, RequestsCookieJar
+
+    from streamlink.validate import Schema
 
     _TYPE_SOCKET_OPTION: TypeAlias = tuple[int, int, int | bytes]
 
@@ -38,7 +43,24 @@ if TYPE_CHECKING:
 log = getLogger(__name__)
 
 
-_original_allowed_gai_family = urllib3_util_connection.allowed_gai_family  # type: ignore[attr-defined, ty:unresolved-attribute]
+_KT_co = TypeVar("_KT_co", covariant=True)
+_VT_co = TypeVar("_VT_co", covariant=True)
+
+
+@runtime_checkable
+class SupportsItems(Protocol[_KT_co, _VT_co]):
+    def items(self) -> Iterable[tuple[_KT_co, _VT_co]]: ...  # pragma: no cover
+
+
+_original_allowed_gai_family = urllib3_util_connection.allowed_gai_family
+
+
+def allowed_gai_family_inet() -> socket.AddressFamily:
+    return socket.AF_INET
+
+
+def allowed_gai_family_inet6() -> socket.AddressFamily:
+    return socket.AF_INET6
 
 
 # Never convert percent-encoded characters to uppercase in urllib3>=2.0.0.
@@ -53,7 +75,7 @@ _original_allowed_gai_family = urllib3_util_connection.allowed_gai_family  # typ
 # > encodings.
 class Urllib3UtilUrlPercentReOverride:
     # noinspection PyProtectedMember
-    _re_percent_encoding: re.Pattern = urllib3.util.url._PERCENT_RE  # type: ignore[attr-defined, ty:unresolved-attribute]
+    _re_percent_encoding: re.Pattern = urllib3.util.url._PERCENT_RE  # type: ignore[attr-defined]
 
     # noinspection PyUnusedLocal
     # https://github.com/urllib3/urllib3/blob/2.0.0/src/urllib3/util/url.py#L241-L243
@@ -62,7 +84,7 @@ class Urllib3UtilUrlPercentReOverride:
         return string, len(cls._re_percent_encoding.findall(string))
 
 
-urllib3.util.url._PERCENT_RE = Urllib3UtilUrlPercentReOverride  # type: ignore[attr-defined, ty:unresolved-attribute]
+urllib3.util.url._PERCENT_RE = Urllib3UtilUrlPercentReOverride  # type: ignore[assignment, ty:invalid-assignment]
 
 
 # Monkey-patch urllib3's set_socket_options,
@@ -87,7 +109,7 @@ def _filter_socket_options(sock: socket.socket, options: list[_TYPE_SOCKET_OPTIO
                 yield option
 
 
-urllib3.util.connection._set_socket_options = urllib3_set_socket_options  # type: ignore[attr-defined, ty:unresolved-attribute]
+urllib3.util.connection._set_socket_options = urllib3_set_socket_options  # type: ignore[ty:invalid-assignment]
 
 
 # requests.Request.__init__ keywords, except for "hooks"
@@ -95,8 +117,6 @@ _VALID_REQUEST_ARGS = {"method", "url", "headers", "files", "data", "params", "a
 
 
 class HTTPSession(Session):
-    params: dict
-
     def __init__(self):
         super().__init__()
 
@@ -193,10 +213,15 @@ class HTTPSession(Session):
             adapter.poolmanager.connection_pool_kw.pop("socket_options", None)
             adapter.poolmanager.connection_pool_kw.update(connection_pool_kw)
 
-    def mount(self, prefix: str | bytes, adapter: BaseAdapter) -> None:
+    def mount(self, prefix: str, adapter: BaseAdapter) -> None:
         # Update poolmanager connection kwargs for HTTPAdapters mounted after interface options were set
-        if isinstance(adapter, HTTPAdapter) and "http://" in self.adapters and "https://" in self.adapters:
-            default_adapter_connection_pool_kw = cast("HTTPAdapter", self.adapters["https://"]).poolmanager.connection_pool_kw
+        if (
+            isinstance(adapter, HTTPAdapter)
+            and "http://" in self.adapters
+            and (https_adapter := self.adapters.get("https://"))
+            and isinstance(https_adapter, HTTPAdapter)
+        ):
+            default_adapter_connection_pool_kw = https_adapter.poolmanager.connection_pool_kw
             adapter.poolmanager.connection_pool_kw.update({
                 "source_address": default_adapter_connection_pool_kw.get("source_address"),
                 "socket_options": default_adapter_connection_pool_kw.get("socket_options"),
@@ -206,11 +231,11 @@ class HTTPSession(Session):
     # noinspection PyMethodMayBeStatic
     def set_address_family(self, family: socket.AddressFamily | None = None) -> None:
         if family is None:
-            urllib3_util_connection.allowed_gai_family = _original_allowed_gai_family  # type: ignore[attr-defined, ty:unresolved-attribute]
+            urllib3_util_connection.allowed_gai_family = _original_allowed_gai_family
         elif family == socket.AF_INET:
-            urllib3_util_connection.allowed_gai_family = lambda: socket.AF_INET  # type: ignore[attr-defined, ty:unresolved-attribute]
+            urllib3_util_connection.allowed_gai_family = allowed_gai_family_inet  # type: ignore[ty:invalid-assignment]
         elif family == socket.AF_INET6:  # pragma: no branch
-            urllib3_util_connection.allowed_gai_family = lambda: socket.AF_INET6  # type: ignore[attr-defined, ty:unresolved-attribute]
+            urllib3_util_connection.allowed_gai_family = allowed_gai_family_inet6  # type: ignore[ty:invalid-assignment]
 
     def disable_dh(self, disable: bool = True) -> None:
         adapter: HTTPAdapter
@@ -250,37 +275,68 @@ class HTTPSession(Session):
         # prepare request with the session context, which might add params, headers, cookies, etc.
         return self.prepare_request(request)
 
-    def request(self, method, url, *args, **kwargs):
-        acceptable_status = kwargs.pop("acceptable_status", [])
-        encoding = kwargs.pop("encoding", None)
-        exception = kwargs.pop("exception", PluginError)
-        headers = kwargs.pop("headers", {})
-        params = kwargs.pop("params", {})
-        proxies = kwargs.pop("proxies", self.proxies)
-        raise_for_status = kwargs.pop("raise_for_status", True)
-        schema = kwargs.pop("schema", None)
-        session = kwargs.pop("session", None)
-        timeout = kwargs.pop("timeout", self.timeout)
-        total_retries = kwargs.pop("retries", 0)
-        retry_backoff = kwargs.pop("retry_backoff", 0.3)
-        retry_max_backoff = kwargs.pop("retry_max_backoff", 10.0)
-        retries = 0
+    def request(
+        self,
+        method: str,
+        url: _rq_t.UriType,
+        params: _rq_t.ParamsType = None,
+        data: _rq_t.DataType = None,
+        headers: Mapping[str, str | bytes] | None = None,
+        cookies: RequestsCookieJar | CookieJar | dict[str, str] | None = None,
+        files: _rq_t.FilesType = None,
+        auth: _rq_t.AuthType = None,
+        timeout: _rq_t.TimeoutType = None,
+        allow_redirects: bool = True,
+        proxies: dict[str, str] | None = None,
+        hooks: _rq_t.HooksInputType | None = None,
+        stream: bool | None = None,
+        verify: _rq_t.VerifyType | None = None,
+        cert: _rq_t.CertType = None,
+        json: _rq_t.JsonType = None,
+        # streamlink options
+        acceptable_status: Sequence[int] | None = None,
+        encoding: str | None = None,
+        exception: type[Exception] | None = None,
+        raise_for_status: bool = True,
+        retries: int = 0,
+        retry_backoff: float = 0.3,
+        retry_max_backoff: float = 10.0,
+        schema: Schema | None = None,
+        session: HTTPSession | None = None,
+    ) -> Any:
+        acceptable_status = acceptable_status or []
+        exception = exception or PluginError
+        timeout = timeout or self.timeout
 
         if session:
-            headers.update(session.headers)
-            params.update(session.params)
+            headers = dict(headers or {}) | dict(session.headers or {})
+            if isinstance(params, SupportsItems):
+                params = dict(params.items()) | session.params  # type: ignore[ty:unsupported-operator]
+            elif params and not isinstance(params, (str, bytes)):
+                params = dict(params) | session.params  # type: ignore[ty:unsupported-operator]
+            else:
+                params = session.params
 
+        attempt = 0
         while True:
             try:
                 res = super().request(
                     method,
                     url,
-                    *args,
-                    headers=headers,
                     params=params,
+                    data=data,
+                    headers=headers,
+                    cookies=cookies,
+                    files=files,
+                    auth=auth,
                     timeout=timeout,
+                    allow_redirects=allow_redirects,
                     proxies=proxies,
-                    **kwargs,
+                    hooks=hooks,
+                    stream=stream,
+                    verify=verify,
+                    cert=cert,
+                    json=json,
                 )
                 if raise_for_status and res.status_code not in acceptable_status:
                     res.raise_for_status()
@@ -288,13 +344,13 @@ class HTTPSession(Session):
             except KeyboardInterrupt:
                 raise
             except Exception as rerr:
-                if retries >= total_retries:
+                if attempt >= retries:
                     err = exception(f"Unable to open URL: {url} ({rerr})")
-                    err.err = rerr
-                    raise err from None  # TODO: fix this
-                retries += 1
+                    err.err = rerr  # ty:ignore[unresolved-attribute]
+                    raise err from rerr
+                attempt += 1
                 # back off retrying, but only to a maximum sleep time
-                delay = min(retry_max_backoff, retry_backoff * (2 ** (retries - 1)))
+                delay = min(retry_max_backoff, retry_backoff * (2 ** (attempt - 1)))
                 time.sleep(delay)
 
         if encoding is not None:

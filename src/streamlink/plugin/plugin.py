@@ -29,6 +29,8 @@ if TYPE_CHECKING:
     from streamlink.session.session import Streamlink
     from streamlink.user_input import UserInputRequester
 
+    _TPlugin = TypeVar("_TPlugin", bound="Plugin")
+
 
 #: See the :func:`~.pluginargument` decorator
 _PLUGINARGUMENT_TYPE_REGISTRY: Mapping[str, Callable[[Any], Any]] = {
@@ -657,7 +659,7 @@ def pluginmatcher(
     pattern: re.Pattern,
     priority: int = NORMAL_PRIORITY,
     name: str | None = None,
-) -> Callable[[type[Plugin]], type[Plugin]]:
+) -> Callable[[type[_TPlugin]], type[_TPlugin]]:
     """
     Decorator for plugin URL matchers.
 
@@ -695,7 +697,7 @@ def pluginmatcher(
 
     matcher = Matcher(pattern, priority, name)
 
-    def decorator(cls: type[Plugin]) -> type[Plugin]:
+    def decorator(cls: type[_TPlugin]) -> type[_TPlugin]:
         if not issubclass(cls, Plugin):
             raise TypeError(f"{cls.__name__} is not a Plugin")
         cls.matchers.add(matcher)
@@ -715,19 +717,19 @@ def pluginargument(
     nargs: int | Literal["?", "*", "+"] | None = None,
     const: Any = None,
     default: Any = None,
-    type: str | Callable[[Any], _TChoices | Any] | None = None,  # noqa: A002
+    type: str | Callable[[Any], _TChoices | Any] | None = None,  # ruff: ignore[builtin-argument-shadowing]
     type_args: list | tuple | None = None,
     type_kwargs: Mapping[str, Any] | None = None,
     choices: _TChoices | None = None,
     required: bool = False,
-    help: str | None = None,  # noqa: A002
+    help: str | None = None,  # ruff: ignore[builtin-argument-shadowing]
     metavar: str | list[str] | tuple[str, ...] | None = None,
     dest: str | None = None,
     requires: str | list[str] | tuple[str, ...] | None = None,
     prompt: str | None = None,
     sensitive: bool = False,
     argument_name: str | None = None,
-) -> Callable[[type[Plugin]], type[Plugin]]:
+) -> Callable[[type[_TPlugin]], type[_TPlugin]]:
     """
     Decorator for plugin arguments. Takes the same arguments as :class:`Argument <streamlink.options.Argument>`.
 
@@ -791,9 +793,10 @@ def pluginargument(
         argument_name=argument_name,
     )
 
-    def decorator(cls: builtins.type[Plugin]) -> builtins.type[Plugin]:
+    # noinspection PyUnresolvedReferences
+    def decorator(cls: builtins.type[_TPlugin]) -> builtins.type[_TPlugin]:
         if not issubclass(cls, Plugin):
-            raise TypeError(f"{repr(cls)} is not a Plugin")  # noqa: RUF010  # builtins.repr gets monkeypatched in tests
+            raise TypeError(f"{repr(cls)} is not a Plugin")  # ruff: ignore[explicit-f-string-type-conversion]  # builtins.repr gets monkeypatched in tests
         cls.arguments.add(arg)
 
         return cls

@@ -57,7 +57,7 @@ dependencies = [
   "certifi",
   "exceptiongroup ; python_version<'3.11'",
   "isodate",
-  "lxml >=4.6.4,<7",
+  "lxml >=4.6.4,<8",
   "pycountry",
   "pycryptodome >=3.4.3,<4",
   "PySocks >=1.5.6,!=1.5.7",
@@ -107,39 +107,40 @@ test = [
   "freezegun >=1.5.0",
 ]
 lint = [
-  "ruff ==0.15.12",
+  "ruff ==0.16.0",
 ]
 typing = [
   { include-group = "test" },
   { include-group = "docs" },
   { include-group = "script" },
-  "ty ==0.0.33",
-  "mypy[faster-cache] ==1.20.2",
+  # tools and typing dependencies
+  "ty ==0.0.64",
+  "mypy[faster-cache] ==2.3.0",
   "typing-extensions >=4.0.0",
+  # dependency overrides
+  "requests >=2.34.0,!=2.34.1",
+  # dependency type-stubs
   "lxml-stubs",
-  "trio-typing",
   "types-docutils",
   "types-freezegun",
-  "types-requests",
   "types-setuptools",
-  "types-urllib3",
 ]
 docs = [
   { include-group = "dev" },
-  "sphinx >=7.0.0,<10",
+  "sphinx >=7.0.0,<9",  # ignore Sphinx v9: sphinx-doc/sphinx#14332
   "furo ==2025.12.19",
   "myst-parser >=4.0.0,<6",
   "sphinx-design >=0.6.0,<0.8",
 ]
 build = [
   { include-group = "dev" },
-  "shtab",
   "build",
 ]
 script = [
   "inflection",
   "jinja2",
   "requests",
+  "shtab >=1.9.0",
 ]
 all = [
   { include-group = "test" },
@@ -312,34 +313,29 @@ select = [
   "RUF",
 ]
 ignore = [
-  "A003",  # builtin-attribute-shadowing
-  "A005",  # stdlib-module-shadowing
-  "ASYNC109",  # async-function-with-timeout
-  "B901",  # return-in-generator
-  "C408",  # unnecessary-collection-call
-  "ISC003",  # explicit-string-concatenation
-  "PLC1901",  # compare-to-empty-string
-  "PLC2801",  # unnecessary-dunder-call
-  "PLW2901",  # redefined-loop-name
-  "RUF021",  # parenthesize-chained-operators
-  "RUF022",  # unsorted-dunder-all
-  "RUF027",  # missing-f-string-syntax
+  "async-function-with-timeout",
+  "builtin-attribute-shadowing",
+  "compare-to-empty-string",
+  "explicit-string-concatenation",
+  "missing-f-string-syntax",
+  "parenthesize-chained-operators",
+  "redefined-loop-name",
+  "return-in-generator",
+  "stdlib-module-shadowing",
+  "unnecessary-collection-call",
+  "unnecessary-dunder-call",
+  "unsorted-dunder-all",
 ]
 future-annotations = true
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
-"build_backend/__init__.py" = ["RUF067"]
+"__init__.py" = ["unused-import"]
 "docs/**" = ["INP"]
 "script/**" = ["INP"]
-"src/streamlink/__init__.py" = ["I", "RUF067"]
-"src/streamlink/_version.py" = ["I"]
-"src/streamlink/plugins/*" = ["RUF012"]
-"src/streamlink/session/http_useragents.py" = ["E501"]
-"src/streamlink/webbrowser/cdp/devtools/*" = ["E303", "E501", "F401", "TC"]
-"src/streamlink_cli/main.py" = ["PLW0603"]
-"tests/**" = ["RUF012"]
-"tests/**/__init__.py" = ["RUF067"]
+"src/streamlink/plugins/*" = ["mutable-class-default"]
+"src/streamlink/webbrowser/cdp/devtools/*" = ["TC", "line-too-long", "too-many-blank-lines", "unused-import"]
+"tests/**" = ["mutable-class-default"]
+"tests/**/__init__.py" = ["non-empty-init-module"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["streamlink", "streamlink_cli"]
