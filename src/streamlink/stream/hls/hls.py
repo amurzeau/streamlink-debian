@@ -9,7 +9,12 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 from urllib.parse import urlparse
 
 from requests import Response
-from requests.exceptions import ChunkedEncodingError, ConnectionError, ContentDecodingError, InvalidSchema  # noqa: A004
+from requests.exceptions import (
+    ChunkedEncodingError,
+    ConnectionError,  # ruff: ignore[builtin-import-shadowing]
+    ContentDecodingError,
+    InvalidSchema,
+)
 
 from streamlink.exceptions import StreamError, StreamlinkDeprecationWarning
 from streamlink.logger import getLogger
@@ -23,6 +28,7 @@ from streamlink.utils.cache import LRUCache
 from streamlink.utils.crypto import AES, unpad
 from streamlink.utils.formatter import Formatter
 from streamlink.utils.l10n import Language
+from streamlink.utils.num import to_float
 from streamlink.utils.times import now
 
 
@@ -130,10 +136,8 @@ class HLSStreamWriter(SegmentedStreamWriter[HLSSegment, Response]):
                     **self.reader.request_params,
                 )
             except StreamError as err:
-                # FIXME: fix HTTPSession.request()
-                original_error = getattr(err, "err", None)
-                if isinstance(original_error, InvalidSchema):
-                    raise StreamError(f"Unable to find connection adapter for key URI: {key_uri}") from original_error
+                if isinstance(err.__context__, InvalidSchema):
+                    raise StreamError(f"Unable to find connection adapter for key URI: {key_uri}") from err.__context__
                 raise  # pragma: no cover
 
             res.encoding = "binary/octet-stream"
@@ -320,19 +324,26 @@ class HLSStreamWorker(SegmentedStreamWorker[HLSSegment, Response]):
         self.playlist_segments: list[HLSSegment] = []
 
         self.live_edge = self.session.options.get("hls-live-edge")
-        self.duration_offset_start = int(self.stream.start_offset + (self.session.options.get("hls-start-offset") or 0))
+        self.duration_offset_start = float(self.stream.start_offset + (self.session.options.get("hls-start-offset") or 0.0))
         self.hls_live_restart = self.stream.force_restart or self.session.options.get("hls-live-restart")
 
         self.duration_limit = self.stream.duration or self.duration_limit
 
         self.reload_attempts = self.session.options.get("hls-playlist-reload-attempts")
         self.reload_time = self.session.options.get("hls-playlist-reload-time")
-        if str(self.reload_time).isnumeric() and float(self.reload_time) >= self._RELOAD_TIME_MIN:
-            self.reload_time = float(self.reload_time)
-        elif self.reload_time not in ("segment", "live-edge"):
+        if self.reload_time in (None, "default"):
             self.reload_time = 0.0
+        elif self.reload_time not in ("segment", "live-edge"):
+            try:
+                self.reload_time = to_float(self.reload_time, raise_on_error=True)
+                if self.reload_time < self._RELOAD_TIME_MIN:
+                    self.reload_time = 0.0
+            except Exception as err:
+                log.error(f"Failed parsing hls-playlist-reload-time value: {err}")
+                self.reload_time = 0.0
         self._reload_time: float = self._RELOAD_TIME_DEFAULT
         self._reload_last: datetime = now()
+
         self.passthrough_encrypted = self.session.options.get("stream-passthrough-encrypted")
 
     def _warn_playlist_sequence(self):
@@ -435,18 +446,18 @@ class HLSStreamWorker(SegmentedStreamWorker[HLSSegment, Response]):
     @staticmethod
     def duration_to_sequence(duration: float, segments: list[HLSSegment]) -> int:
         d = 0.0
-        default = -1
+        sequence = -1
 
-        segments_order = segments if duration >= 0 else reversed(segments)
+        segments_order = segments if duration >= 0.0 else reversed(segments)
+        duration = abs(duration)
 
         for segment in segments_order:
-            if d >= abs(duration):
-                return segment.num
+            sequence = segment.num
+            if d >= duration:
+                break
             d += segment.duration
-            default = segment.num
 
-        # could not skip far enough, so return the default
-        return default
+        return sequence
 
     @property
     def _queue_deadline_wait(self) -> float:
@@ -482,12 +493,12 @@ class HLSStreamWorker(SegmentedStreamWorker[HLSSegment, Response]):
             return
 
         if self.playlist_end is None:
-            if self.duration_offset_start > 0:
+            if self.duration_offset_start > 0.0:
                 log.debug(f"Time offsets negative for live streams, skipping back {self.duration_offset_start} seconds")
             # live playlist, force offset durations back to None
             self.duration_offset_start = -self.duration_offset_start
 
-        if self.duration_offset_start != 0:
+        if self.duration_offset_start:
             self.sequence = self.duration_to_sequence(self.duration_offset_start, self.playlist_segments)
 
         if self.playlist_segments:
@@ -628,7 +639,7 @@ class HLSStream(HTTPStream):
         multivariant: M3U8 | None = None,
         name: str | None = None,
         force_restart: bool = False,
-        start_offset: float = 0,
+        start_offset: float = 0.0,
         duration: float | None = None,
         **kwargs,
     ):
@@ -650,7 +661,7 @@ class HLSStream(HTTPStream):
         self.start_offset = start_offset
         self.duration = duration
 
-    def __json__(self):  # noqa: PLW3201
+    def __json__(self):  # ruff: ignore[bad-dunder-method-name]
         json = super().__json__()
 
         try:
@@ -734,7 +745,7 @@ class HLSStream(HTTPStream):
         check_streams: bool | Literal["playlists", "segments"] = False,
         force_restart: bool = False,
         name_fmt: str | None = None,
-        start_offset: float = 0,
+        start_offset: float = 0.0,
         duration: float | None = None,
         **kwargs,
     ) -> dict[str, Self | MuxedHLSStream[Self]]:

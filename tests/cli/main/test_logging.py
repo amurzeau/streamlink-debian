@@ -182,7 +182,7 @@ class TestStdoutStderr:
         exception = Exception()
         monkeypatch.setattr("streamlink_cli.main.setup", Mock(side_effect=exception))
 
-        with pytest.raises(Exception) as excinfo:  # noqa: PT011
+        with pytest.raises(Exception) as excinfo:  # ruff: ignore[pytest-raises-too-broad]
             streamlink_cli.main.main()
         assert excinfo.value is exception, "Does not catch non-StreamlinkCLIError exceptions"
 
@@ -665,7 +665,7 @@ class TestPrint:
     @pytest.fixture()
     def _color(self, request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch):
         can_colorize = getattr(request, "param", False)
-        monkeypatch.setattr("_colorize.can_colorize", lambda: can_colorize)
+        monkeypatch.setattr("_colorize.can_colorize", Mock(return_value=can_colorize))
 
     @pytest.fixture()
     def stdout(self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture, session: Streamlink):

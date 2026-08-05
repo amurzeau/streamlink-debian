@@ -9,7 +9,7 @@ import streamlink.validate as validate
 from streamlink.exceptions import PluginError
 
 # noinspection PyProtectedMember
-from streamlink.validate._exception import ValidationError  # noqa: PLC2701
+from streamlink.validate._exception import ValidationError  # ruff: ignore[import-private-name]
 
 
 def assert_validationerror(exception: Exception, expected: str, regex: bool = False):
@@ -22,12 +22,16 @@ def assert_validationerror(exception: Exception, expected: str, regex: bool = Fa
 
 
 class TestSchema:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def schema(self):
+    @classmethod
+    def schema(cls):
         return validate.Schema(str, "foo")
 
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def schema_nested(self, schema: validate.Schema):
+    @classmethod
+    def schema_nested(cls, schema: validate.Schema):
         return validate.Schema(schema)
 
     def test_validate_success(self, schema: validate.Schema):
@@ -380,8 +384,10 @@ class TestPattern:
 
 
 class TestAllSchema:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def schema(self):
+    @classmethod
+    def schema(cls):
         return validate.all(
             str,
             lambda string: string.startswith("f"),
@@ -429,8 +435,10 @@ class TestAllSchema:
 
 
 class TestAnySchema:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def schema(self):
+    @classmethod
+    def schema(cls):
         return validate.any(
             "foo",
             str,
@@ -1237,8 +1245,10 @@ class TestUrlValidator:
 
 
 class TestGetAttrValidator:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def subject(self):
+    @classmethod
+    def subject(cls):
         class Subject:
             foo = 1
 
@@ -1360,8 +1370,10 @@ class TestXmlFindValidator:
 
 
 class TestXmlFindallValidator:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def element(self):
+    @classmethod
+    def element(cls):
         element = Element("root")
         for child in Element("foo"), Element("bar"), Element("baz"):
             element.append(child)
@@ -1422,8 +1434,10 @@ class TestXmlFindtextValidator:
 
 
 class TestXmlXpathValidator:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def element(self):
+    @classmethod
+    def element(cls):
         element = Element("root")
         for child in Element("foo"), Element("bar"), Element("baz"):
             child.text = child.tag.upper()
@@ -1491,8 +1505,10 @@ class TestXmlXpathValidator:
 
 
 class TestXmlXpathStringValidator:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def element(self):
+    @classmethod
+    def element(cls):
         element = Element("root")
         for child in Element("foo"), Element("bar"), Element("baz"):
             child.text = child.tag.upper()
@@ -1764,5 +1780,5 @@ class TestValidationError:
             """
                 ValidationError:
                   foo <Some really long error message that exceeds the maximum...> bar <'Some really long error message that exceeds the maximu...> baz
-            """,  # noqa: E501
+            """,  # ruff: ignore[line-too-long]
         )
