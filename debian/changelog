@@ -1,8 +1,11 @@
-streamlink (8.5.0-1) UNRELEASED; urgency=medium
+streamlink (8.5.0-1) unstable; urgency=medium
 
   * New upstream version 8.5.0
+  * d/patches: update patches
+  * d/streamlink.install: add fish completions script
+  * Update debhelper compat to 14
 
- -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 05 Aug 2026 21:14:14 +0200
+ -- Alexis Murzeau <amubtdx@gmail.com>  Wed, 05 Aug 2026 21:49:04 +0200
 
 streamlink (8.4.0-2) unstable; urgency=medium
 
