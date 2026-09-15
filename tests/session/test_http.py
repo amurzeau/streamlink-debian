@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import socket
 import ssl
+from contextlib import closing, nullcontext
 from operator import itemgetter
 from socket import AF_INET, AF_INET6
 from ssl import SSLContext
@@ -18,6 +19,7 @@ from urllib3.connection import HTTPConnection
 from urllib3.response import HTTPResponse
 
 from streamlink.exceptions import PluginError, StreamlinkDeprecationWarning
+from streamlink.packages.requests_file import FileAdapter
 from streamlink.session.http import (
     HTTPSession,
     SSLContextAdapter,
@@ -33,6 +35,8 @@ if TYPE_CHECKING:
 
     from streamlink import Streamlink
 
+
+does_not_raise = nullcontext()
 
 _original_allowed_gai_family = urllib3.util.connection.allowed_gai_family
 
@@ -616,6 +620,108 @@ class TestHTTPSession:
         assert isinstance(session.adapters["https://"], HTTPAdapter)
         assert not isinstance(session.adapters["https://"], TLSNoDHAdapter)
         assert session.adapters["https://"].poolmanager.connection_pool_kw.get("source_address") == ("0.0.0.0", 0)
+
+
+class TestRedirect:
+    @pytest.mark.parametrize(
+        ("source", "target", "location", "raises"),
+        [
+            pytest.param("http://foo", "http://foo/bar", "bar", does_not_raise, id="no-scheme"),
+            pytest.param("http://foo", "http://foo/bar", "/bar", does_not_raise, id="no-scheme2"),
+            pytest.param("http://foo", "http://bar", "//bar", does_not_raise, id="same-scheme"),
+            pytest.param("http://foo", "http://bar", None, does_not_raise, id="http-to-http"),
+            pytest.param("https://foo", "https://bar", None, does_not_raise, id="https-to-https"),
+            pytest.param("file://foo", "file://bar", None, does_not_raise, id="file-to-file"),
+            pytest.param("http://foo", "https://bar", None, does_not_raise, id="http-to-https"),
+            pytest.param("custom://foo", "https://bar", None, does_not_raise, id="custom-to-https"),
+            pytest.param(
+                "https://foo/abc",
+                "http://bar/xyz",
+                None,
+                pytest.raises(PluginError, match=r"Disallowed redirection to http:// URL from https://foo/abc"),
+                id="https-to-http",
+            ),
+            pytest.param(
+                "custom://foo/abc",
+                "http://bar/xyz",
+                None,
+                pytest.raises(PluginError, match=r"Disallowed redirection to http:// URL from custom://foo/abc"),
+                id="custom-to-http",
+            ),
+            pytest.param(
+                "http://foo/abc",
+                "file://bar/xyz",
+                None,
+                pytest.raises(PluginError, match=r"Disallowed redirection to file:// URL from http://foo/abc"),
+                id="http-to-file",
+            ),
+            pytest.param(
+                "https://foo/abc",
+                "file://bar/xyz",
+                None,
+                pytest.raises(PluginError, match=r"Disallowed redirection to file:// URL from https://foo/abc"),
+                id="https-to-file",
+            ),
+        ],
+    )
+    def test_scheme(
+        self,
+        requests_mock: rm.Mocker,
+        source: str,
+        target: str,
+        location: str | None,
+        raises: nullcontext,
+    ):
+        session = HTTPSession()
+        requests_mock.get(target, text="data")
+        requests_mock.get(source, status_code=301, headers={"Location": location or target})
+        with raises:
+            assert session.get(source).text == "data"
+
+    @pytest.mark.parametrize("target", ["http", "file"])
+    def test_two_hops(self, requests_mock: rm.Mocker, target: str):
+        session = HTTPSession()
+        mocked = requests_mock.get(f"{target}://three/", text="data")
+        requests_mock.get("https://two/", status_code=301, headers={"Location": f"{target}://three/"})
+        requests_mock.get("https://one/", status_code=301, headers={"Location": "https://two/"})
+        with pytest.raises(PluginError, match=rf"Disallowed redirection to {target}:// URL from https://two/"):
+            session.get("https://one/")
+        assert mocked.call_count == 0
+
+    @pytest.mark.parametrize(
+        ("target", "has_next"),
+        [
+            pytest.param("http", False, id="http"),
+            pytest.param("https", True, id="https"),
+            pytest.param("file", False, id="file"),
+        ],
+    )
+    def test_allow_redirects_false(self, requests_mock: rm.Mocker, target: str, has_next: bool):
+        session = HTTPSession()
+        mocked = requests_mock.get(f"{target}://two/", text="data")
+        requests_mock.get("https://one/", status_code=301, text="redirect", headers={"Location": f"{target}://two/"})
+        resp = session.get("https://one/", allow_redirects=False)
+        assert resp.text == "redirect"
+        assert (resp._next is not None) is has_next
+        assert mocked.call_count == 0
+
+    def test_no_redirect_file(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+        # fix macOS py310 failure: "UnicodeError: encoding with 'idna' codec failed (UnicodeError: label empty or too long)"
+        # caused by proxy bypass lookups, which is irrelevant for this
+        monkeypatch.setattr("requests.utils.should_bypass_proxies", Mock(return_value=True))
+
+        monkeypatch.chdir(tmp_path)
+        one = tmp_path / "one"
+        two = tmp_path / "two"
+        one.symlink_to(two)
+        two.write_bytes(b"data")
+
+        session = HTTPSession()
+        assert isinstance(session.adapters.get("file://"), FileAdapter)
+        for file in ("one", "two"):
+            with closing(session.get(f"file://./{file}")) as resp:
+                assert not resp.is_redirect
+                assert resp.content == b"data"
 
 
 class TestHTTPCookies:

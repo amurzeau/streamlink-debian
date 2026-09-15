@@ -39,6 +39,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Topic :: Internet :: WWW/HTTP",
   "Topic :: Multimedia :: Sound/Audio",
   "Topic :: Multimedia :: Video",
@@ -57,7 +58,7 @@ dependencies = [
   "certifi",
   "exceptiongroup ; python_version<'3.11'",
   "isodate",
-  "lxml >=4.6.4,<8",
+  "lxml >=5.0.0,<8",
   "pycountry",
   "pycryptodome >=3.4.3,<4",
   "PySocks >=1.5.6,!=1.5.7",
@@ -107,15 +108,15 @@ test = [
   "freezegun >=1.5.0",
 ]
 lint = [
-  "ruff ==0.16.0",
+  "ruff ==0.16.4",
 ]
 typing = [
   { include-group = "test" },
   { include-group = "docs" },
   { include-group = "script" },
   # tools and typing dependencies
-  "ty ==0.0.64",
-  "mypy[faster-cache] ==2.3.0",
+  "ty ==0.0.74",
+  "mypy[faster-cache] ==2.3.1",
   "typing-extensions >=4.0.0",
   # dependency overrides
   "requests >=2.34.0,!=2.34.1",
@@ -318,6 +319,7 @@ ignore = [
   "compare-to-empty-string",
   "explicit-string-concatenation",
   "missing-f-string-syntax",
+  "missing-trailing-comma",  # already covered by ruff's formatter
   "parenthesize-chained-operators",
   "redefined-loop-name",
   "return-in-generator",
