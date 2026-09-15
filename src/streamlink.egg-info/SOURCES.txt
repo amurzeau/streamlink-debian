@@ -113,7 +113,6 @@ src/streamlink/plugins/adultswim.py
 src/streamlink/plugins/albavision.py
 src/streamlink/plugins/aloula.py
 src/streamlink/plugins/app17.py
-src/streamlink/plugins/ard_live.py
 src/streamlink/plugins/ard_mediathek.py
 src/streamlink/plugins/artetv.py
 src/streamlink/plugins/atpchallenger.py
@@ -188,7 +187,6 @@ src/streamlink/plugins/openrectv.py
 src/streamlink/plugins/pandalive.py
 src/streamlink/plugins/piaulizaportal.py
 src/streamlink/plugins/picarto.py
-src/streamlink/plugins/piczel.py
 src/streamlink/plugins/pixiv.py
 src/streamlink/plugins/pluto.py
 src/streamlink/plugins/pluzz.py
@@ -275,6 +273,7 @@ src/streamlink/utils/crypto.py
 src/streamlink/utils/data.py
 src/streamlink/utils/dataclass.py
 src/streamlink/utils/formatter.py
+src/streamlink/utils/id3v2.py
 src/streamlink/utils/l10n.py
 src/streamlink/utils/module.py
 src/streamlink/utils/named_pipe.py
@@ -377,6 +376,7 @@ tests/cli/main/test_create_output.py
 tests/cli/main/test_formatter.py
 tests/cli/main/test_handle_url.py
 tests/cli/main/test_logging.py
+tests/cli/main/test_main.py
 tests/cli/main/test_output_stream.py
 tests/cli/main/test_output_stream_passthrough.py
 tests/cli/main/test_player_argv.py
@@ -408,7 +408,6 @@ tests/plugins/test_adultswim.py
 tests/plugins/test_albavision.py
 tests/plugins/test_aloula.py
 tests/plugins/test_app17.py
-tests/plugins/test_ard_live.py
 tests/plugins/test_ard_mediathek.py
 tests/plugins/test_artetv.py
 tests/plugins/test_atpchallenger.py
@@ -483,7 +482,6 @@ tests/plugins/test_openrectv.py
 tests/plugins/test_pandalive.py
 tests/plugins/test_piaulizaportal.py
 tests/plugins/test_picarto.py
-tests/plugins/test_piczel.py
 tests/plugins/test_pixiv.py
 tests/plugins/test_pluto.py
 tests/plugins/test_pluzz.py
@@ -573,11 +571,11 @@ tests/resources/dash/test_segments_byterange.mpd
 tests/resources/dash/test_segments_dynamic_number.mpd
 tests/resources/dash/test_static_no_publish_time.mpd
 tests/resources/dash/test_suggested_presentation_delay.mpd
+tests/resources/dash/test_timeline_gap.mpd
 tests/resources/dash/test_timeline_ids.mpd
 tests/resources/hls/test_1.m3u8
 tests/resources/hls/test_date.m3u8
 tests/resources/hls/test_master.m3u8
-tests/resources/hls/test_master_twitch_vod.m3u8
 tests/resources/hls/test_media_language.m3u8
 tests/resources/hls/test_media_language_special.m3u8
 tests/resources/hls/test_multivariant_bandwidth.m3u8
@@ -614,6 +612,7 @@ tests/utils/test_crypto.py
 tests/utils/test_data.py
 tests/utils/test_dataclass.py
 tests/utils/test_formatter.py
+tests/utils/test_id3v2.py
 tests/utils/test_init.py
 tests/utils/test_l10n.py
 tests/utils/test_module.py

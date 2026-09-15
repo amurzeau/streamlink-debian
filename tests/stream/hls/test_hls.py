@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 import logging
 import os
+import struct
 import unittest
 from contextlib import nullcontext
 from datetime import datetime, timedelta, timezone
@@ -28,13 +29,21 @@ from streamlink.stream.hls import (
     M3U8Parser,
     MuxedHLSStream,
 )
-from streamlink.stream.hls.hls import log
+from streamlink.stream.hls.hls import (
+    ID3v2FrameHLSPackedAudioTimestamp,
+    ID3v2HLSPackedAudio,
+    get_packed_audio_timestamp,
+    log,
+)
 from streamlink.utils.crypto import AES, pad
+from streamlink.utils.id3v2 import ID3v2FrameError
 from tests.mixins.stream_hls import EventedHLSStreamWorker, EventedHLSStreamWriter, Playlist, Segment, Tag, TestMixinStreamHLS
 from tests.resources import text
 
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from streamlink.session import Streamlink
 
 
@@ -152,7 +161,20 @@ class TestHLSVariantPlaylist:
 
     @pytest.mark.parametrize("streams", [{"multivariant": "hls/test_multivariant_twitch_usher_v2.m3u8"}], indirect=True)
     def test_framerate(self, streams: dict[str, HLSStream]):
-        assert sorted(streams.keys()) == ["1080p60", "160k", "160p", "360p", "480p", "720p60"]
+        assert sorted(streams.keys()) == [
+            "1080p60",
+            "1280p60",
+            "1440p60",
+            "160p",
+            "1920p60",
+            "210k",
+            "284p",
+            "360p",
+            "480p",
+            "640p",
+            "720p60",
+            "852p",
+        ]
 
     @pytest.mark.parametrize(
         ("streams", "expected"),
@@ -1887,3 +1909,150 @@ class TestM3U8ParserLogging:
         parser.parse(data)
 
         assert bool(caplog.records) is has_logs
+
+
+class TestID3v2HLSPackedAudio:
+    @pytest.fixture()
+    def iterator(self):
+        return iter([
+            # first valid tag
+            b"ID3\x04\x00\x00\x00\x00\x00\x3f",
+            b"PRIV\x00\x00\x00\x35\x00\x00",
+            b"com.apple.streaming.transportStreamTimestamp",
+            b"\x00\x00\x00\x00\x00\x00\x00\x00\x01",
+            # second valid tag
+            b"ID3\x04\x00\x00\x00\x00\x00\x3f",
+            b"PRIV\x00\x00\x00\x35\x00\x00",
+            b"com.apple.streaming.transportStreamTimestamp",
+            b"\x00\x00\x00\x00\x00\x00\x00\x00\x02",
+            # packed audio data
+            b"remaining",
+        ])
+
+    def test_get_packed_audio_timestamp(self, iterator: Iterator[bytes]):
+        tags, iterator = ID3v2HLSPackedAudio.parse_tags(iterator)
+        assert get_packed_audio_timestamp(tags) == pytest.approx(1 / 90000)
+
+    def test_frames(self, iterator: Iterator[bytes]):
+        (first, second), iterator = ID3v2HLSPackedAudio.parse_tags(iterator)
+        assert b"".join(iterator) == b"remaining"
+
+        assert first.frames[0].ident == b"PRIV"
+        assert first.frames[0].result == ID3v2FrameHLSPackedAudioTimestamp(1)
+        assert first.frames[0].error is None
+
+        assert second.frames[0].ident == b"PRIV"
+        assert second.frames[0].result == ID3v2FrameHLSPackedAudioTimestamp(2)
+        assert second.frames[0].error is None
+
+    def test_invalid_timestamp(self):
+        iterator = iter([
+            b"ID3\x04\x00\x00\x00\x00\x00\x3f",
+            b"PRIV\x00\x00\x00\x35\x00\x00",
+            b"com.apple.streaming.transportStreamTimestamp",
+            b"\x00\x12\x34\x56\x78\x9a\xbc\xde\xf0",
+            b"remaining",
+        ])
+        (tag,), iterator = ID3v2HLSPackedAudio.parse_tags(iterator)
+        assert b"".join(iterator) == b"remaining"
+
+        assert tag.frames[0].result is None
+        assert isinstance(tag.frames[0].error, ID3v2FrameError)
+        assert str(tag.frames[0].error) == "Invalid timestamp value for PRIV frame com.apple.streaming.transportStreamTimestamp"
+
+    def test_invalid_size(self):
+        iterator = iter([
+            b"ID3\x04\x00\x00\x00\x00\x00\x40",
+            b"PRIV\x00\x00\x00\x36\x00\x00",
+            b"com.apple.streaming.transportStreamTimestamp",
+            b"\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00",
+            b"remaining",
+        ])
+        (tag,), iterator = ID3v2HLSPackedAudio.parse_tags(iterator)
+        assert b"".join(iterator) == b"remaining"
+
+        assert tag.frames[0].result is None
+        assert isinstance(tag.frames[0].error, ID3v2FrameError)
+        assert str(tag.frames[0].error) == "Invalid data size for PRIV frame com.apple.streaming.transportStreamTimestamp"
+
+
+@patch("streamlink.stream.hls.hls.HLSStreamWorker.wait", Mock(return_value=True))
+class TestHlsPackedAudio(TestMixinStreamHLS, unittest.TestCase):
+    class PASegment(Segment):
+        def __init__(self, *args, ts: int = 0, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.audio_content = self.content
+            self.content = b"".join([
+                b"ID3\x04\x00\x00\x00\x00\x00\x3f",
+                b"PRIV\x00\x00\x00\x35\x00\x00",
+                b"com.apple.streaming.transportStreamTimestamp",
+                b"\x00",
+                struct.pack(">Q", ts),
+                self.content,
+            ])
+
+    def test_packed_audio_stream(self):
+        mocked_get_packed_audio_timestamp = Mock(side_effect=get_packed_audio_timestamp)
+        with patch("streamlink.stream.hls.hls.get_packed_audio_timestamp", mocked_get_packed_audio_timestamp):
+            segments = self.subject([
+                Playlist(0, [self.PASegment(0, ts=1234), self.PASegment(1, ts=1235)], end=True),
+            ])
+            data = self.await_read(read_all=True)
+
+        assert data == self.content(segments, prop="audio_content")
+        assert self.stream.packed_audio_timestamp == pytest.approx(1234 / 90000)
+        assert self.stream.parse_packed_audio
+        assert mocked_get_packed_audio_timestamp.call_count == 1
+
+    def test_no_packed_audio_stream(self):
+        mocked_get_packed_audio_timestamp = Mock(side_effect=get_packed_audio_timestamp)
+        with patch("streamlink.stream.hls.hls.get_packed_audio_timestamp", mocked_get_packed_audio_timestamp):
+            segments = self.subject([
+                Playlist(0, [Segment(0), Segment(1)], end=True),
+            ])
+            data = self.await_read(read_all=True)
+
+        assert data == self.content(segments, prop="content")
+        assert self.stream.packed_audio_timestamp is None
+        assert not self.stream.parse_packed_audio
+        assert mocked_get_packed_audio_timestamp.call_count == 0
+
+
+@pytest.mark.parametrize(
+    ("timestamps", "itsoffset", "copyts"),
+    [
+        pytest.param([], [], None, id="no-packed-audio"),
+        pytest.param([None, 123], [None, 123, None], True, id="first"),
+        pytest.param([None, None, 123], [None, None, 123], True, id="second"),
+        pytest.param([None, 123, 456], [None, 123, 456], True, id="both"),
+    ],
+)
+def test_muxedhlsstream_packed_audio_ffmpeg_options(
+    monkeypatch: pytest.MonkeyPatch,
+    session: Streamlink,
+    timestamps: list,
+    itsoffset: list,
+    copyts: bool,
+):
+    def reader_open(reader: HLSStreamReader):
+        reader.buffer.event_used.set()
+
+    fake_streamio = object()
+    fake_ffmpegmuxer = Mock(open=Mock(return_value=fake_streamio))
+    monkeypatch.setattr("streamlink.stream.segmented.segmented.SegmentedStreamReader.open", reader_open)
+    monkeypatch.setattr("streamlink.stream.ffmpegmux.FFMPEGMuxer", Mock(return_value=fake_ffmpegmuxer))
+
+    packed_audio_stream = MuxedHLSStream[HLSStream](
+        session,
+        "mocked://video/1",
+        ["mocked://audio/1", "mocked://audio/2"],
+    )
+    assert len(packed_audio_stream.substreams) == 3
+
+    for idx, timestamp in enumerate(timestamps):
+        packed_audio_stream.substreams[idx].packed_audio_timestamp = timestamp
+
+    assert packed_audio_stream.open() is fake_streamio
+    assert packed_audio_stream.options.get("format") == "mpegts"
+    assert packed_audio_stream.options.get("itsoffset", []) == itsoffset
+    assert packed_audio_stream.options.get("copyts") is copyts

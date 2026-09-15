@@ -1,6 +1,6 @@
 certifi
 isodate
-lxml<8,>=4.6.4
+lxml<8,>=5.0.0
 pycountry
 pycryptodome<4,>=3.4.3
 PySocks!=1.5.7,>=1.5.6
