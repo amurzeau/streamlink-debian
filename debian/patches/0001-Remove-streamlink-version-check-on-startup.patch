@@ -25,7 +25,7 @@ index 70c082f..a6e18f5 100644
              Default is "no".
          """,
 diff --git a/src/streamlink_cli/main.py b/src/streamlink_cli/main.py
-index 6709d28..a8bbbd3 100644
+index 00d3597..8de3fb6 100644
 --- a/src/streamlink_cli/main.py
 +++ b/src/streamlink_cli/main.py
 @@ -1001,7 +1001,7 @@ def setup(parser: ArgumentParser) -> None:

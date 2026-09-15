@@ -10,7 +10,7 @@ Author: Alexis Murzeau <amubtdx@gmail.com>
  2 files changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/docs/_static/styles/custom.css b/docs/_static/styles/custom.css
-index 19adbde..e946ff6 100644
+index 152a587..69366ab 100644
 --- a/docs/_static/styles/custom.css
 +++ b/docs/_static/styles/custom.css
 @@ -100,7 +100,7 @@ a[href^="https://"]:not(.no-external-link-icon):not(.muted-link):not(.sd-badge):
