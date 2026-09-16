@@ -91,5 +91,5 @@ if __name__ == "__main__":
         cmdclass=get_cmdclasses(cmdclass),
         entry_points=entry_points,
         data_files=data_files,
-        version="8.6.0",
+        version="8.6.1",
     )
