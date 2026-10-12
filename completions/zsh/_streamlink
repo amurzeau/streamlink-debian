@@ -36,7 +36,7 @@ _shtab_streamlink_options=(
   "--no-plugin-cache[Disable I\/O of the plugin key-value store.]"
   "--no-plugin-sideloading[Disable automatic sideloading of third-party plugins from the default location.]"
   "*--plugin-dir[Load additional plugins from this directory.]:DIRECTORY:"
-  "*--plugin-dirs[Load additional plugins from a list of comma-separated directories. (deprecated)]:DIRECTORY:"
+  "*--plugin-dirs[Load additional plugins from a list of comma-separated directories.]:DIRECTORY:"
   "--interface[Select the network interface, either by IP address or by interface name.]:INTERFACE:"
   {-4,--ipv4}"[Resolve address names to IPv4 only. This option overrides --ipv6.]"
   {-6,--ipv6}"[Resolve address names to IPv6 only. This option overrides --ipv4.]"

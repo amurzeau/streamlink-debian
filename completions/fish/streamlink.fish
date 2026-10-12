@@ -76,7 +76,7 @@ complete -c streamlink -n _shtab_streamlink_using -l can-handle-url-no-redirect 
 complete -c streamlink -n _shtab_streamlink_using -l no-plugin-cache -d 'Disable I/O of the plugin key-value store.'
 complete -c streamlink -n _shtab_streamlink_using -l no-plugin-sideloading -d 'Disable automatic sideloading of third-party plugins from the default location.'
 complete -c streamlink -n _shtab_streamlink_using -l plugin-dir -x -d 'Load additional plugins from this directory.'
-complete -c streamlink -n _shtab_streamlink_using -l plugin-dirs -x -d 'Load additional plugins from a list of comma-separated directories. (deprecated)'
+complete -c streamlink -n _shtab_streamlink_using -l plugin-dirs -x -d 'Load additional plugins from a list of comma-separated directories.'
 complete -c streamlink -n _shtab_streamlink_using -l interface -x -d 'Select the network interface, either by IP address or by interface name.'
 complete -c streamlink -n _shtab_streamlink_using -s 4 -l ipv4 -d 'Resolve address names to IPv4 only. This option overrides --ipv6.'
 complete -c streamlink -n _shtab_streamlink_using -s 6 -l ipv6 -d 'Resolve address names to IPv6 only. This option overrides --ipv4.'

@@ -147,6 +147,7 @@ src/streamlink/plugins/douyu.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
 src/streamlink/plugins/euronews.py
+src/streamlink/plugins/facebook.py
 src/streamlink/plugins/filmon.py
 src/streamlink/plugins/goltelevision.py
 src/streamlink/plugins/goodgame.py
@@ -237,6 +238,7 @@ src/streamlink/plugins/vkvideolive.py
 src/streamlink/plugins/welt.py
 src/streamlink/plugins/wwenetwork.py
 src/streamlink/plugins/youtube.py
+src/streamlink/plugins/youtvua.py
 src/streamlink/plugins/yupptv.py
 src/streamlink/plugins/zattoo.py
 src/streamlink/plugins/zdf_mediathek.py
@@ -381,6 +383,7 @@ tests/cli/main/test_output_stream.py
 tests/cli/main/test_output_stream_passthrough.py
 tests/cli/main/test_player_argv.py
 tests/cli/main/test_resolve_stream_name.py
+tests/cli/main/test_setup_args.py
 tests/cli/main/test_setup_config_args.py
 tests/cli/main/test_setup_plugins.py
 tests/cli/main/test_setup_session_options.py
@@ -442,6 +445,7 @@ tests/plugins/test_douyu.py
 tests/plugins/test_drdk.py
 tests/plugins/test_earthcam.py
 tests/plugins/test_euronews.py
+tests/plugins/test_facebook.py
 tests/plugins/test_filmon.py
 tests/plugins/test_goltelevision.py
 tests/plugins/test_goodgame.py
@@ -532,6 +536,7 @@ tests/plugins/test_vkvideolive.py
 tests/plugins/test_welt.py
 tests/plugins/test_wwenetwork.py
 tests/plugins/test_youtube.py
+tests/plugins/test_youtvua.py
 tests/plugins/test_yupptv.py
 tests/plugins/test_zattoo.py
 tests/plugins/test_zdf_mediathek.py
@@ -563,6 +568,7 @@ tests/resources/dash/test_dynamic_segment_list_p4.mpd
 tests/resources/dash/test_dynamic_segment_list_p5.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p1.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p2.mpd
+tests/resources/dash/test_location_scheme_mismatch.mpd
 tests/resources/dash/test_no_segment_list_or_template.mpd
 tests/resources/dash/test_period_selection.mpd
 tests/resources/dash/test_segment_list.mpd
@@ -588,6 +594,7 @@ tests/session/test_options.py
 tests/session/test_plugins.py
 tests/session/test_session.py
 tests/stream/__init__.py
+tests/stream/conftest.py
 tests/stream/test_ffmpegmux.py
 tests/stream/test_file.py
 tests/stream/test_init.py

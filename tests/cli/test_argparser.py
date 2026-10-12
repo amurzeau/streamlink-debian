@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import gettext
 
 # noinspection PyProtectedMember
@@ -20,7 +21,6 @@ from streamlink_cli.argparser import (
 )
 from streamlink_cli.console import ConsoleUserInputRequester
 from streamlink_cli.exceptions import StreamlinkCLIError
-from streamlink_cli.main import main as streamlink_cli_main
 
 
 if TYPE_CHECKING:
@@ -207,6 +207,16 @@ class TestMatchArgumentOverride:
         assert str(exc_info.value) == errormsg
 
 
+@pytest.mark.python(3, 13)
+def test_warnings(recwarn: pytest.WarningsRecorder):
+    parser = ArgumentParser()
+    parser.add_argument("--foo", action="store_true", deprecated=True)
+    parser.parse_args(["--foo"])
+    assert [(record.category, record.filename, str(record.message)) for record in recwarn.list] == [
+        (SDW, argparse.__file__, "option '--foo' is deprecated"),
+    ]
+
+
 @pytest.mark.parametrize(
     ("argv", "option", "expected"),
     [
@@ -339,34 +349,6 @@ def test_setup_session_options_deprecations(
         setup_session_options(session, args)
     assert [str(dep.message) for dep in warnings.list] == deprecations
     assert session.options.get_explicit(option) == value
-
-
-def test_cli_main_setup_session_options(monkeypatch: pytest.MonkeyPatch, parser: ArgumentParser, session: Streamlink):
-    class StopTest(Exception):
-        pass
-
-    mock_setup_session_options = Mock()
-
-    monkeypatch.setattr("sys.argv", [])
-    monkeypatch.setattr("streamlink_cli.main.CONFIG_FILES", [])
-    monkeypatch.setattr("streamlink_cli.main.logger", Mock())
-    monkeypatch.setattr("streamlink_cli.main.streamlink", session)
-    monkeypatch.setattr("streamlink_cli.main.build_parser", Mock(return_value=parser))
-    monkeypatch.setattr("streamlink_cli.main.setup_streamlink", Mock())
-    monkeypatch.setattr("streamlink_cli.main.setup_plugins", Mock())
-    monkeypatch.setattr("streamlink_cli.main.log_root_warning", Mock())
-    monkeypatch.setattr("streamlink_cli.main.log_current_versions", Mock())
-    monkeypatch.setattr("streamlink_cli.main.log_current_arguments", Mock())
-    monkeypatch.setattr("streamlink_cli.main.setup_session_options", mock_setup_session_options)
-    monkeypatch.setattr("streamlink_cli.main.setup_signals", Mock(side_effect=StopTest))
-
-    with pytest.raises(StopTest):
-        streamlink_cli_main()
-
-    assert mock_setup_session_options.call_count == 1, \
-        "Has called setup_session_options() before setting up signals and running actual CLI code"  # fmt: skip
-    assert mock_setup_session_options.call_args_list[0][0][0] is session
-    assert isinstance(mock_setup_session_options.call_args_list[0][0][1], Namespace)
 
 
 class TestSetupPluginArgsAndOptions:
