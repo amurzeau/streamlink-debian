@@ -40,7 +40,7 @@ class Radiko(Plugin):
         yield from HLSStream.parse_variant_playlist(self.session, url).items()
 
     def _live(self, station_id):
-        live_url = f"http://f-radiko.smartstream.ne.jp/{station_id}/_definst_/simul-stream.stream/playlist.m3u8"
+        live_url = "https://alliance-stream-radiko.smartstream.ne.jp/so/playlist.m3u8"
         token, _area_id = self._authorize()
         lsid = hashlib.md5(str(random.random()).encode("utf-8")).hexdigest()
         live_params = {
@@ -79,9 +79,9 @@ class Radiko(Plugin):
         }
         self.session.http.headers.update(headers)
         r = self.session.http.get(self._api_auth_1)
-        token = r.headers.get("x-radiko-authtoken")
-        offset = int(r.headers.get("x-radiko-keyoffset"))
-        length = int(r.headers.get("x-radiko-keylength"))
+        token = r.headers.get("x-radiko-authtoken", "")
+        offset = int(r.headers.get("x-radiko-keyoffset", 0))
+        length = int(r.headers.get("x-radiko-keylength", 0))
         partial_key = base64.b64encode(self._auth_key[offset : offset + length].encode("ascii")).decode("utf-8")
         headers = {
             "x-radiko-authtoken": token,

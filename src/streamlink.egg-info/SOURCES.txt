@@ -14,6 +14,7 @@ build_backend/test_build_backend.py
 build_backend/test_onbuild.py
 build_backend/test_plugins_json.py
 completions/bash/streamlink
+completions/fish/streamlink.fish
 completions/zsh/_streamlink
 docs/Makefile
 docs/_man.rst
@@ -77,7 +78,7 @@ docs/sphinxext/ext_github.py
 docs/sphinxext/ext_html_template_vars.py
 docs/sphinxext/ext_plugins.py
 docs/sphinxext/ext_releaseref.py
-script/build-shell-completions.sh
+script/build-shell-completions.py
 src/streamlink/__init__.py
 src/streamlink/__main__.py
 src/streamlink/_version.py
@@ -112,7 +113,6 @@ src/streamlink/plugins/adultswim.py
 src/streamlink/plugins/albavision.py
 src/streamlink/plugins/aloula.py
 src/streamlink/plugins/app17.py
-src/streamlink/plugins/ard_live.py
 src/streamlink/plugins/ard_mediathek.py
 src/streamlink/plugins/artetv.py
 src/streamlink/plugins/atpchallenger.py
@@ -143,9 +143,11 @@ src/streamlink/plugins/dlive.py
 src/streamlink/plugins/dogan.py
 src/streamlink/plugins/dogus.py
 src/streamlink/plugins/douyin.py
+src/streamlink/plugins/douyu.py
 src/streamlink/plugins/drdk.py
 src/streamlink/plugins/earthcam.py
 src/streamlink/plugins/euronews.py
+src/streamlink/plugins/facebook.py
 src/streamlink/plugins/filmon.py
 src/streamlink/plugins/goltelevision.py
 src/streamlink/plugins/goodgame.py
@@ -186,7 +188,6 @@ src/streamlink/plugins/openrectv.py
 src/streamlink/plugins/pandalive.py
 src/streamlink/plugins/piaulizaportal.py
 src/streamlink/plugins/picarto.py
-src/streamlink/plugins/piczel.py
 src/streamlink/plugins/pixiv.py
 src/streamlink/plugins/pluto.py
 src/streamlink/plugins/pluzz.py
@@ -214,13 +215,13 @@ src/streamlink/plugins/telefe.py
 src/streamlink/plugins/telemadrid.py
 src/streamlink/plugins/tf1.py
 src/streamlink/plugins/tiktok.py
-src/streamlink/plugins/trovo.py
 src/streamlink/plugins/turkuvaz.py
 src/streamlink/plugins/tv360.py
 src/streamlink/plugins/tv3cat.py
 src/streamlink/plugins/tv5monde.py
 src/streamlink/plugins/tv8.py
 src/streamlink/plugins/tv999.py
+src/streamlink/plugins/tvazteca.py
 src/streamlink/plugins/tvibo.py
 src/streamlink/plugins/tviplayer.py
 src/streamlink/plugins/tvp.py
@@ -237,6 +238,7 @@ src/streamlink/plugins/vkvideolive.py
 src/streamlink/plugins/welt.py
 src/streamlink/plugins/wwenetwork.py
 src/streamlink/plugins/youtube.py
+src/streamlink/plugins/youtvua.py
 src/streamlink/plugins/yupptv.py
 src/streamlink/plugins/zattoo.py
 src/streamlink/plugins/zdf_mediathek.py
@@ -273,9 +275,11 @@ src/streamlink/utils/crypto.py
 src/streamlink/utils/data.py
 src/streamlink/utils/dataclass.py
 src/streamlink/utils/formatter.py
+src/streamlink/utils/id3v2.py
 src/streamlink/utils/l10n.py
 src/streamlink/utils/module.py
 src/streamlink/utils/named_pipe.py
+src/streamlink/utils/num.py
 src/streamlink/utils/parse.py
 src/streamlink/utils/path.py
 src/streamlink/utils/processoutput.py
@@ -374,10 +378,12 @@ tests/cli/main/test_create_output.py
 tests/cli/main/test_formatter.py
 tests/cli/main/test_handle_url.py
 tests/cli/main/test_logging.py
+tests/cli/main/test_main.py
 tests/cli/main/test_output_stream.py
 tests/cli/main/test_output_stream_passthrough.py
 tests/cli/main/test_player_argv.py
 tests/cli/main/test_resolve_stream_name.py
+tests/cli/main/test_setup_args.py
 tests/cli/main/test_setup_config_args.py
 tests/cli/main/test_setup_plugins.py
 tests/cli/main/test_setup_session_options.py
@@ -405,7 +411,6 @@ tests/plugins/test_adultswim.py
 tests/plugins/test_albavision.py
 tests/plugins/test_aloula.py
 tests/plugins/test_app17.py
-tests/plugins/test_ard_live.py
 tests/plugins/test_ard_mediathek.py
 tests/plugins/test_artetv.py
 tests/plugins/test_atpchallenger.py
@@ -436,9 +441,11 @@ tests/plugins/test_dlive.py
 tests/plugins/test_dogan.py
 tests/plugins/test_dogus.py
 tests/plugins/test_douyin.py
+tests/plugins/test_douyu.py
 tests/plugins/test_drdk.py
 tests/plugins/test_earthcam.py
 tests/plugins/test_euronews.py
+tests/plugins/test_facebook.py
 tests/plugins/test_filmon.py
 tests/plugins/test_goltelevision.py
 tests/plugins/test_goodgame.py
@@ -479,7 +486,6 @@ tests/plugins/test_openrectv.py
 tests/plugins/test_pandalive.py
 tests/plugins/test_piaulizaportal.py
 tests/plugins/test_picarto.py
-tests/plugins/test_piczel.py
 tests/plugins/test_pixiv.py
 tests/plugins/test_pluto.py
 tests/plugins/test_pluzz.py
@@ -507,13 +513,13 @@ tests/plugins/test_telefe.py
 tests/plugins/test_telemadrid.py
 tests/plugins/test_tf1.py
 tests/plugins/test_tiktok.py
-tests/plugins/test_trovo.py
 tests/plugins/test_turkuvaz.py
 tests/plugins/test_tv360.py
 tests/plugins/test_tv3cat.py
 tests/plugins/test_tv5monde.py
 tests/plugins/test_tv8.py
 tests/plugins/test_tv999.py
+tests/plugins/test_tvazteca.py
 tests/plugins/test_tvibo.py
 tests/plugins/test_tviplayer.py
 tests/plugins/test_tvp.py
@@ -530,6 +536,7 @@ tests/plugins/test_vkvideolive.py
 tests/plugins/test_welt.py
 tests/plugins/test_wwenetwork.py
 tests/plugins/test_youtube.py
+tests/plugins/test_youtvua.py
 tests/plugins/test_yupptv.py
 tests/plugins/test_zattoo.py
 tests/plugins/test_zdf_mediathek.py
@@ -547,6 +554,7 @@ tests/resources/dash/test_2.mpd
 tests/resources/dash/test_3.mpd
 tests/resources/dash/test_8.mpd
 tests/resources/dash/test_9.mpd
+tests/resources/dash/test_attribute_namespaces.mpd
 tests/resources/dash/test_baseurl_nested.mpd
 tests/resources/dash/test_baseurl_scheme_mismatch.mpd
 tests/resources/dash/test_baseurl_urljoin.mpd
@@ -560,6 +568,7 @@ tests/resources/dash/test_dynamic_segment_list_p4.mpd
 tests/resources/dash/test_dynamic_segment_list_p5.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p1.mpd
 tests/resources/dash/test_dynamic_timeline_continued_p2.mpd
+tests/resources/dash/test_location_scheme_mismatch.mpd
 tests/resources/dash/test_no_segment_list_or_template.mpd
 tests/resources/dash/test_period_selection.mpd
 tests/resources/dash/test_segment_list.mpd
@@ -568,11 +577,11 @@ tests/resources/dash/test_segments_byterange.mpd
 tests/resources/dash/test_segments_dynamic_number.mpd
 tests/resources/dash/test_static_no_publish_time.mpd
 tests/resources/dash/test_suggested_presentation_delay.mpd
+tests/resources/dash/test_timeline_gap.mpd
 tests/resources/dash/test_timeline_ids.mpd
 tests/resources/hls/test_1.m3u8
 tests/resources/hls/test_date.m3u8
 tests/resources/hls/test_master.m3u8
-tests/resources/hls/test_master_twitch_vod.m3u8
 tests/resources/hls/test_media_language.m3u8
 tests/resources/hls/test_media_language_special.m3u8
 tests/resources/hls/test_multivariant_bandwidth.m3u8
@@ -585,6 +594,7 @@ tests/session/test_options.py
 tests/session/test_plugins.py
 tests/session/test_session.py
 tests/stream/__init__.py
+tests/stream/conftest.py
 tests/stream/test_ffmpegmux.py
 tests/stream/test_file.py
 tests/stream/test_init.py
@@ -609,10 +619,12 @@ tests/utils/test_crypto.py
 tests/utils/test_data.py
 tests/utils/test_dataclass.py
 tests/utils/test_formatter.py
+tests/utils/test_id3v2.py
 tests/utils/test_init.py
 tests/utils/test_l10n.py
 tests/utils/test_module.py
 tests/utils/test_named_pipe.py
+tests/utils/test_num.py
 tests/utils/test_parse.py
 tests/utils/test_path.py
 tests/utils/test_processoutput.py

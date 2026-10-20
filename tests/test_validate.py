@@ -9,7 +9,7 @@ import streamlink.validate as validate
 from streamlink.exceptions import PluginError
 
 # noinspection PyProtectedMember
-from streamlink.validate._exception import ValidationError  # noqa: PLC2701
+from streamlink.validate._exception import ValidationError  # ruff: ignore[import-private-name]
 
 
 def assert_validationerror(exception: Exception, expected: str, regex: bool = False):
@@ -22,12 +22,16 @@ def assert_validationerror(exception: Exception, expected: str, regex: bool = Fa
 
 
 class TestSchema:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def schema(self):
+    @classmethod
+    def schema(cls):
         return validate.Schema(str, "foo")
 
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def schema_nested(self, schema: validate.Schema):
+    @classmethod
+    def schema_nested(cls, schema: validate.Schema):
         return validate.Schema(schema)
 
     def test_validate_success(self, schema: validate.Schema):
@@ -380,8 +384,10 @@ class TestPattern:
 
 
 class TestAllSchema:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def schema(self):
+    @classmethod
+    def schema(cls):
         return validate.all(
             str,
             lambda string: string.startswith("f"),
@@ -429,8 +435,10 @@ class TestAllSchema:
 
 
 class TestAnySchema:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def schema(self):
+    @classmethod
+    def schema(cls):
         return validate.any(
             "foo",
             str,
@@ -1237,8 +1245,10 @@ class TestUrlValidator:
 
 
 class TestGetAttrValidator:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def subject(self):
+    @classmethod
+    def subject(cls):
         class Subject:
             foo = 1
 
@@ -1360,8 +1370,10 @@ class TestXmlFindValidator:
 
 
 class TestXmlFindallValidator:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def element(self):
+    @classmethod
+    def element(cls):
         element = Element("root")
         for child in Element("foo"), Element("bar"), Element("baz"):
             element.append(child)
@@ -1422,8 +1434,10 @@ class TestXmlFindtextValidator:
 
 
 class TestXmlXpathValidator:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def element(self):
+    @classmethod
+    def element(cls):
         element = Element("root")
         for child in Element("foo"), Element("bar"), Element("baz"):
             child.text = child.tag.upper()
@@ -1447,6 +1461,20 @@ class TestXmlXpathValidator:
         for child in Element("{http://a}child"), Element("{http://b}child"):
             root.append(child)
         assert validate.validate(validate.xml_xpath("./b:child", namespaces=nsmap), root)[0] is root[1]
+
+    def test_re_namespace(self):
+        root = Element("root")
+        for child in Element("foo", {"value": "foo"}), Element("bar", {"value": "123"}), Element("baz", {"value": ".!?"}):
+            root.append(child)
+        assert validate.validate(validate.xml_xpath("./*[re:test(@value,'[0-9]')]"), root)[0] is root[1]
+        assert validate.validate(validate.xml_xpath("string(re:match(name(//*[@value='.!?']), '(.)$')[2])"), root) == "z"
+        assert validate.validate(validate.xml_xpath("re:replace(//foo/@value, '(FOO)', 'i', 'not \\1')"), root) == "not foo"
+
+    def test_re_namespace_override(self):
+        root = Element("root")
+        child = Element("{http://a}foo")
+        root.append(child)
+        assert validate.validate(validate.xml_xpath("./re:foo", namespaces={"re": "http://a"}), root)[0] is child
 
     def test_extensions(self, element):
         def foo(context, a, b):
@@ -1491,8 +1519,10 @@ class TestXmlXpathValidator:
 
 
 class TestXmlXpathStringValidator:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def element(self):
+    @classmethod
+    def element(cls):
         element = Element("root")
         for child in Element("foo"), Element("bar"), Element("baz"):
             child.text = child.tag.upper()
@@ -1608,6 +1638,56 @@ class TestParseQsdValidator:
                     Type of 123 should be str, but is int
                   ValidationError(type):
                     Type of 123 should be bytes, but is int
+            """,
+        )
+
+
+class TestNextJSInlineRSCValidator:
+    def test_chunk_newline_no_tag(self):
+        assert validate.validate(
+            validate.nextjs_inline_rsc(),
+            r"""
+                self.__next_f.push([1, "a0:[\"$\",\"$L6c\",null,[{\"a\":\"b\"}]]\n\na1:[\"$\",\"$L6c\",null,[{\"c\":\"d\"}]]"])
+            """,
+        ) == [["$", "$L6c", None, [{"a": "b"}]], ["$", "$L6c", None, [{"c": "d"}]]]
+
+    def test_chunk_newline_ignored_tag(self):
+        assert validate.validate(
+            validate.nextjs_inline_rsc(),
+            r"""
+                self.__next_f.push([1, "a0:I[123,[{\"a\":\"b\"}]]\n\na1:Idiscarded-because-no-json\na2:Z[456,[{\"c\":\"d\"}]]"])
+            """,
+        ) == [[123, [{"a": "b"}]], [456, [{"c": "d"}]]]
+
+    def test_chunk_newline_length_tag(self):
+        assert validate.validate(
+            validate.nextjs_inline_rsc(),
+            r"""
+                self.__next_f.push([1, "a0:T10,[\"foobarfoobar\"]\n\na1:T10,foobar0123456789\na2:Ta0,[\"foobar\"]"])
+            """,
+        ) == [["foobarfoobar"], ["foobar"]]
+
+    def test_failure_data_type(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.nextjs_inline_rsc(), 'self.__next_f.push([0, "foo"])')
+        assert_validationerror(
+            cm.value,
+            """
+                ValidationError(nextjs_inline_rsc):
+                  Unsupported data type: 0
+            """,
+        )
+
+    def test_failure_parse(self):
+        with pytest.raises(ValidationError) as cm:
+            validate.validate(validate.nextjs_inline_rsc(), 'self.__next_f.push([1, "a0:Tfoo,bar"])')
+        assert_validationerror(
+            cm.value,
+            """
+                ValidationError(nextjs_inline_rsc):
+                  Could not parse Next.js inline React Server Component Flight Stream data
+                  Context:
+                    invalid literal for int() with base 16: b'foo'
             """,
         )
 
@@ -1764,5 +1844,5 @@ class TestValidationError:
             """
                 ValidationError:
                   foo <Some really long error message that exceeds the maximum...> bar <'Some really long error message that exceeds the maximu...> baz
-            """,  # noqa: E501
+            """,  # ruff: ignore[line-too-long]
         )

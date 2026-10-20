@@ -5,7 +5,7 @@ import itertools
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from time import time
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from requests import Response
 
@@ -99,7 +99,7 @@ class DASHStreamWorker(SegmentedStreamWorker[DASHSegment, Response]):
         Do something and then wait for a given duration minus the time it took doing something
         """
         s = time()
-        yield
+        yield  # ruff: ignore[fallible-context-manager]
         time_to_sleep = duration - (time() - s)
         if time_to_sleep > 0:
             self.wait(time_to_sleep)
@@ -219,6 +219,8 @@ class DASHStream(Stream):
     """
 
     __shortname__ = "dash"
+    __reader__: ClassVar[type[DASHStreamReader]] = DASHStreamReader
+    __parser__: ClassVar[type[MPD]] = MPD
 
     def __init__(
         self,
@@ -245,7 +247,7 @@ class DASHStream(Stream):
         self.duration = duration
         self.args = session.http.valid_request_args(**kwargs)
 
-    def __json__(self):  # noqa: PLW3201
+    def __json__(self):  # ruff: ignore[bad-dunder-method-name]
         json = dict(type=self.shortname())
 
         if self.mpd.url:
@@ -280,11 +282,11 @@ class DASHStream(Stream):
 
         return manifest, dict(url=url, base_url=url)
 
-    @staticmethod
-    def parse_mpd(manifest: str, mpd_params: Mapping[str, Any]) -> MPD:
+    @classmethod
+    def parse_mpd(cls, manifest: str, mpd_params: Mapping[str, Any]) -> MPD:
         node = parse_xml(manifest, ignore_ns=True)
 
-        return MPD(node, **mpd_params)
+        return cls.__parser__(node, **mpd_params)
 
     @classmethod
     def parse_manifest(
@@ -432,11 +434,11 @@ class DASHStream(Stream):
         timestamp = now()
 
         if rep_video:
-            video = DASHStreamReader(self, rep_video, timestamp, name="video")
+            video = self.__reader__(self, rep_video, timestamp, name="video")
             log.debug("Opening DASH reader for: %r - %s", rep_video.ident, rep_video.mimeType)
 
         if rep_audio:
-            audio = DASHStreamReader(self, rep_audio, timestamp, name="audio")
+            audio = self.__reader__(self, rep_audio, timestamp, name="audio")
             log.debug("Opening DASH reader for: %r - %s", rep_audio.ident, rep_audio.mimeType)
 
         if video and audio and FFMPEGMuxer.is_usable(self.session):

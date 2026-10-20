@@ -201,6 +201,22 @@ class TestMPDParser:
                 "http://test.se/video/250kbit/segment_5.m4s",
             ]
 
+    def test_segments_timeline_gap(self):
+        with xml("dash/test_timeline_gap.mpd") as mpd_xml:
+            mpd = MPD(mpd_xml, base_url="http://test.se/", url="http://test.se/manifest.mpd")
+
+            segments = mpd.periods[0].adaptationSets[0].representations[0].segments()
+            init_segment = next(segments)
+            assert init_segment.uri == "http://test.se/init.m4s"
+
+            # The second `<S t="10000">` signals a gap: its explicit @t must be
+            # honoured instead of continuing the running time from 8000.
+            assert [segment.uri for segment in itertools.islice(segments, 3)] == [
+                "http://test.se/seg-1.m4s?t=0",
+                "http://test.se/seg-2.m4s?t=4000",
+                "http://test.se/seg-3.m4s?t=10000",
+            ]
+
     def test_segments_dynamic_time(self):
         with xml("dash/test_3.mpd") as mpd_xml:
             mpd = MPD(mpd_xml, base_url="http://test.se/", url="http://test.se/manifest.mpd")
@@ -827,6 +843,100 @@ class TestMPDParser:
         with raises:
             list(itertools.islice(rep.segments(), 0, 2))
 
+    @pytest.mark.parametrize(
+        ("base_url", "location", "mpd_url_expected", "segment_url_expected", "raises"),
+        [
+            pytest.param(
+                "http://foo/bar/baz",
+                "http://bar/foo/baz",
+                "http://bar/foo/baz",
+                "http://bar/foo/init_0.m4s",
+                does_not_raise,
+                id="same-scheme",
+            ),
+            pytest.param(
+                "file:///a/b/c",
+                "file:///d/e/f",
+                "file:///d/e/f",
+                "file:///d/e/init_0.m4s",
+                does_not_raise,
+                id="same-scheme-file",
+            ),
+            pytest.param(
+                "https://foo/",
+                "http://bar/",
+                None,
+                None,
+                pytest.raises(
+                    MPDParsingError,
+                    match=r"^Prevented access to insecure MPD location: base_scheme='https' scheme='http'$",
+                ),
+                id="https-to-http",
+            ),
+            pytest.param(
+                "https://foo/",
+                "file:///path",
+                None,
+                None,
+                pytest.raises(
+                    MPDParsingError,
+                    match=r"^Prevented access to insecure MPD location: base_scheme='https' scheme='file'$",
+                ),
+                id="https-to-file",
+            ),
+        ],
+    )
+    def test_location_insecure_scheme(
+        self,
+        base_url: str,
+        location: str,
+        mpd_url_expected: str,
+        segment_url_expected: str,
+        raises: nullcontext,
+    ):
+        with xml("dash/test_location_scheme_mismatch.mpd") as mpd_xml:
+            element = mpd_xml.xpath(".//Location[1]")[0]
+            assert iselement(element)
+            element.text = location
+
+        with raises:
+            mpd = MPD(mpd_xml, base_url=base_url, url=f"{base_url}/manifest.mpd")
+            assert mpd.url == mpd_url_expected
+            rep = mpd.get_representation(("0", "0", "0"))
+            assert rep
+            assert next(rep.segments()).uri == segment_url_expected
+
+    @pytest.mark.parametrize(
+        ("location", "raises"),
+        [
+            pytest.param(
+                "https://foo/",
+                does_not_raise,
+                id="non-file-scheme",
+            ),
+            pytest.param(
+                "file:///path",
+                pytest.raises(
+                    MPDParsingError,
+                    match=r"^Prevented access to insecure MPD location: base_scheme='' scheme='file'$",
+                ),
+                id="file-scheme",
+            ),
+        ],
+    )
+    def test_location_without_url(
+        self,
+        location: str,
+        raises: nullcontext,
+    ):
+        with xml("dash/test_location_scheme_mismatch.mpd") as mpd_xml:
+            element = mpd_xml.xpath(".//Location[1]")[0]
+            assert iselement(element)
+            element.text = location
+
+        with raises:
+            assert MPD(mpd_xml, base_url=None, url=None)
+
     def test_timeline_ids(self):
         with xml("dash/test_timeline_ids.mpd") as mpd_xml, freeze_time("2000-01-01T00:00:00Z"):
             mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd")
@@ -877,3 +987,34 @@ class TestMPDParser:
         assert getattr(mpd.get_representation(("period-0", "0", "audio2")), "mimeType", None) == "audio/mp4"
         assert getattr(mpd.get_representation(("period-0", None, "video1")), "mimeType", None) == "video/mp4"
         assert getattr(mpd.get_representation(("period-0", None, "video2")), "mimeType", None) == "video/mp4"
+
+    def test_attribute_namespaces(self):
+        with xml("dash/test_attribute_namespaces.mpd") as mpd_xml:
+            mpd = MPD(mpd_xml, base_url="http://test/", url="http://test/manifest.mpd")
+
+        assert [
+            (
+                cont_prot.schemeIdUri,
+                cont_prot.default_KID,
+                cont_prot.value,
+            )
+            for period in mpd.periods
+            for aset in period.adaptationSets
+            for cont_prot in aset.contentProtections
+        ] == [
+            (
+                "urn:mpeg:dash:mp4protection:2011",
+                "00000000-0000-0000-0000-000000000000",
+                "cenc",
+            ),
+            (
+                "urn:mpeg:dash:mp4protection:2011",
+                "00000000-0000-0000-0000-000000000001",
+                "cenc",
+            ),
+            (
+                "urn:uuid:9a04f079-9840-4286-ab92-e65be0885f95",
+                None,
+                "MSPR 2.0",
+            ),
+        ]

@@ -172,30 +172,53 @@ class _TwitchHLSStream(TwitchHLSStream):
     __reader__ = _TwitchHLSStreamReader
 
 
-def test_stream_weight(requests_mock: rm.Mocker, session: Streamlink):
+@pytest.mark.parametrize(
+    ("sorting_excludes", "worst", "best"),
+    [
+        pytest.param(None, "160p30", "1440p60", id="no-exclusion"),
+        pytest.param(["<1p"], "160p30", "1440p60", id="exclude-all-portraits"),
+        pytest.param([">1p"], "284p30_portrait", "1920p60_portrait", id="exclude-all-landscapes"),
+        pytest.param(["<720p60"], "720p60", "1440p60", id="exclude-low-landscapes"),
+        pytest.param(["<1280p60_portrait"], "1280p60_portrait", "1440p60", id="exclude-low-portraits"),
+    ],
+)
+def test_multivariant_and_weights(
+    monkeypatch: pytest.MonkeyPatch,
+    requests_mock: rm.Mocker,
+    session: Streamlink,
+    sorting_excludes: list[str] | None,
+    worst: str,
+    best: str,
+):
     plugin = Twitch(session, "http://twitch.tv/foo")
 
-    with text("hls/test_master_twitch_vod.m3u8") as fh:
-        playlist = fh.read()
+    with text("hls/test_multivariant_twitch_usher_v2.m3u8") as fd:
+        playlist = fd.read()
 
     requests_mock.request(method="GET", url="http://mocked/master.m3u8", text=playlist)
     streams = TwitchHLSStream.parse_variant_playlist(session, "http://mocked/master.m3u8")
 
-    with patch.object(plugin, "_get_streams", return_value=streams):
-        data = plugin.streams()
+    monkeypatch.setattr(plugin, "_get_streams", Mock(return_value=streams))
+    result = plugin.streams(sorting_excludes=sorting_excludes)
 
-    assert list(data.keys()) == ["audio", "160p30", "360p30", "480p30", "720p30", "720p60", "source", "worst", "best"]
-    assert data["best"] is data["source"]
-    assert data["worst"] is data["160p30"]
-
-
-def test_multivariant(session: Streamlink, requests_mock: rm.Mocker):
-    with text("hls/test_multivariant_twitch_usher_v2.m3u8") as fd:
-        content = fd.read()
-        requests_mock.get("http://mocked/multivariant.m3u8", text=content)
-        streams = TwitchHLSStream.parse_variant_playlist(session, "http://mocked/multivariant.m3u8")
-
-    assert sorted(streams.keys()) == ["1080p60", "160p", "360p", "480p", "720p60", "audio_only"]
+    assert list(result.keys()) == [
+        "audio_only",
+        "284p30_portrait",
+        "640p30_portrait",
+        "852p30_portrait",
+        "1280p60_portrait",
+        "1920p60_portrait",
+        "160p30",
+        "360p30",
+        "480p30",
+        "720p60",
+        "1080p60",
+        "1440p60",
+        "worst",
+        "best",
+    ]
+    assert result["worst"] is result[worst]
+    assert result["best"] is result[best]
 
 
 @patch("streamlink.stream.hls.HLSStreamWorker.wait", MagicMock(return_value=True))
@@ -675,6 +698,10 @@ class TestUsherService:
         qs = dict(parse_qsl(urlparse(endpoint).query))
         assert qs.get("supported_codecs") == expected
 
+    def test_multigroup_video(self, endpoint: str):
+        qs = dict(parse_qsl(urlparse(endpoint).query))
+        assert qs.get("multigroup_video") == "true"
+
 
 class TestTwitchAPIAccessToken:
     @pytest.fixture(autouse=True)
@@ -1110,7 +1137,9 @@ class TestTwitchMetadata:
 
     @pytest.fixture()
     def mock_request_channel(self, request: pytest.FixtureRequest, requests_mock: rm.Mocker):
-        data = getattr(request, "param", True)
+        param = getattr(request, "param", {})
+        data = param.get("data", True)
+        game = param.get("game", True)
 
         return requests_mock.post(
             "https://gql.twitch.tv/gql",
@@ -1134,7 +1163,9 @@ class TestTwitchMetadata:
                             },
                             "stream": {
                                 "id": "stream id",
-                                "game": {
+                                "game": None
+                                if not game
+                                else {
                                     "name": "channel game",
                                 },
                             },
@@ -1192,7 +1223,7 @@ class TestTwitchMetadata:
             },
         )
 
-    @pytest.mark.parametrize(("mock_request_channel", "metadata"), [(True, "https://twitch.tv/foo")], indirect=True)
+    @pytest.mark.parametrize(("mock_request_channel", "metadata"), [({}, "https://twitch.tv/foo")], indirect=True)
     def test_metadata_channel(self, mock_request_channel, metadata):
         assert metadata == ("stream id", "channel name", "channel game", "channel status")
         assert mock_request_channel.call_count == 1
@@ -1224,9 +1255,14 @@ class TestTwitchMetadata:
             },
         ]
 
-    @pytest.mark.parametrize(("mock_request_channel", "metadata"), [(False, "https://twitch.tv/foo")], indirect=True)
+    @pytest.mark.parametrize(("mock_request_channel", "metadata"), [({"data": False}, "https://twitch.tv/foo")], indirect=True)
     def test_metadata_channel_no_data(self, mock_request_channel, metadata):
         assert metadata == (None, None, None, None)
+        assert mock_request_channel.call_count == 1
+
+    @pytest.mark.parametrize(("mock_request_channel", "metadata"), [({"game": False}, "https://twitch.tv/foo")], indirect=True)
+    def test_metadata_channel_no_category(self, mock_request_channel, metadata):
+        assert metadata == ("stream id", "channel name", None, "channel status")
         assert mock_request_channel.call_count == 1
 
     @pytest.mark.parametrize(("mock_request_video", "metadata"), [(True, "https://twitch.tv/videos/1337")], indirect=True)

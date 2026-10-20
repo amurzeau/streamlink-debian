@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import socket
 import ssl
+from contextlib import closing, nullcontext
 from operator import itemgetter
 from socket import AF_INET, AF_INET6
 from ssl import SSLContext
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest.mock import Mock, PropertyMock, call
 
 import freezegun
@@ -18,6 +19,7 @@ from urllib3.connection import HTTPConnection
 from urllib3.response import HTTPResponse
 
 from streamlink.exceptions import PluginError, StreamlinkDeprecationWarning
+from streamlink.packages.requests_file import FileAdapter
 from streamlink.session.http import (
     HTTPSession,
     SSLContextAdapter,
@@ -34,12 +36,16 @@ if TYPE_CHECKING:
     from streamlink import Streamlink
 
 
-_original_allowed_gai_family = urllib3.util.connection.allowed_gai_family  # type: ignore[attr-defined, ty:unresolved-attribute]
+does_not_raise = nullcontext()
+
+_original_allowed_gai_family = urllib3.util.connection.allowed_gai_family
 
 
 class TestUrllib3Overrides:
+    # noinspection PyNestedDecorators
     @pytest.fixture(scope="class")
-    def httpsession(self) -> HTTPSession:
+    @classmethod
+    def httpsession(cls) -> HTTPSession:
         return HTTPSession()
 
     @pytest.mark.parametrize(
@@ -151,8 +157,65 @@ class TestHTTPSession:
     def test_session_init(self):
         session = HTTPSession()
         assert session.headers.get("User-Agent") == DEFAULT
-        assert session.timeout == 20.0  # noqa: RUF069
+        assert session.timeout == 20.0  # ruff: ignore[float-equality-comparison]
         assert "file://" in session.adapters.keys()
+
+    @pytest.mark.parametrize("verb", ["get", "post", "head", "options", "put", "patch", "delete"])
+    def test_http_verbs(self, requests_mock: rm.Mocker, verb: str):
+        mocked = requests_mock.register_uri(verb, "http://localhost", text="OK")
+        session = HTTPSession()
+        method = getattr(session, verb)
+        assert callable(method)
+        res = method("http://localhost")
+        assert isinstance(res, requests.Response)
+        assert res.text == "OK"
+        assert mocked.called_once
+
+    @pytest.mark.parametrize(
+        ("params", "expected"),
+        [
+            pytest.param(
+                {"one": "three", "foo": "bar"},
+                "http://localhost/path?one=two&foo=bar",
+                id="mapping",
+            ),
+            pytest.param(
+                [("one", "three"), ("foo", "bar")],
+                "http://localhost/path?one=two&foo=bar",
+                id="list",
+            ),
+            pytest.param(
+                (("one", "three"), ("foo", "bar")),
+                "http://localhost/path?one=two&foo=bar",
+                id="tuple",
+            ),
+            pytest.param(
+                "one=three&foo=bar",
+                "http://localhost/path?one=two",
+                id="str",
+            ),
+            pytest.param(
+                b"one=three&foo=bar",
+                "http://localhost/path?one=two",
+                id="bytes",
+            ),
+        ],
+    )
+    def test_session_keyword(self, requests_mock: rm.Mocker, params: Any, expected: str):
+        session_one = HTTPSession()
+        session_two = HTTPSession()
+        requests_mock.register_uri("GET", "http://localhost/path")
+        session_two.headers.update({"User-Agent": "foo"})
+        session_two.params.update({"one": "two"})
+        res = session_one.get(
+            "http://localhost/path",
+            headers={"User-Agent": "bar", "X-Foo": "bar"},
+            params=params,
+            session=session_two,
+        )
+        assert res.request.headers["User-Agent"] == "foo"
+        assert res.request.headers["X-Foo"] == "bar"
+        assert res.request.url == expected
 
     def test_read_timeout(self, monkeypatch: pytest.MonkeyPatch):
         mock_sleep = Mock()
@@ -161,14 +224,31 @@ class TestHTTPSession:
         monkeypatch.setattr("streamlink.session.http.Session.request", mock_request)
 
         session = HTTPSession()
-        with pytest.raises(PluginError, match=r"^Unable to open URL: http://localhost/"):
+        with pytest.raises(PluginError, match=r"^Unable to open URL: http://localhost/") as err:
             session.get("http://localhost/", timeout=123, retries=3, retry_backoff=2, retry_max_backoff=5)
+        oerr = getattr(err.value, "err", None)
+        assert isinstance(oerr, requests.Timeout)
+        assert err.value.__context__ is oerr
 
-        assert mock_request.call_args_list == [
-            call("GET", "http://localhost/", headers={}, params={}, timeout=123, proxies={}, allow_redirects=True),
-            call("GET", "http://localhost/", headers={}, params={}, timeout=123, proxies={}, allow_redirects=True),
-            call("GET", "http://localhost/", headers={}, params={}, timeout=123, proxies={}, allow_redirects=True),
-            call("GET", "http://localhost/", headers={}, params={}, timeout=123, proxies={}, allow_redirects=True),
+        assert mock_request.call_args_list == 4 * [
+            call(
+                "GET",
+                "http://localhost/",
+                params=None,
+                data=None,
+                headers=None,
+                cookies=None,
+                files=None,
+                auth=None,
+                timeout=123,
+                allow_redirects=True,
+                proxies=None,
+                hooks=None,
+                stream=None,
+                verify=None,
+                cert=None,
+                json=None,
+            ),
         ]
         assert mock_sleep.call_args_list == [
             call(2),
@@ -178,7 +258,7 @@ class TestHTTPSession:
 
     @pytest.mark.parametrize("encoding", ["UTF-32BE", "UTF-32LE", "UTF-16BE", "UTF-16LE", "UTF-8"])
     def test_determine_json_encoding(self, recwarn: pytest.WarningsRecorder, encoding: str):
-        data = "Hello world, Γειά σου Κόσμε, こんにちは世界".encode(encoding)  # noqa: RUF001
+        data = "Hello world, Γειά σου Κόσμε, こんにちは世界".encode(encoding)  # ruff: ignore[ambiguous-unicode-character-string]
         assert HTTPSession.determine_json_encoding(data) == encoding
         assert [(record.category, str(record.message)) for record in recwarn.list] == [
             (StreamlinkDeprecationWarning, "Deprecated HTTPSession.determine_json_encoding() call"),
@@ -202,13 +282,13 @@ class TestHTTPSession:
         ],
     )
     def test_json(self, monkeypatch: pytest.MonkeyPatch, encoding: str, override: str | None):
-        mock_content = PropertyMock(return_value='{"test": "Α and Ω"}'.encode(encoding))  # noqa: RUF001
+        mock_content = PropertyMock(return_value='{"test": "Α and Ω"}'.encode(encoding))  # ruff: ignore[ambiguous-unicode-character-string]
         monkeypatch.setattr("requests.Response.content", mock_content)
 
         res = requests.Response()
         res.encoding = override
 
-        assert HTTPSession.json(res) == {"test": "Α and Ω"}  # noqa: RUF001
+        assert HTTPSession.json(res) == {"test": "Α and Ω"}  # ruff: ignore[ambiguous-unicode-character-string]
 
     @pytest.mark.parametrize(
         ("content_type", "encoding", "content", "expected"),
@@ -540,6 +620,108 @@ class TestHTTPSession:
         assert isinstance(session.adapters["https://"], HTTPAdapter)
         assert not isinstance(session.adapters["https://"], TLSNoDHAdapter)
         assert session.adapters["https://"].poolmanager.connection_pool_kw.get("source_address") == ("0.0.0.0", 0)
+
+
+class TestRedirect:
+    @pytest.mark.parametrize(
+        ("source", "target", "location", "raises"),
+        [
+            pytest.param("http://foo", "http://foo/bar", "bar", does_not_raise, id="no-scheme"),
+            pytest.param("http://foo", "http://foo/bar", "/bar", does_not_raise, id="no-scheme2"),
+            pytest.param("http://foo", "http://bar", "//bar", does_not_raise, id="same-scheme"),
+            pytest.param("http://foo", "http://bar", None, does_not_raise, id="http-to-http"),
+            pytest.param("https://foo", "https://bar", None, does_not_raise, id="https-to-https"),
+            pytest.param("file://foo", "file://bar", None, does_not_raise, id="file-to-file"),
+            pytest.param("http://foo", "https://bar", None, does_not_raise, id="http-to-https"),
+            pytest.param("custom://foo", "https://bar", None, does_not_raise, id="custom-to-https"),
+            pytest.param(
+                "https://foo/abc",
+                "http://bar/xyz",
+                None,
+                pytest.raises(PluginError, match=r"Disallowed redirection to http:// URL from https://foo/abc"),
+                id="https-to-http",
+            ),
+            pytest.param(
+                "custom://foo/abc",
+                "http://bar/xyz",
+                None,
+                pytest.raises(PluginError, match=r"Disallowed redirection to http:// URL from custom://foo/abc"),
+                id="custom-to-http",
+            ),
+            pytest.param(
+                "http://foo/abc",
+                "file://bar/xyz",
+                None,
+                pytest.raises(PluginError, match=r"Disallowed redirection to file:// URL from http://foo/abc"),
+                id="http-to-file",
+            ),
+            pytest.param(
+                "https://foo/abc",
+                "file://bar/xyz",
+                None,
+                pytest.raises(PluginError, match=r"Disallowed redirection to file:// URL from https://foo/abc"),
+                id="https-to-file",
+            ),
+        ],
+    )
+    def test_scheme(
+        self,
+        requests_mock: rm.Mocker,
+        source: str,
+        target: str,
+        location: str | None,
+        raises: nullcontext,
+    ):
+        session = HTTPSession()
+        requests_mock.get(target, text="data")
+        requests_mock.get(source, status_code=301, headers={"Location": location or target})
+        with raises:
+            assert session.get(source).text == "data"
+
+    @pytest.mark.parametrize("target", ["http", "file"])
+    def test_two_hops(self, requests_mock: rm.Mocker, target: str):
+        session = HTTPSession()
+        mocked = requests_mock.get(f"{target}://three/", text="data")
+        requests_mock.get("https://two/", status_code=301, headers={"Location": f"{target}://three/"})
+        requests_mock.get("https://one/", status_code=301, headers={"Location": "https://two/"})
+        with pytest.raises(PluginError, match=rf"Disallowed redirection to {target}:// URL from https://two/"):
+            session.get("https://one/")
+        assert mocked.call_count == 0
+
+    @pytest.mark.parametrize(
+        ("target", "has_next"),
+        [
+            pytest.param("http", False, id="http"),
+            pytest.param("https", True, id="https"),
+            pytest.param("file", False, id="file"),
+        ],
+    )
+    def test_allow_redirects_false(self, requests_mock: rm.Mocker, target: str, has_next: bool):
+        session = HTTPSession()
+        mocked = requests_mock.get(f"{target}://two/", text="data")
+        requests_mock.get("https://one/", status_code=301, text="redirect", headers={"Location": f"{target}://two/"})
+        resp = session.get("https://one/", allow_redirects=False)
+        assert resp.text == "redirect"
+        assert (resp._next is not None) is has_next
+        assert mocked.call_count == 0
+
+    def test_no_redirect_file(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+        # fix macOS py310 failure: "UnicodeError: encoding with 'idna' codec failed (UnicodeError: label empty or too long)"
+        # caused by proxy bypass lookups, which is irrelevant for this
+        monkeypatch.setattr("requests.utils.should_bypass_proxies", Mock(return_value=True))
+
+        monkeypatch.chdir(tmp_path)
+        one = tmp_path / "one"
+        two = tmp_path / "two"
+        one.symlink_to(two)
+        two.write_bytes(b"data")
+
+        session = HTTPSession()
+        assert isinstance(session.adapters.get("file://"), FileAdapter)
+        for file in ("one", "two"):
+            with closing(session.get(f"file://./{file}")) as resp:
+                assert not resp.is_redirect
+                assert resp.content == b"data"
 
 
 class TestHTTPCookies:

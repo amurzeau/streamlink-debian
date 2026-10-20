@@ -1,5 +1,7 @@
+# ruff: file-ignore[global-statement]
 from __future__ import annotations
 
+import argparse
 import importlib.metadata
 import logging
 import os
@@ -48,7 +50,6 @@ from streamlink_cli.utils.versioncheck import check_version
 
 
 if TYPE_CHECKING:
-    import argparse
     from collections.abc import Mapping
 
     from streamlink.plugin import Plugin
@@ -165,7 +166,7 @@ def create_output(formatter: Formatter) -> FileOutput | PlayerOutput:
             except OSError as err:
                 raise StreamlinkCLIError(f"Failed to create pipe: {err}") from err
         elif args.player_http:
-            http = create_http_server()
+            http = create_http_server(host="127.0.0.1", port=0)
 
         if args.record:
             if args.record == "-":
@@ -229,7 +230,7 @@ def output_stream_http(
                 + " You must specify the path to a player executable with --player.",
             )
 
-        server = create_http_server()
+        server = create_http_server(host="127.0.0.1", port=0)
         player = output = PlayerOutput(
             path=args.player,
             args=args.player_args,
@@ -246,7 +247,7 @@ def output_stream_http(
         except OSError as err:
             raise StreamlinkCLIError(f"Failed to start player: {args.player} ({err})") from err
     else:
-        server = create_http_server(args.player_external_http_interface, port)
+        server = create_http_server(host=args.player_external_http_interface, port=port)
         player = None
 
         log.info("Starting server, access with one of:")
@@ -266,7 +267,7 @@ def output_stream_http(
 
         stream_fd = prebuffer = None
         while not stream_fd and (not player or player.running):
-            try:
+            try:  # ruff: ignore[too-many-statements-in-try-clause]
                 if not initial_streams_used:
                     streams = initial_streams
                     initial_streams_used = True
@@ -585,19 +586,24 @@ def format_valid_streams(plugin: Plugin, streams: Mapping[str, Stream]) -> str:
     return delimiter.join(validstreams)
 
 
+def close_output():
+    if not output:  # pragma: no cover
+        return
+    with suppress(KeyboardInterrupt):
+        output.close()
+
+
 def handle_url_wrapper() -> int:
     exit_code = 0
     try:
         handle_url()
     except KeyboardInterrupt:
-        # Close output
-        if output:
-            try:
-                output.close()
-            except KeyboardInterrupt:
-                pass
+        close_output()
         console.msg("Interrupted! Exiting...")
         exit_code = 128 + signal.SIGINT
+    except Exception:
+        close_output()
+        raise
     finally:
         if stream_fd:
             try:
@@ -620,7 +626,7 @@ def handle_url():
 
     """
 
-    try:
+    try:  # ruff: ignore[too-many-statements-in-try-clause]
         pluginname, pluginclass, resolved_url = streamlink.resolve_url(args.url)
         log.info(f"Found matching plugin {pluginname} for URL {args.url}")
 
@@ -742,7 +748,11 @@ def setup_args(
     prefix = parser.fromfile_prefix_chars or "@"
     configs = [f"{prefix}{config_file}" for config_file in config_files or []]
 
-    args, unknown = parser.parse_known_args(configs + arglist)
+    try:
+        args, unknown = parser.parse_known_args(configs + arglist)
+    except argparse.ArgumentError as err:
+        raise StreamlinkCLIError(f"{parser.prog}: error: {err}", code=2) from err
+
     if unknown and not ignore_unknown:
         # output the same text as parser.error(), but raise a StreamlinkCLIError
         usage = parser.format_usage()
@@ -962,9 +972,13 @@ def setup_logger() -> None:
 
 
 def setup(parser: ArgumentParser) -> None:
-    setup_args(parser, ignore_unknown=True)
-    # call argument set up as early as possible to load args from config files
-    setup_config_args(parser, ignore_unknown=True)
+    # TODO: py310 support end: set filter in warnings.catch_warnings()
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter(action="ignore", category=StreamlinkDeprecationWarning)
+
+        setup_args(parser, ignore_unknown=True)
+        # call argument set up as early as possible to load args from config files
+        setup_config_args(parser, ignore_unknown=True)
 
     setup_console()
     setup_logger()
@@ -974,6 +988,7 @@ def setup(parser: ArgumentParser) -> None:
     setup_plugins(streamlink, not args.no_plugin_sideloading, args.plugin_dirs)
     setup_plugin_args(streamlink, parser)
     # call setup args again once the plugin specific args have been added
+    # deprecation warnings are emitted here
     setup_args(parser)
     setup_config_args(parser)
 
@@ -1023,7 +1038,8 @@ def main():
         parser = build_parser()
         setup(parser)
     except StreamlinkCLIError as err:
-        sys.stderr.write(f"{err}\n")
+        if sys.stderr:
+            sys.stderr.write(f"{err}\n")
         raise SystemExit(err.code) from None
 
     try:

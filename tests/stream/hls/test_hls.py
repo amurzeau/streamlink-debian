@@ -3,12 +3,13 @@ from __future__ import annotations
 import itertools
 import logging
 import os
+import struct
 import unittest
 from contextlib import nullcontext
 from datetime import datetime, timedelta, timezone
 from threading import Event
 from typing import TYPE_CHECKING, NamedTuple
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, patch
 
 import freezegun
 import pytest
@@ -28,13 +29,21 @@ from streamlink.stream.hls import (
     M3U8Parser,
     MuxedHLSStream,
 )
-from streamlink.stream.hls.hls import log
+from streamlink.stream.hls.hls import (
+    ID3v2FrameHLSPackedAudioTimestamp,
+    ID3v2HLSPackedAudio,
+    get_packed_audio_timestamp,
+    log,
+)
 from streamlink.utils.crypto import AES, pad
+from streamlink.utils.id3v2 import ID3v2FrameError
 from tests.mixins.stream_hls import EventedHLSStreamWorker, EventedHLSStreamWriter, Playlist, Segment, Tag, TestMixinStreamHLS
 from tests.resources import text
 
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from streamlink.session import Streamlink
 
 
@@ -152,7 +161,20 @@ class TestHLSVariantPlaylist:
 
     @pytest.mark.parametrize("streams", [{"multivariant": "hls/test_multivariant_twitch_usher_v2.m3u8"}], indirect=True)
     def test_framerate(self, streams: dict[str, HLSStream]):
-        assert sorted(streams.keys()) == ["1080p60", "160k", "160p", "360p", "480p", "720p60"]
+        assert sorted(streams.keys()) == [
+            "1080p60",
+            "1280p60",
+            "1440p60",
+            "160p",
+            "1920p60",
+            "210k",
+            "284p",
+            "360p",
+            "480p",
+            "640p",
+            "720p60",
+            "852p",
+        ]
 
     @pytest.mark.parametrize(
         ("streams", "expected"),
@@ -280,8 +302,7 @@ class TestHLSStream(TestMixinStreamHLS, unittest.TestCase):
 
         assert self.await_read(read_all=True) == self.content(segments), "Stream ends and read-all handshake doesn't time out"
 
-    @patch("streamlink.stream.segmented.segmented.log")
-    def test_duration(self, mock_log: Mock):
+    def test_duration(self):
         segments = self.subject(
             [
                 Playlist(
@@ -302,10 +323,11 @@ class TestHLSStream(TestMixinStreamHLS, unittest.TestCase):
         assert data == self.content(segments, cond=lambda s: 0 <= s.num < 3), "Respects the duration"
         assert all(self.called(s) for s in segments.values() if 0 <= s.num < 3), "Downloads first, second and third segment"
         assert not any(self.called(s) for s in segments.values() if s.num >= 3), "Skips other segments"
-        assert mock_log.info.call_args_list == [call("Stopping stream early after 5.00s")]
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            ("streamlink.stream.segmented", "info", "Stopping stream early after 5.00s"),
+        ]
 
-    @patch("streamlink.stream.segmented.segmented.log")
-    def test_offset_and_duration(self, mock_log: Mock):
+    def test_offset_and_duration(self):
         segments = self.subject(
             [
                 Playlist(
@@ -326,7 +348,9 @@ class TestHLSStream(TestMixinStreamHLS, unittest.TestCase):
         assert data == self.content(segments, cond=lambda s: 0 < s.num < 3), "Respects the offset and duration"
         assert all(self.called(s) for s in segments.values() if 0 < s.num < 3), "Downloads second and third segment"
         assert not any(self.called(s) for s in segments.values() if 0 > s.num > 3), "Skips other segments"
-        assert mock_log.info.call_args_list == [call("Stopping stream early after 1.00s")]
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            ("streamlink.stream.segmented", "info", "Stopping stream early after 1.00s"),
+        ]
 
     def test_map(self):
         discontinuity = Tag("EXT-X-DISCONTINUITY")
@@ -355,8 +379,7 @@ class TestHLSStream(TestMixinStreamHLS, unittest.TestCase):
 # TODO: finally rewrite the segmented/HLS test setup using pytest and replace redundant setups with parametrization
 @patch("streamlink.stream.hls.hls.HLSStreamWorker.wait", Mock(return_value=True))
 class TestCheckSequenceGap(TestMixinStreamHLS, unittest.TestCase):
-    @patch("streamlink.stream.segmented.segmented.log")
-    def test_no_discontinuity(self, mock_log: Mock):
+    def test_no_discontinuity(self):
         segments = self.subject([
             Playlist(0, [Segment(0), Segment(1)]),
             Playlist(2, [Segment(2), Segment(3)]),
@@ -366,10 +389,9 @@ class TestCheckSequenceGap(TestMixinStreamHLS, unittest.TestCase):
         data = self.await_read(read_all=True)
         assert data == self.content(segments)
         assert all(self.called(s) for s in segments.values())
-        assert mock_log.warning.call_args_list == []
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == []
 
-    @patch("streamlink.stream.segmented.segmented.log")
-    def test_discontinuity_single_segment(self, mock_log: Mock):
+    def test_discontinuity_single_segment(self):
         segments = self.subject([
             Playlist(0, [Segment(0), Segment(1)]),
             Playlist(2, [Segment(2), Segment(3)]),
@@ -380,13 +402,20 @@ class TestCheckSequenceGap(TestMixinStreamHLS, unittest.TestCase):
         data = self.await_read(read_all=True)
         assert data == self.content(segments)
         assert all(self.called(s) for s in segments.values())
-        assert mock_log.warning.call_args_list == [
-            call("Sequence gap of 1 segment at position 4. This is unsupported and will result in incoherent output data."),
-            call("Sequence gap of 1 segment at position 7. This is unsupported and will result in incoherent output data."),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            (
+                "streamlink.stream.segmented",
+                "warning",
+                "Sequence gap of 1 segment at position 4. This is unsupported and will result in incoherent output data.",
+            ),
+            (
+                "streamlink.stream.segmented",
+                "warning",
+                "Sequence gap of 1 segment at position 7. This is unsupported and will result in incoherent output data.",
+            ),
         ]
 
-    @patch("streamlink.stream.segmented.segmented.log")
-    def test_discontinuity_multiple_segments(self, mock_log: Mock):
+    def test_discontinuity_multiple_segments(self):
         segments = self.subject([
             Playlist(0, [Segment(0), Segment(1)]),
             Playlist(2, [Segment(2), Segment(3)]),
@@ -397,9 +426,17 @@ class TestCheckSequenceGap(TestMixinStreamHLS, unittest.TestCase):
         data = self.await_read(read_all=True)
         assert data == self.content(segments)
         assert all(self.called(s) for s in segments.values())
-        assert mock_log.warning.call_args_list == [
-            call("Sequence gap of 2 segments at position 4. This is unsupported and will result in incoherent output data."),
-            call("Sequence gap of 2 segments at position 8. This is unsupported and will result in incoherent output data."),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            (
+                "streamlink.stream.segmented",
+                "warning",
+                "Sequence gap of 2 segments at position 4. This is unsupported and will result in incoherent output data.",
+            ),
+            (
+                "streamlink.stream.segmented",
+                "warning",
+                "Sequence gap of 2 segments at position 8. This is unsupported and will result in incoherent output data.",
+            ),
         ]
 
 
@@ -430,10 +467,7 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
         worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment, ty:invalid-assignment]
         targetduration = ONE_SECOND * 5
 
-        with (
-            freezegun.freeze_time(EPOCH) as frozen_time,
-            patch("streamlink.stream.segmented.segmented.log") as mock_log,
-        ):
+        with freezegun.freeze_time(EPOCH) as frozen_time:
             self.start()
 
             assert worker.handshake_reload.wait_ready(1), "Loads playlist for the first time"
@@ -470,7 +504,7 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
                 assert worker._queue_last == EPOCH + ONE_SECOND + targetduration, "Last queue time is unchanged"
                 assert worker.playlist_targetduration == pytest.approx(5.0)
 
-            assert mock_log.warning.call_args_list == []
+            assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == []
 
             # trigger next reload when the target duration has passed
             frozen_time.tick(targetduration)
@@ -480,7 +514,9 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
             self.await_read(read_all=True)
             self.await_close(1)
 
-            assert mock_log.warning.call_args_list == [call("No new segments for more than 15.00s. Stopping...")]
+            assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+                ("streamlink.stream.segmented", "warning", "No new segments for more than 15.00s. Stopping..."),
+            ]
 
     def test_queue_deadline_reached_ignored(self) -> None:
         segments = self.subject(
@@ -538,10 +574,7 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
         worker: EventedHLSStreamWorker = self.thread.reader.worker  # type: ignore[assignment, ty:invalid-assignment]
         targetduration = ONE_SECOND
 
-        with (
-            freezegun.freeze_time(EPOCH) as frozen_time,
-            patch("streamlink.stream.segmented.segmented.log") as mock_log,
-        ):
+        with freezegun.freeze_time(EPOCH) as frozen_time:
             self.start()
 
             assert worker.handshake_reload.wait_ready(1), "Loads playlist for the first time"
@@ -568,7 +601,7 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
                 assert worker._queue_last == EPOCH + ONE_SECOND, "Last queue time is unchanged"
                 assert worker.playlist_targetduration == pytest.approx(1.0)
 
-            assert mock_log.warning.call_args_list == []
+            assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == []
 
             # trigger next reload when the target duration has passed
             frozen_time.tick(targetduration)
@@ -583,7 +616,9 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
             self.close()
             self.await_close()
 
-            assert mock_log.warning.call_args_list == [call("No new segments for more than 5.00s. Stopping...")]
+            assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+                ("streamlink.stream.segmented", "warning", "No new segments for more than 5.00s. Stopping..."),
+            ]
 
     def test_playlist_reload_offset(self) -> None:
         segments = self.subject(
@@ -679,8 +714,14 @@ class TestHLSStreamWorker(TestMixinStreamHLS, unittest.TestCase):
 
 
 class TestHLSStreamWorkerOptions:
+    @pytest.fixture()
+    def reader(self, request: pytest.FixtureRequest, session: Streamlink):
+        options = getattr(request, "param", {})
+        stream = HLSStream(session, "https://foo/", **options)
+        return HLSStreamReader(stream)
+
     @pytest.mark.parametrize(
-        ("options", "session", "expected", "warning"),
+        ("reader", "session", "expected", "warning"),
         [
             pytest.param(
                 {},
@@ -723,39 +764,38 @@ class TestHLSStreamWorkerOptions:
                 id="duration-priority",
             ),
         ],
-        indirect=["session"],
+        indirect=["reader", "session"],
     )
     def test_duration(
         self,
         recwarn: pytest.WarningsRecorder,
         session: Streamlink,
-        options: dict,
+        reader: HLSStreamReader,
         expected: float | None,
         warning: list,
     ):
-        stream = HLSStream(session, "https://foo/", **options)
-        reader = HLSStreamReader(stream)
-        worker = HLSStreamWorker(reader)
-
-        assert worker.duration_limit == expected
+        assert reader.worker.duration_limit == expected
         assert [(record.category, str(record.message)) for record in recwarn.list] == warning
 
     @pytest.mark.parametrize(
-        ("session", "expected", "warning"),
+        ("reader", "session", "expected", "warning"),
         [
             pytest.param(
+                {},
                 {},
                 3.0,
                 [],
                 id="default-value",
             ),
             pytest.param(
+                {},
                 {"stream-segmented-queue-deadline": 5.0},
                 5.0,
                 [],
                 id="stream-segmented-queue-deadline",
             ),
             pytest.param(
+                {},
                 {"hls-segment-queue-threshold": 5.0},
                 5.0,
                 [
@@ -768,21 +808,52 @@ class TestHLSStreamWorkerOptions:
                 id="hls-segment-queue-threshold",
             ),
         ],
-        indirect=["session"],
+        indirect=["reader", "session"],
     )
     def test_queue_deadline(
         self,
         recwarn: pytest.WarningsRecorder,
         session: Streamlink,
+        reader: HLSStreamReader,
         expected: float,
         warning: list,
     ):
-        stream = HLSStream(session, "https://foo/")
-        reader = HLSStreamReader(stream)
-        worker = HLSStreamWorker(reader)
-
-        assert worker._queue_deadline_factor == expected
+        assert reader.worker._queue_deadline_factor == expected
         assert [(record.category, str(record.message)) for record in recwarn.list] == warning
+
+
+duration_to_segments_data = [1.0, 2.0, 3.0, 5.0, 7.0]
+
+
+@pytest.mark.parametrize(
+    ("duration", "durations", "expected"),
+    [
+        pytest.param(0.0, [], -1, id="empty"),
+        pytest.param(0.0, duration_to_segments_data, 0, id="no-duration"),
+        pytest.param(1.0, duration_to_segments_data, 1, id="one-segment"),
+        pytest.param(6.0, duration_to_segments_data, 3, id="multiple-segments-exact"),
+        pytest.param(6.1, duration_to_segments_data, 4, id="multiple-segments-partial"),
+        pytest.param(-7.0, duration_to_segments_data, 3, id="negative-one-segment-exact"),
+        pytest.param(-1.0, duration_to_segments_data, 3, id="negative-one-segment-partial"),
+        pytest.param(-12.0, duration_to_segments_data, 2, id="negative-multiple-segments-exact"),
+        pytest.param(-12.1, duration_to_segments_data, 1, id="negative-multiple-segments-partial"),
+    ],
+)
+def test_hlsstreamworker_duration_to_sequence(duration: float, durations: list[float], expected: int):
+    segments = [
+        HLSSegment(
+            num=num,
+            duration=d,
+            uri="",
+            title=None,
+            key=None,
+            byterange=None,
+            date=None,
+            map=None,
+        )
+        for num, d in enumerate(durations)
+    ]
+    assert HLSStreamWorker.duration_to_sequence(duration, segments) == expected
 
 
 class TestHLSStreamWorkerPlaylistSequenceWarning:
@@ -833,8 +904,7 @@ class TestHLSStreamByterange(TestMixinStreamHLS, unittest.TestCase):
     # successful segments, so we can close the stream afterward and safely make the test assertions.
     # The EventedHLSStreamWriter could also implement await_fetch, but this is unnecessarily more complex than it already is.
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_unknown_offset(self, mock_log: Mock):
+    def test_unknown_offset(self):
         self.subject([
             Playlist(
                 0,
@@ -850,13 +920,12 @@ class TestHLSStreamByterange(TestMixinStreamHLS, unittest.TestCase):
         self.await_write(2 - 1)
         self.thread.close()
 
-        assert mock_log.error.call_args_list == [
-            call("Failed to fetch segment 0: Missing BYTERANGE offset"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            ("streamlink.stream.hls", "error", "Failed to fetch segment 0: Missing BYTERANGE offset"),
         ]
         assert not self.called(Segment(0))
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_unknown_offset_map(self, mock_log: Mock):
+    def test_unknown_offset_map(self):
         map1 = TagMap(1, self.id(), {"BYTERANGE": '"1234"'})
         self.mock("GET", self.url(map1), content=map1.content)
         self.subject([
@@ -874,13 +943,12 @@ class TestHLSStreamByterange(TestMixinStreamHLS, unittest.TestCase):
         self.await_write(3 - 1)
         self.thread.close()
 
-        assert mock_log.error.call_args_list == [
-            call("Failed to fetch map for segment 1: Missing BYTERANGE offset"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            ("streamlink.stream.hls", "error", "Failed to fetch map for segment 1: Missing BYTERANGE offset"),
         ]
         assert not self.called(map1)
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_invalid_offset_reference(self, mock_log: Mock):
+    def test_invalid_offset_reference(self):
         self.subject([
             Playlist(
                 0,
@@ -899,8 +967,8 @@ class TestHLSStreamByterange(TestMixinStreamHLS, unittest.TestCase):
         self.await_write(4 - 1)
         self.thread.close()
 
-        assert mock_log.error.call_args_list == [
-            call("Failed to fetch segment 2: Missing BYTERANGE offset"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            ("streamlink.stream.hls", "error", "Failed to fetch segment 2: Missing BYTERANGE offset"),
         ]
         assert self.mocks[self.url(Segment(0))].last_request._request.headers["Range"] == "bytes=0-2"
         assert not self.called(Segment(2))
@@ -974,8 +1042,7 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
 
         return aes_key, aes_iv, key
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_hls_encrypted_invalid_method(self, mock_log: Mock):
+    def test_hls_encrypted_invalid_method(self):
         aesKey, aesIv, key = self.gen_key(method="INVALID")
 
         self.subject([
@@ -987,12 +1054,11 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         self.await_close()
 
         assert b"".join(self.thread.data) == b""
-        assert mock_log.error.mock_calls == [
-            call("Failed to create decryptor: Unable to decrypt cipher INVALID"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            ("streamlink.stream.hls", "error", "Failed to create decryptor: Unable to decrypt cipher INVALID"),
         ]
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_hls_encrypted_missing_uri(self, mock_log: Mock):
+    def test_hls_encrypted_missing_uri(self):
         aesKey, aesIv, key = self.gen_key(uri=False)
 
         self.subject([
@@ -1004,12 +1070,11 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         self.await_close()
 
         assert b"".join(self.thread.data) == b""
-        assert mock_log.error.mock_calls == [
-            call("Failed to create decryptor: Missing URI for decryption key"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            ("streamlink.stream.hls", "error", "Failed to create decryptor: Missing URI for decryption key"),
         ]
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_hls_encrypted_missing_adapter(self, mock_log: Mock):
+    def test_hls_encrypted_missing_adapter(self):
         aesKey, aesIv, key = self.gen_key(uri="foo://bar/baz", mock={"exc": InvalidSchema})
 
         self.subject([
@@ -1021,8 +1086,12 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         self.await_close()
 
         assert b"".join(self.thread.data) == b""
-        assert mock_log.error.mock_calls == [
-            call("Failed to create decryptor: Unable to find connection adapter for key URI: foo://bar/baz"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            (
+                "streamlink.stream.hls",
+                "error",
+                "Failed to create decryptor: Unable to find connection adapter for key URI: foo://bar/baz",
+            ),
         ]
 
     def test_hls_encrypted_aes128(self):
@@ -1047,8 +1116,7 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         assert all(self.called(s) for s in segments.values() if s.num >= 1), "Downloads all remaining segments"
         assert self.get_mock(segments[1]).last_request._request.headers.get("X-FOO") == "BAR"
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_hls_encrypted_aes128_custom_adapter(self, mock_log: Mock):
+    def test_hls_encrypted_aes128_custom_adapter(self):
         class FooAdapter(requests.adapters.BaseAdapter):
             def close(self):  # pragma: no cover
                 return
@@ -1077,7 +1145,7 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         self.await_close()
 
         assert data == self.content(segments, prop="content_plain")
-        assert mock_log.error.call_args_list == []
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == []
 
     def test_hls_encrypted_aes128_with_map(self):
         aesKey, aesIv, key = self.gen_key()
@@ -1185,8 +1253,7 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         assert self.called(key, once=True), "Downloads custom encryption key"
         assert self.get_mock(key).last_request._request.headers.get("X-FOO") == "BAR"
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_hls_encrypted_aes128_incorrect_block_length(self, mock_log: Mock):
+    def test_hls_encrypted_aes128_incorrect_block_length(self):
         aesKey, aesIv, key = self.gen_key()
 
         segments = self.subject([
@@ -1208,12 +1275,15 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         self.await_close()
 
         assert data == self.content([segments[1]], prop="content_plain")
-        assert mock_log.error.mock_calls == [
-            call("Error while decrypting segment 0: Data must be padded to 16 byte boundary in CBC mode"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            (
+                "streamlink.stream.hls",
+                "error",
+                "Error while decrypting segment 0: Data must be padded to 16 byte boundary in CBC mode",
+            ),
         ]
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_hls_encrypted_aes128_incorrect_padding_length(self, mock_log: Mock):
+    def test_hls_encrypted_aes128_incorrect_padding_length(self):
         aesKey, aesIv, key = self.gen_key()
 
         padding = b"\x00" * (AES.block_size - len(b"[0]"))
@@ -1236,10 +1306,11 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         self.await_close()
 
         assert data == self.content([segments[1]], prop="content_plain")
-        assert mock_log.error.mock_calls == [call("Error while decrypting segment 0: Padding is incorrect.")]
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            ("streamlink.stream.hls", "error", "Error while decrypting segment 0: Padding is incorrect."),
+        ]
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_hls_encrypted_aes128_incorrect_padding_content(self, mock_log: Mock):
+    def test_hls_encrypted_aes128_incorrect_padding_content(self):
         aesKey, aesIv, key = self.gen_key()
 
         padding = (b"\x00" * (AES.block_size - len(b"[0]") - 1)) + bytes([AES.block_size])
@@ -1262,7 +1333,9 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         self.await_close()
 
         assert data == self.content([segments[1]], prop="content_plain")
-        assert mock_log.error.mock_calls == [call("Error while decrypting segment 0: PKCS#7 padding is incorrect.")]
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            ("streamlink.stream.hls", "error", "Error while decrypting segment 0: PKCS#7 padding is incorrect."),
+        ]
 
     def test_hls_encrypted_switch_methods(self):
         aesKey1, aesIv1, key_aes128_1 = self.gen_key()
@@ -1296,8 +1369,9 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         expected += self.content(segments, prop="content_plain", cond=lambda s: 4 <= s.num <= 5)
         assert data == expected, "Switches between encryption key methods"
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_hls_passthrough_encrypted(self, mock_log: Mock):
+    def test_hls_passthrough_encrypted(self):
+        self.caplog.set_level("debug", "streamlink")
+
         aes_key, aes_iv, key = self.gen_key()
         segments = self.subject(
             options={
@@ -1320,17 +1394,17 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
         assert data != encrypted, "Does not decrypt the stream data"
         assert (
             len([
-                call_arg
-                for call_arg in mock_log.debug.call_args_list
-                if call_arg.args == ("Segments in this playlist are encrypted",)
+                r
+                for r in self.caplog.records
+                if r.getMessage() == "Segments in this playlist are encrypted"
             ])
             == 1
-        )
+        )  # fmt: skip
         assert (
             len([
-                call_arg
-                for call_arg in mock_log.warning.call_args_list
-                if call_arg.args == ("The stream content is encrypted with '%s' and won't be decrypted", "AES-128")
+                r
+                for r in self.caplog.records
+                if r.getMessage() == "The stream content is encrypted with 'AES-128' and won't be decrypted"
             ])
             == 1
         )
@@ -1343,8 +1417,7 @@ class TestHLSStreamEncrypted(TestMixinStreamHLS, unittest.TestCase):
     lambda writer: writer._queue.get(block=True, timeout=0.01),
 )
 class TestHlsInsecureSchemeMedia(TestMixinStreamHLS, unittest.TestCase):
-    @patch("streamlink.stream.hls.hls.log")
-    def test_http_to_file_segment(self, mock_log: Mock):
+    def test_http_to_file_segment(self):
         class FileSegment(Segment):
             @property
             def path(self):
@@ -1353,32 +1426,41 @@ class TestHlsInsecureSchemeMedia(TestMixinStreamHLS, unittest.TestCase):
         self.subject([Playlist(0, [Segment(0), FileSegment(1)], end=True)])
 
         assert self.await_read(read_all=True) == b"", "Rejects the entire playlist"
-        assert mock_log.error.call_args_list == [
-            call("Prevented access to insecure resource in playlist: base_scheme='http' scheme='file'"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            (
+                "streamlink.stream.hls",
+                "error",
+                "Prevented access to insecure resource in playlist: base_scheme='http' scheme='file'",
+            ),
         ]
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_http_to_file_map(self, mock_log: Mock):
+    def test_http_to_file_map(self):
         map0 = TagMap(0, "", attrs={"URI": "file:///path/map0"})
         self.subject([Playlist(0, [map0, Segment(0)], end=True)])
 
         assert self.await_read(read_all=True) == b"", "Rejects the entire playlist"
-        assert mock_log.error.call_args_list == [
-            call("Prevented access to insecure resource in playlist: base_scheme='http' scheme='file'"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            (
+                "streamlink.stream.hls",
+                "error",
+                "Prevented access to insecure resource in playlist: base_scheme='http' scheme='file'",
+            ),
         ]
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_http_to_file_key(self, mock_log: Mock):
+    def test_http_to_file_key(self):
         key = TagKey(method="AES-128", uri="file:///key", iv=os.urandom(16), keyformat="identity", keyformatversions=1)
         self.subject([Playlist(0, [key, Segment(0)], end=True)])
 
         assert self.await_read(read_all=True) == b"", "Rejects the entire playlist"
-        assert mock_log.error.call_args_list == [
-            call("Prevented access to insecure resource in playlist: base_scheme='http' scheme='file'"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            (
+                "streamlink.stream.hls",
+                "error",
+                "Prevented access to insecure resource in playlist: base_scheme='http' scheme='file'",
+            ),
         ]
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_file_to_file(self, mock_log: Mock):
+    def test_file_to_file(self):
         class FilePlaylist(Playlist):
             def url(self, namespace):
                 return "file:///path/playlist"
@@ -1394,10 +1476,9 @@ class TestHlsInsecureSchemeMedia(TestMixinStreamHLS, unittest.TestCase):
         segments = self.subject([FilePlaylist(0, [FileSegment(0), FileSegment(1)], end=True)])
 
         assert self.await_read(read_all=True) == self.content(segments)
-        assert mock_log.error.call_args_list == []
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == []
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_http_to_https(self, mock_log: Mock):
+    def test_http_to_https(self):
         class SecureSegment(Segment):
             @property
             def path(self):
@@ -1409,10 +1490,9 @@ class TestHlsInsecureSchemeMedia(TestMixinStreamHLS, unittest.TestCase):
         segments = self.subject([Playlist(0, [SecureSegment(0)], end=True)])
 
         assert self.await_read(read_all=True) == self.content(segments)
-        assert mock_log.error.call_args_list == []
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == []
 
-    @patch("streamlink.stream.hls.hls.log")
-    def test_https_to_http(self, mock_log: Mock):
+    def test_https_to_http(self):
         class SecurePlaylist(Playlist):
             def url(self, namespace):
                 return f"https://mocked/{namespace}/{self.path}"
@@ -1428,8 +1508,12 @@ class TestHlsInsecureSchemeMedia(TestMixinStreamHLS, unittest.TestCase):
         self.subject([SecurePlaylist(0, [InsecureSegment(0)], end=True)])
 
         assert self.await_read(read_all=True) == b"", "Rejects the entire playlist"
-        assert mock_log.error.call_args_list == [
-            call("Prevented access to insecure resource in playlist: base_scheme='https' scheme='http'"),
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            (
+                "streamlink.stream.hls",
+                "error",
+                "Prevented access to insecure resource in playlist: base_scheme='https' scheme='http'",
+            ),
         ]
 
 
@@ -1597,13 +1681,28 @@ class TestHlsReloadTime(TestMixinStreamHLS, unittest.TestCase):
         time = self.subject([Playlist(0, [], end=True, targetduration=0)], reload_time="live-edge")
         assert time == 6, "sets reload time to 6 seconds when no segments and no targetduration are available"
 
-    def test_number(self):
+    def test_number_int(self):
         time = self.subject([Playlist(0, self.segments, end=True, targetduration=4)], reload_time="2")
         assert time == 2, "number values override the reload time"
+
+    def test_number_float(self):
+        time = self.subject([Playlist(0, self.segments, end=True, targetduration=4)], reload_time="2.5")
+        assert time == pytest.approx(2.5), "number values override the reload time"
 
     def test_number_invalid(self):
         time = self.subject([Playlist(0, self.segments, end=True, targetduration=4)], reload_time="0")
         assert time == 4, "invalid number values set the reload time to the playlist's targetduration"
+
+    def test_number_error(self):
+        time = self.subject([Playlist(0, self.segments, end=True, targetduration=4)], reload_time="foo")
+        assert time == 4, "invalid number values set the reload time to the playlist's targetduration"
+        assert [(record.name, record.levelname, record.getMessage()) for record in self.caplog.records] == [
+            (
+                "streamlink.stream.hls",
+                "error",
+                "Failed parsing hls-playlist-reload-time value: could not convert string to float: 'foo'",
+            ),
+        ]
 
     def test_no_target_duration(self):
         time = self.subject([Playlist(0, self.segments, end=True, targetduration=0)], reload_time="default")
@@ -1614,7 +1713,6 @@ class TestHlsReloadTime(TestMixinStreamHLS, unittest.TestCase):
         assert time == 6, "sets reload time to 6 seconds when no data is available"
 
 
-@patch("streamlink.stream.hls.hls.log")
 @patch("streamlink.stream.hls.hls.HLSStreamWorker.wait", Mock(return_value=True))
 @patch("streamlink.stream.hls.hls.HLSStreamWorker.check_queue_deadline", Mock(return_value=False))
 class TestHlsPlaylistParseErrors(TestMixinStreamHLS, unittest.TestCase):
@@ -1628,15 +1726,21 @@ class TestHlsPlaylistParseErrors(TestMixinStreamHLS, unittest.TestCase):
         def build(self, *args, **kwargs):
             return "invalid"
 
-    def test_generic(self, mock_log):
+    def test_generic(self):
+        self.caplog.set_level("debug", "streamlink")
+
         self.subject([self.InvalidPlaylist()])
         assert self.await_read(read_all=True) == b""
         self.await_close()
         assert self.thread.reader.buffer.closed, "Closes the stream on initial playlist parsing error"
-        assert mock_log.debug.mock_calls == [call("Reloading playlist")]
-        assert mock_log.error.mock_calls == [call("Missing #EXTM3U header")]
+        assert [
+            (record.levelname, record.getMessage()) for record in self.caplog.records if record.name == "streamlink.stream.hls"
+        ] == [
+            ("debug", "Reloading playlist"),
+            ("error", "Missing #EXTM3U header"),
+        ]
 
-    def test_reload(self, mock_log):
+    def test_reload(self):
         segments = self.subject([
             Playlist(1, [Segment(0)]),
             self.InvalidPlaylist(),
@@ -1648,30 +1752,42 @@ class TestHlsPlaylistParseErrors(TestMixinStreamHLS, unittest.TestCase):
         assert data == self.content(segments)
         self.close()
         self.await_close()
-        assert mock_log.warning.mock_calls == [
-            call("Reloading failed: Missing #EXTM3U header"),
-            call("Reloading failed: Missing #EXTM3U header"),
+        assert [
+            (record.levelname, record.getMessage()) for record in self.caplog.records if record.name == "streamlink.stream.hls"
+        ] == [
+            ("warning", "Reloading failed: Missing #EXTM3U header"),
+            ("warning", "Reloading failed: Missing #EXTM3U header"),
         ]
 
     @patch("streamlink.stream.hls.hls.parse_m3u8", Mock(return_value=FakePlaylist(is_master=True)))
-    def test_is_master(self, mock_log):
+    def test_is_master(self):
+        self.caplog.set_level("debug", "streamlink")
+
         self.subject([Playlist()])
         assert self.await_read(read_all=True) == b""
         self.await_close()
         assert self.thread.reader.buffer.closed, "Closes the stream on initial playlist parsing error"
-        assert mock_log.debug.mock_calls == [call("Reloading playlist")]
-        assert mock_log.error.mock_calls == [
-            call(f"Attempted to play a variant playlist, use 'hls://{self.stream.url}' instead"),
+        assert [
+            (record.levelname, record.getMessage()) for record in self.caplog.records if record.name == "streamlink.stream.hls"
+        ] == [
+            ("debug", "Reloading playlist"),
+            ("error", f"Attempted to play a variant playlist, use 'hls://{self.stream.url}' instead"),
         ]
 
     @patch("streamlink.stream.hls.hls.parse_m3u8", Mock(return_value=FakePlaylist(iframes_only=True)))
-    def test_iframes_only(self, mock_log):
+    def test_iframes_only(self):
+        self.caplog.set_level("debug", "streamlink")
+
         self.subject([Playlist()])
         assert self.await_read(read_all=True) == b""
         self.await_close()
         assert self.thread.reader.buffer.closed, "Closes the stream on initial playlist parsing error"
-        assert mock_log.debug.mock_calls == [call("Reloading playlist")]
-        assert mock_log.error.mock_calls == [call("Streams containing I-frames only are not playable")]
+        assert [
+            (record.levelname, record.getMessage()) for record in self.caplog.records if record.name == "streamlink.stream.hls"
+        ] == [
+            ("debug", "Reloading playlist"),
+            ("error", "Streams containing I-frames only are not playable"),
+        ]
 
 
 class TestHlsExtAudio:
@@ -1841,3 +1957,150 @@ class TestM3U8ParserLogging:
         parser.parse(data)
 
         assert bool(caplog.records) is has_logs
+
+
+class TestID3v2HLSPackedAudio:
+    @pytest.fixture()
+    def iterator(self):
+        return iter([
+            # first valid tag
+            b"ID3\x04\x00\x00\x00\x00\x00\x3f",
+            b"PRIV\x00\x00\x00\x35\x00\x00",
+            b"com.apple.streaming.transportStreamTimestamp",
+            b"\x00\x00\x00\x00\x00\x00\x00\x00\x01",
+            # second valid tag
+            b"ID3\x04\x00\x00\x00\x00\x00\x3f",
+            b"PRIV\x00\x00\x00\x35\x00\x00",
+            b"com.apple.streaming.transportStreamTimestamp",
+            b"\x00\x00\x00\x00\x00\x00\x00\x00\x02",
+            # packed audio data
+            b"remaining",
+        ])
+
+    def test_get_packed_audio_timestamp(self, iterator: Iterator[bytes]):
+        tags, iterator = ID3v2HLSPackedAudio.parse_tags(iterator)
+        assert get_packed_audio_timestamp(tags) == pytest.approx(1 / 90000)
+
+    def test_frames(self, iterator: Iterator[bytes]):
+        (first, second), iterator = ID3v2HLSPackedAudio.parse_tags(iterator)
+        assert b"".join(iterator) == b"remaining"
+
+        assert first.frames[0].ident == b"PRIV"
+        assert first.frames[0].result == ID3v2FrameHLSPackedAudioTimestamp(1)
+        assert first.frames[0].error is None
+
+        assert second.frames[0].ident == b"PRIV"
+        assert second.frames[0].result == ID3v2FrameHLSPackedAudioTimestamp(2)
+        assert second.frames[0].error is None
+
+    def test_invalid_timestamp(self):
+        iterator = iter([
+            b"ID3\x04\x00\x00\x00\x00\x00\x3f",
+            b"PRIV\x00\x00\x00\x35\x00\x00",
+            b"com.apple.streaming.transportStreamTimestamp",
+            b"\x00\x12\x34\x56\x78\x9a\xbc\xde\xf0",
+            b"remaining",
+        ])
+        (tag,), iterator = ID3v2HLSPackedAudio.parse_tags(iterator)
+        assert b"".join(iterator) == b"remaining"
+
+        assert tag.frames[0].result is None
+        assert isinstance(tag.frames[0].error, ID3v2FrameError)
+        assert str(tag.frames[0].error) == "Invalid timestamp value for PRIV frame com.apple.streaming.transportStreamTimestamp"
+
+    def test_invalid_size(self):
+        iterator = iter([
+            b"ID3\x04\x00\x00\x00\x00\x00\x40",
+            b"PRIV\x00\x00\x00\x36\x00\x00",
+            b"com.apple.streaming.transportStreamTimestamp",
+            b"\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00",
+            b"remaining",
+        ])
+        (tag,), iterator = ID3v2HLSPackedAudio.parse_tags(iterator)
+        assert b"".join(iterator) == b"remaining"
+
+        assert tag.frames[0].result is None
+        assert isinstance(tag.frames[0].error, ID3v2FrameError)
+        assert str(tag.frames[0].error) == "Invalid data size for PRIV frame com.apple.streaming.transportStreamTimestamp"
+
+
+@patch("streamlink.stream.hls.hls.HLSStreamWorker.wait", Mock(return_value=True))
+class TestHlsPackedAudio(TestMixinStreamHLS, unittest.TestCase):
+    class PASegment(Segment):
+        def __init__(self, *args, ts: int = 0, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.audio_content = self.content
+            self.content = b"".join([
+                b"ID3\x04\x00\x00\x00\x00\x00\x3f",
+                b"PRIV\x00\x00\x00\x35\x00\x00",
+                b"com.apple.streaming.transportStreamTimestamp",
+                b"\x00",
+                struct.pack(">Q", ts),
+                self.content,
+            ])
+
+    def test_packed_audio_stream(self):
+        mocked_get_packed_audio_timestamp = Mock(side_effect=get_packed_audio_timestamp)
+        with patch("streamlink.stream.hls.hls.get_packed_audio_timestamp", mocked_get_packed_audio_timestamp):
+            segments = self.subject([
+                Playlist(0, [self.PASegment(0, ts=1234), self.PASegment(1, ts=1235)], end=True),
+            ])
+            data = self.await_read(read_all=True)
+
+        assert data == self.content(segments, prop="audio_content")
+        assert self.stream.packed_audio_timestamp == pytest.approx(1234 / 90000)
+        assert self.stream.parse_packed_audio
+        assert mocked_get_packed_audio_timestamp.call_count == 1
+
+    def test_no_packed_audio_stream(self):
+        mocked_get_packed_audio_timestamp = Mock(side_effect=get_packed_audio_timestamp)
+        with patch("streamlink.stream.hls.hls.get_packed_audio_timestamp", mocked_get_packed_audio_timestamp):
+            segments = self.subject([
+                Playlist(0, [Segment(0), Segment(1)], end=True),
+            ])
+            data = self.await_read(read_all=True)
+
+        assert data == self.content(segments, prop="content")
+        assert self.stream.packed_audio_timestamp is None
+        assert not self.stream.parse_packed_audio
+        assert mocked_get_packed_audio_timestamp.call_count == 0
+
+
+@pytest.mark.parametrize(
+    ("timestamps", "itsoffset", "copyts"),
+    [
+        pytest.param([], [], None, id="no-packed-audio"),
+        pytest.param([None, 123], [None, 123, None], True, id="first"),
+        pytest.param([None, None, 123], [None, None, 123], True, id="second"),
+        pytest.param([None, 123, 456], [None, 123, 456], True, id="both"),
+    ],
+)
+def test_muxedhlsstream_packed_audio_ffmpeg_options(
+    monkeypatch: pytest.MonkeyPatch,
+    session: Streamlink,
+    timestamps: list,
+    itsoffset: list,
+    copyts: bool,
+):
+    def reader_open(reader: HLSStreamReader):
+        reader.buffer.event_used.set()
+
+    fake_streamio = object()
+    fake_ffmpegmuxer = Mock(open=Mock(return_value=fake_streamio))
+    monkeypatch.setattr("streamlink.stream.segmented.segmented.SegmentedStreamReader.open", reader_open)
+    monkeypatch.setattr("streamlink.stream.ffmpegmux.FFMPEGMuxer", Mock(return_value=fake_ffmpegmuxer))
+
+    packed_audio_stream = MuxedHLSStream[HLSStream](
+        session,
+        "mocked://video/1",
+        ["mocked://audio/1", "mocked://audio/2"],
+    )
+    assert len(packed_audio_stream.substreams) == 3
+
+    for idx, timestamp in enumerate(timestamps):
+        packed_audio_stream.substreams[idx].packed_audio_timestamp = timestamp
+
+    assert packed_audio_stream.open() is fake_streamio
+    assert packed_audio_stream.options.get("format") == "mpegts"
+    assert packed_audio_stream.options.get("itsoffset", []) == itsoffset
+    assert packed_audio_stream.options.get("copyts") is copyts

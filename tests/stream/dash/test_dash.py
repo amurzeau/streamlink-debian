@@ -55,7 +55,7 @@ class TestDASHStreamParseManifest:
     @pytest.fixture()
     def mpd(self, monkeypatch: pytest.MonkeyPatch, parse_xml: Mock):
         mpd = Mock()
-        monkeypatch.setattr("streamlink.stream.dash.dash.MPD", mpd)
+        monkeypatch.setattr(DASHStream, "__parser__", mpd)
         return mpd
 
     @pytest.mark.parametrize(
@@ -408,7 +408,7 @@ class TestDASHStreamOpen:
     @pytest.fixture()
     def reader(self, monkeypatch: pytest.MonkeyPatch):
         reader = Mock()
-        monkeypatch.setattr("streamlink.stream.dash.dash.DASHStreamReader", reader)
+        monkeypatch.setattr(DASHStream, "__reader__", reader)
         return reader
 
     @pytest.fixture()
@@ -525,7 +525,7 @@ class TestDASHStreamWorker:
     @staticmethod
     def _iter_segments(iter_segments: Generator[DASHSegment, bool, None]) -> Iterator[DASHSegment]:
         queued: bool | None = None
-        try:
+        try:  # ruff: ignore[too-many-statements-in-try-clause]
             while True:
                 if queued is None:
                     yield next(iter_segments)
@@ -621,6 +621,41 @@ class TestDASHStreamWorker:
                 "Failed to find matching DASH representation: (None, None, '1')",
             ),
         ]
+
+    def test_dynamic_reload_location_insecure(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+        timestamp: datetime,
+        worker: DASHStreamWorker,
+        representation: Mock,
+        segments: list[DASHSegment],
+        mpd: Mock,
+    ):
+        caplog.set_level("INFO", "streamlink")
+
+        mpd.dynamic = True
+        mpd.type = "dynamic"
+
+        segment_iter = self._iter_segments(worker.iter_segments())
+
+        monkeypatch.setattr(
+            "streamlink.stream.dash.dash.MPD",
+            Mock(return_value=mpd),
+        )
+        representation.segments.return_value = segments[:2]
+        assert self._next_segments(worker, segment_iter, 2) == segments[:2]
+        assert representation.segments.call_args_list == [call(sequence=-1, init=True, timestamp=timestamp)]
+
+        monkeypatch.setattr(
+            "streamlink.stream.dash.dash.MPD",
+            Mock(side_effect=MPDParsingError("Prevented access to insecure MPD location")),
+        )
+        representation.segments.reset_mock()
+        representation.segments.return_value = segments[3:]
+        with pytest.raises(MPDParsingError, match=r"^Prevented access to insecure MPD location"):
+            self._next_segments(worker, segment_iter, 3)
+        assert representation.segments.call_args_list == []
 
     def test_static(
         self,

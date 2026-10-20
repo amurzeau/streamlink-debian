@@ -274,7 +274,7 @@ class SegmentedStreamWorker(AwaitableMixin, NamedThread, Generic[TSegment, TResu
         iter_segments = self.iter_segments()
         queued: bool | None = None
 
-        try:
+        try:  # ruff: ignore[too-many-statements-in-try-clause]
             while True:
                 if queued is None:
                     segment = next(iter_segments)
@@ -327,11 +327,20 @@ class SegmentedStreamReader(StreamIO, Generic[TSegment, TResult]):
         self.writer = self.__writer__(self, name=name)
         self.worker = self.__worker__(self, name=name)
 
+        self._opened = False
+
     def open(self) -> None:
+        if self._opened:
+            return
+
         self.writer.start()
         self.worker.start()
+        self._opened = True
 
     def close(self) -> None:
+        if not self._opened:
+            return
+
         self.worker.close()
         self.writer.close()
         self.buffer.close()

@@ -26,7 +26,7 @@ from dataclasses import dataclass, replace as dataclass_replace
 from datetime import timedelta
 from json import dumps as json_dumps
 from random import random
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, cast
 from urllib.parse import urlparse
 
 from requests.exceptions import HTTPError
@@ -154,25 +154,34 @@ class TwitchM3U8Parser(M3U8Parser[TwitchM3U8, TwitchHLSSegment, HLSPlaylist]):
 
         return segment
 
-    def get_playlist(self, *args, **kwargs):
+    def get_playlist(self, *args, **kwargs) -> HLSPlaylist:
         streaminf = self._streaminf or {}
         playlist = super().get_playlist(*args, **kwargs)
-        # backwards compatibility for stream names on Usher v2
-        if not playlist.media and (name := streaminf.get("IVS-NAME")):
-            is_audio_only = name in ("audio_only", "audio")  # live + VOD
-            media = Media(
-                uri=None,
-                type="VIDEO",
-                group_id=name,
-                language=None,
-                name=name,
-                default=not is_audio_only,
-                autoselect=not is_audio_only,
-                forced=False,
-                characteristics=None,
-            )
-            playlist.stream_info.video = name
-            playlist.media.append(media)
+
+        name = playlist.get_name_pixels(with_framerate=True)
+        variant_id = streaminf.get("STABLE-VARIANT-ID", "").lower()
+        is_audio_only = False
+        if name and streaminf.get("IVS-GROUPS", "").lower() == "portrait":
+            name = f"{name}_portrait"
+        elif variant_id.startswith("audio"):
+            name = "audio_only"
+            is_audio_only = True
+        else:
+            name = variant_id
+
+        media = Media(
+            uri=None,
+            type="VIDEO",
+            group_id=name,
+            language=None,
+            name=name,
+            default=not is_audio_only,
+            autoselect=not is_audio_only,
+            forced=False,
+            characteristics=None,
+        )
+        playlist.stream_info.video = name
+        playlist.media = [media]
 
         return playlist
 
@@ -297,7 +306,7 @@ class UsherService:
         self.session = session
         self.supported_codecs = supported_codecs or self.SUPPORTED_CODECS_DEFAULT
 
-    def _create_url(self, endpoint, **extra_params):
+    def _create_url(self, endpoint, **extra_params) -> str:
         url = f"https://usher.ttvnw.net{endpoint}"
         params = {
             "platform": "web",
@@ -305,13 +314,14 @@ class UsherService:
             "allow_source": "true",
             "allow_audio_only": "true",
             "playlist_include_framerate": "true",
+            "multigroup_video": "true",
             "supported_codecs": ",".join(self.supported_codecs),
         }
         params.update(extra_params)
 
         req = self.session.http.prepare_new_request(url=url, params=params)
 
-        return req.url
+        return cast("str", req.url)
 
     def channel(self, channel: str, **extra_params) -> str:
         with suppress(PluginError):
@@ -448,37 +458,34 @@ class TwitchAPI:
             queries,
             schema=validate.all(
                 validate.list(
-                    validate.all(
-                        {
-                            "data": {
-                                "userOrError": {
-                                    "displayName": str,
+                    {
+                        "data": {
+                            "userOrError": {
+                                "displayName": str,
+                            },
+                        },
+                    },
+                    {
+                        "data": {
+                            "user": {
+                                "lastBroadcast": {
+                                    "title": str,
+                                },
+                                "stream": {
+                                    "id": str,
+                                    "game": validate.none_or_all(
+                                        {"name": str},
+                                        validate.get("name"),
+                                    ),
                                 },
                             },
                         },
-                    ),
-                    validate.all(
-                        {
-                            "data": {
-                                "user": {
-                                    "lastBroadcast": {
-                                        "title": str,
-                                    },
-                                    "stream": {
-                                        "id": str,
-                                        "game": {
-                                            "name": str,
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    ),
+                    },
                 ),
                 validate.union_get(
                     (1, "data", "user", "stream", "id"),
                     (0, "data", "userOrError", "displayName"),
-                    (1, "data", "user", "stream", "game", "name"),
+                    (1, "data", "user", "stream", "game"),
                     (1, "data", "user", "lastBroadcast", "title"),
                 ),
             ),
@@ -676,8 +683,10 @@ class TwitchClientIntegrity:
         headers: Mapping[str, str],
         device_id: str,
     ) -> tuple[str, int] | None:
-        from streamlink.compat import BaseExceptionGroup  # noqa: PLC0415
-        from streamlink.webbrowser.cdp import CDPClient, CDPClientSession, devtools  # noqa: PLC0415, TC001
+        # ruff: disable[import-outside-top-level]
+        from streamlink.compat import BaseExceptionGroup
+        from streamlink.webbrowser.cdp import CDPClient, CDPClientSession, devtools
+        # ruff: enable[import-outside-top-level]
 
         url = f"https://www.twitch.tv/{channel}"
         js_get_integrity_token = cls.JS_INTEGRITY_TOKEN \
@@ -693,7 +702,6 @@ class TwitchClientIntegrity:
                 cm.body = "<!doctype html>"
 
         async def acquire_client_integrity_token(client: CDPClient):
-            client_session: CDPClientSession
             async with client.session() as client_session:
                 client_session.add_request_handler(on_main, url_pattern=url, on_request=True)
                 async with client_session.navigate(url) as frame_id:
@@ -839,9 +847,14 @@ class Twitch(Plugin):
 
     @classmethod
     def stream_weight(cls, stream: str) -> tuple[float, str]:
-        if stream == "source":
-            return sys.maxsize, stream
-        return super().stream_weight(stream)
+        if stream.startswith("audio"):
+            return 0, "audio"
+
+        weight, group = super().stream_weight(stream.removesuffix("_portrait"))
+        if stream.endswith("_portrait"):
+            return weight, group
+
+        return (sys.maxsize >> 16) + weight, group
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -887,8 +900,17 @@ class Twitch(Plugin):
             method = f"get_{metadata}"
             setattr(self, method, method_factory(getattr(parent, method)))
 
+    def streams(self, stream_types=None, sorting_excludes=None):
+        def sorting_excludes_default(stream: str):
+            return not (stream.startswith("audio") or stream.endswith("_portrait"))
+
+        return super().streams(
+            stream_types,
+            sorting_excludes=sorting_excludes_default if sorting_excludes is None else sorting_excludes,
+        )
+
     def _get_metadata(self):
-        try:
+        with suppress(PluginError, TypeError):
             if self.video_id:
                 data = self.api.metadata_video(self.video_id)
             elif self.clip_id:
@@ -898,8 +920,6 @@ class Twitch(Plugin):
             else:  # pragma: no cover
                 return
             self.id, self.author, self.category, self.title = data
-        except (PluginError, TypeError):
-            pass
 
     def _client_integrity_token(self, channel: str) -> tuple[str, str] | None:
         if self.options.get("purge-client-integrity"):
@@ -993,9 +1013,8 @@ class Twitch(Plugin):
                 **extra_params,
             )
         except OSError as err:
-            # TODO: fix the "err" attribute set by HTTPSession.request()
-            orig = getattr(err, "err", None)
-            if isinstance(orig, HTTPError) and orig.response.status_code >= 400:
+            orig = err.__context__
+            if isinstance(orig, HTTPError) and orig.response is not None and orig.response.status_code >= 400:
                 # The playlist's error response may include JSON data with an error message
                 with suppress(PluginError):
                     error = validate.Schema(

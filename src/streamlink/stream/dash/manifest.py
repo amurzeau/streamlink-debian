@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 from itertools import count, repeat
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeAlias, TypeVar, overload
-from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.parse import urljoin, urlparse
 
 from isodate import Duration, parse_datetime, parse_duration  # type: ignore[import]
 
@@ -56,8 +56,10 @@ def count_dt(firstval: datetime | None = None, step: timedelta = ONE_SECOND) -> 
 @contextmanager
 def freeze_timeline(mpd):
     timelines = copy.copy(mpd.timelines)
-    yield
-    mpd.timelines = timelines
+    try:
+        yield
+    finally:
+        mpd.timelines = timelines
 
 
 _re_segment_template = re.compile(r"(.*?)\$(\w+)(?:%([\w.]+))?\$")
@@ -165,6 +167,8 @@ class MPDNode:
     def attr(
         self,
         key: str,
+        *,
+        namespace: str | None = None,
         inherited: TAttrInherited = None,
     ) -> str | None: ...  # pragma: no cover
 
@@ -172,6 +176,8 @@ class MPDNode:
     def attr(
         self,
         key: str,
+        *,
+        namespace: str | None = None,
         parser: type[TAttrParseResult] | Callable[[Any], TAttrParseResult],
         inherited: TAttrInherited = None,
     ) -> TAttrParseResult | None: ...  # pragma: no cover
@@ -180,6 +186,8 @@ class MPDNode:
     def attr(
         self,
         key: str,
+        *,
+        namespace: str | None = None,
         required: Literal[True],
         inherited: TAttrInherited = None,
     ) -> str: ...  # pragma: no cover
@@ -188,6 +196,8 @@ class MPDNode:
     def attr(
         self,
         key: str,
+        *,
+        namespace: str | None = None,
         parser: type[TAttrParseResult] | Callable[[Any], TAttrParseResult],
         required: Literal[True],
         inherited: TAttrInherited = None,
@@ -197,6 +207,8 @@ class MPDNode:
     def attr(
         self,
         key: str,
+        *,
+        namespace: str | None = None,
         required: bool = False,
         inherited: TAttrInherited = None,
     ) -> str | None: ...  # pragma: no cover
@@ -205,6 +217,8 @@ class MPDNode:
     def attr(
         self,
         key: str,
+        *,
+        namespace: str | None = None,
         default: TAttrDefault,
         inherited: TAttrInherited = None,
     ) -> str | TAttrDefault: ...  # pragma: no cover
@@ -213,20 +227,29 @@ class MPDNode:
     def attr(
         self,
         key: str,
+        *,
+        namespace: str | None = None,
         parser: type[TAttrParseResult] | Callable[[Any], TAttrParseResult],
         default: TAttrDefault,
         inherited: TAttrInherited = None,
     ) -> TAttrParseResult | TAttrDefault: ...  # pragma: no cover
 
-    def attr(self, key, parser=None, default=None, required=False, inherited=None):
+    def attr(self, key, *, namespace=None, parser=None, default=None, required=False, inherited=None):
         self.attributes.add(key)
-        if key in self.attrib:
-            value = self.attrib.get(key)
+
+        if namespace is None:
+            attrib = key
+        else:
+            attrib = f"{{{namespace}}}{key}"
+
+        if attrib in self.attrib:
+            value = self.attrib.get(attrib)
             if parser and callable(parser):
                 return parser(value)
             else:
                 return value
-        elif inherited:
+
+        if inherited:
             value = self.walk_back_get_attr(key, inherited)
             if value is not None:
                 return value
@@ -381,14 +404,18 @@ class MPD(MPDNode):
         )
 
         # parse children
-        location = self.children(Location)
-        self.location = location[0] if location else None
-        if self.location:
-            self.url = self.location.text or ""
-            urlp = list(urlparse(self.url))
-            if urlp[2]:
-                urlp[2], _ = urlp[2].rsplit("/", 1)
-            self._base_url = urlunparse(urlp)
+
+        locations = self.children(Location)
+        self.location = next(iter(locations), None)
+        if self.location and (location_url := self.location.text):
+            location_parsed = urlparse(location_url)
+            base_scheme = urlparse(url).scheme if url else ""
+            scheme = location_parsed.scheme
+            if is_insecure_scheme(base_scheme, scheme):
+                raise MPDParsingError(f"Prevented access to insecure MPD location: {base_scheme=!r} {scheme=!r}")
+
+            self.url = location_url
+            self._base_url = location_url
 
         self.baseURLs = self.children(BaseURL)
         self.periods = self.children(Period, minimum=1)
@@ -1018,7 +1045,9 @@ class SegmentTimeline(MPDNode):
     def segments(self) -> Iterator[TimelineSegment]:
         t = 0
         for tsegment in self.timeline_segments:
-            if t == 0 and tsegment.t is not None:
+            # An explicit @t overrides the running time on any segment, not just
+            # the first one, which is how a SegmentTimeline signals a gap.
+            if tsegment.t is not None:
                 t = tsegment.t
             # check the start time from MPD
             for _ in range(tsegment.r + 1):
@@ -1071,4 +1100,4 @@ class ContentProtection(MPDNode):
 
         self.schemeIdUri = self.attr("schemeIdUri")
         self.value = self.attr("value")
-        self.default_KID = self.attr("default_KID")
+        self.default_KID = self.attr("default_KID") or self.attr("default_KID", namespace="urn:mpeg:cenc:2013")  # 5.8.5.2.2
